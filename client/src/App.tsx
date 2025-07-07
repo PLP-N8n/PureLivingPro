@@ -22,7 +22,10 @@ function Router() {
   return (
     <Switch>
       {isLoading || !isAuthenticated ? (
-        <Route path="/" component={Landing} />
+        <>
+          <Route path="/" component={Landing} />
+          <Route path="/admin" component={Admin} />
+        </>
       ) : (
         <>
           <Route path="/" component={Home} />
@@ -33,7 +36,6 @@ function Router() {
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/premium" component={Premium} />
           <Route path="/challenges" component={Challenges} />
-          <Route path="/admin" component={Admin} />
           <Route path="/admin" component={Admin} />
         </>
       )}

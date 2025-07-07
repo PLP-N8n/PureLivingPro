@@ -109,6 +109,12 @@ export default function Navbar() {
                       Premium
                     </Link>
                   </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/admin">
+                      <Crown className="w-4 h-4 mr-2" />
+                      Admin Panel
+                    </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => window.location.href = "/api/logout"}>
                     <LogOut className="w-4 h-4 mr-2" />
