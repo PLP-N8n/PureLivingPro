@@ -1,0 +1,433 @@
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import Navbar from "@/components/layout/navbar";
+import Footer from "@/components/layout/footer";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Crown, 
+  Check, 
+  Star, 
+  Sparkles, 
+  Heart,
+  Brain,
+  Target,
+  BookOpen,
+  Timer,
+  Users,
+  Zap,
+  Shield
+} from "lucide-react";
+import { motion } from "framer-motion";
+
+const premiumFeatures = [
+  {
+    icon: BookOpen,
+    title: "Premium Articles",
+    description: "Access to in-depth, research-backed wellness content",
+  },
+  {
+    icon: Brain,
+    title: "AI Wellness Coach",
+    description: "Personalized recommendations and insights powered by AI",
+  },
+  {
+    icon: Target,
+    title: "Advanced Goal Tracking",
+    description: "Detailed analytics and progress monitoring",
+  },
+  {
+    icon: Timer,
+    title: "Guided Meditation Library",
+    description: "Extended collection of meditation sessions and soundscapes",
+  },
+  {
+    icon: Users,
+    title: "Expert Consultations",
+    description: "Monthly Q&A sessions with wellness professionals",
+  },
+  {
+    icon: Zap,
+    title: "Priority Support",
+    description: "24/7 customer support with faster response times",
+  },
+  {
+    icon: Shield,
+    title: "Ad-Free Experience",
+    description: "Clean, distraction-free platform experience",
+  },
+  {
+    icon: Star,
+    title: "Early Access",
+    description: "First access to new features and content",
+  },
+];
+
+const testimonials = [
+  {
+    name: "Sarah Johnson",
+    role: "Wellness Enthusiast",
+    content: "Pure Living Pro Premium has transformed my daily wellness routine. The AI recommendations are spot-on!",
+    rating: 5,
+  },
+  {
+    name: "Michael Chen",
+    role: "Busy Professional",
+    content: "The personalized content saves me so much time. I get exactly what I need for my wellness goals.",
+    rating: 5,
+  },
+  {
+    name: "Emma Davis",
+    role: "Meditation Practitioner",
+    content: "The premium meditation library is incredible. So many guided sessions for every mood and situation.",
+    rating: 5,
+  },
+];
+
+export default function Premium() {
+  const { toast } = useToast();
+  const { user, isAuthenticated } = useAuth();
+
+  const handleUpgrade = () => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Sign In Required",
+        description: "Please sign in to upgrade to Premium.",
+        variant: "destructive",
+      });
+      setTimeout(() => {
+        window.location.href = "/api/login";
+      }, 500);
+      return;
+    }
+
+    // In a real app, this would integrate with Stripe
+    toast({
+      title: "Coming Soon!",
+      description: "Premium subscriptions will be available soon. Stay tuned!",
+    });
+  };
+
+  return (
+    <div className="min-h-screen bg-sage-25">
+      <Navbar />
+      
+      {/* Hero Section */}
+      <section className="pt-24 pb-16 bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+            >
+              <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white px-6 py-3 text-lg font-semibold mb-6">
+                <Crown className="w-5 h-5 mr-2" />
+                Premium Membership
+              </Badge>
+              <h1 className="text-4xl md:text-6xl font-bold text-transparent bg-gradient-to-r from-amber-600 via-orange-600 to-red-600 bg-clip-text mb-6">
+                Unlock Your Full<br />Wellness Potential
+              </h1>
+              <p className="text-xl text-sage-600 mb-8 max-w-3xl mx-auto">
+                Join Pure Living Pro Premium and access exclusive content, personalized wellness plans, and advanced tools designed to accelerate your wellness transformation.
+              </p>
+              
+              {user?.isPremium ? (
+                <div className="bg-green-50 border border-green-200 rounded-xl p-6 max-w-md mx-auto">
+                  <div className="flex items-center justify-center mb-4">
+                    <Crown className="w-8 h-8 text-amber-500" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-green-800 mb-2">
+                    You're a Premium Member!
+                  </h3>
+                  <p className="text-green-700">
+                    Thank you for being part of our premium community. Enjoy all the exclusive benefits!
+                  </p>
+                </div>
+              ) : (
+                <Button
+                  onClick={handleUpgrade}
+                  size="lg"
+                  className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-8 py-4 text-lg font-semibold"
+                >
+                  <Crown className="w-5 h-5 mr-2" />
+                  Upgrade to Premium
+                </Button>
+              )}
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Plans */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-sage-800 mb-4">
+              Choose Your Plan
+            </h2>
+            <p className="text-xl text-sage-600 max-w-2xl mx-auto">
+              Select the plan that best fits your wellness journey and goals.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Free Plan */}
+            <Card className="organic-border premium-shadow">
+              <CardHeader className="text-center">
+                <div className="w-16 h-16 bg-sage-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Heart className="w-8 h-8 text-sage-600" />
+                </div>
+                <CardTitle className="text-2xl text-sage-700">Free</CardTitle>
+                <div className="text-3xl font-bold text-sage-700 mb-2">£0</div>
+                <CardDescription>Perfect for getting started</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-4 mb-8">
+                  <li className="flex items-start space-x-3">
+                    <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
+                      <Check className="w-3 h-3 text-green-600" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-sage-700">Basic Articles</div>
+                      <div className="text-sm text-sage-600">Access to free wellness content</div>
+                    </div>
+                  </li>
+                  <li className="flex items-start space-x-3">
+                    <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
+                      <Check className="w-3 h-3 text-green-600" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-sage-700">Community Access</div>
+                      <div className="text-sm text-sage-600">Join discussions and connect</div>
+                    </div>
+                  </li>
+                  <li className="flex items-start space-x-3">
+                    <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
+                      <Check className="w-3 h-3 text-green-600" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-sage-700">Basic Meditation Timer</div>
+                      <div className="text-sm text-sage-600">Simple meditation sessions</div>
+                    </div>
+                  </li>
+                </ul>
+                {!user?.isPremium && (
+                  <Button variant="outline" className="w-full" disabled>
+                    Current Plan
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Pro Plan */}
+            <Card className="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 organic-border premium-shadow relative">
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-2">
+                  <Sparkles className="w-4 h-4 mr-1" />
+                  Most Popular
+                </Badge>
+              </div>
+              <CardHeader className="text-center pt-8">
+                <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Crown className="w-8 h-8 text-white" />
+                </div>
+                <CardTitle className="text-2xl text-sage-700">Premium</CardTitle>
+                <div className="text-3xl font-bold text-sage-700 mb-2">
+                  £19.99<span className="text-lg font-normal text-sage-500">/month</span>
+                </div>
+                <CardDescription>Everything you need to thrive</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-4 mb-8">
+                  <li className="flex items-start space-x-3">
+                    <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
+                      <Check className="w-3 h-3 text-green-600" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-sage-700">Everything in Free</div>
+                      <div className="text-sm text-sage-600">Plus all premium features</div>
+                    </div>
+                  </li>
+                  <li className="flex items-start space-x-3">
+                    <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
+                      <Check className="w-3 h-3 text-green-600" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-sage-700">Premium Articles</div>
+                      <div className="text-sm text-sage-600">In-depth, research-backed content</div>
+                    </div>
+                  </li>
+                  <li className="flex items-start space-x-3">
+                    <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
+                      <Check className="w-3 h-3 text-green-600" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-sage-700">AI Wellness Coach</div>
+                      <div className="text-sm text-sage-600">Personalized recommendations</div>
+                    </div>
+                  </li>
+                  <li className="flex items-start space-x-3">
+                    <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
+                      <Check className="w-3 h-3 text-green-600" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-sage-700">Ad-Free Experience</div>
+                      <div className="text-sm text-sage-600">Clean, distraction-free platform</div>
+                    </div>
+                  </li>
+                  <li className="flex items-start space-x-3">
+                    <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
+                      <Check className="w-3 h-3 text-green-600" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-sage-700">Priority Support</div>
+                      <div className="text-sm text-sage-600">24/7 customer support</div>
+                    </div>
+                  </li>
+                </ul>
+                <Button 
+                  onClick={handleUpgrade}
+                  className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
+                  disabled={user?.isPremium}
+                >
+                  {user?.isPremium ? (
+                    <>
+                      <Crown className="w-4 h-4 mr-2" />
+                      Current Plan
+                    </>
+                  ) : (
+                    <>
+                      <Crown className="w-4 h-4 mr-2" />
+                      Upgrade to Premium
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Premium Features */}
+      <section className="py-20 wellness-gradient">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-sage-800 mb-4">
+              Premium Features
+            </h2>
+            <p className="text-xl text-sage-600 max-w-2xl mx-auto">
+              Unlock powerful tools and exclusive content designed to accelerate your wellness journey.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {premiumFeatures.map((feature, index) => (
+              <motion.div
+                key={feature.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+              >
+                <Card className="text-center h-full organic-border premium-shadow card-hover">
+                  <CardContent className="pt-6">
+                    <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                      <feature.icon className="w-6 h-6 text-amber-600" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-sage-800 mb-2">
+                      {feature.title}
+                    </h3>
+                    <p className="text-sage-600 text-sm">
+                      {feature.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-sage-800 mb-4">
+              What Our Premium Members Say
+            </h2>
+            <p className="text-xl text-sage-600">
+              Join thousands of satisfied members on their wellness journey.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {testimonials.map((testimonial, index) => (
+              <motion.div
+                key={testimonial.name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.2 }}
+              >
+                <Card className="h-full organic-border premium-shadow">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center mb-4">
+                      {Array.from({ length: testimonial.rating }).map((_, i) => (
+                        <Star key={i} className="w-5 h-5 text-amber-400 fill-current" />
+                      ))}
+                    </div>
+                    <p className="text-sage-700 italic mb-6">
+                      "{testimonial.content}"
+                    </p>
+                    <div>
+                      <div className="font-semibold text-sage-800">
+                        {testimonial.name}
+                      </div>
+                      <div className="text-sage-600 text-sm">
+                        {testimonial.role}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-sage-800 mb-6">
+              Ready to Transform Your Wellness Journey?
+            </h2>
+            <p className="text-xl text-sage-600 mb-8">
+              Join Pure Living Pro Premium today and unlock your full potential with personalized guidance, exclusive content, and advanced wellness tools.
+            </p>
+            <div className="space-y-4">
+              <Button
+                onClick={handleUpgrade}
+                size="lg"
+                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-8 py-4 text-lg font-semibold"
+                disabled={user?.isPremium}
+              >
+                <Crown className="w-5 h-5 mr-2" />
+                {user?.isPremium ? "You're Already Premium!" : "Start Your Premium Journey"}
+              </Button>
+              <p className="text-sage-500 text-sm">
+                30-day money-back guarantee • Cancel anytime
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      <Footer />
+    </div>
+  );
+}
