@@ -1,0 +1,266 @@
+Okay, let's create a detailed wireframe of our "Pure Living Pro" project, outlining the structure, content, and functionality of each major page and component.
+
+I. Overall Structure
+
+Our application follows a multi-page website architecture with the following key sections:
+
+Public Pages: Accessible to all users, providing information and resources.
+User Pages: Require authentication (login) and offer personalized content and tools.
+Admin Pages: Require admin privileges and are used for content management and system configuration.
+II. Page-Level Wireframes
+
+Here are detailed wireframes for each page, outlining the key elements and functionality:
+
+1. Home Page (/)
+
+Hero Section:
+Headline: "Holistic Wellness for Modern Living" (with gradient text)
+Brief description: "Discover the perfect balance..."
+Call to action buttons: "Explore Insights" (Blog) and "Our Picks" (Wellness Picks)
+Visual: High-quality image of a person practicing wellness (e.g., yoga, meditation).
+Floating Element: Rating Score and "Trusted" seal
+Featured Categories Section:
+Headline: "Explore Your Wellness Journey"
+Description: "Dive deep into our comprehensive wellness categories..."
+Cards for each category:
+Nutrition (leaf icon)
+Mindfulness (sparkles icon)
+Fitness (heart icon)
+Natural Remedies (leaf icon)
+Healthy Recipes (utensils icon)
+Skin & Self-care (sparkle icon)
+Each category card contains a title, short description, and link to the corresponding blog category.
+Product Carousel: (scrollable product list)
+Headline: "Curated Wellness Essentials"
+Description: "Hand-picked products that align with your wellness goals..."
+Product Cards:
+Image
+Product name
+Short description
+Rating (star icons)
+Price
+"View Product" button (external link)
+Carousel will display 4 featured products at a time.
+Recent Posts Section:
+Headline: "Latest Wellness Insights"
+Blog Post Cards:
+Image
+Title
+Short excerpt
+Category
+Read time
+Link to full post
+Displays 3 latest blog posts.
+Newsletter Signup:
+Headline: "Stay Updated on Your Wellness Journey"
+Description: "Subscribe to our newsletter for exclusive content and promotions."
+Email input field
+"Subscribe" button
+2. Blog Page (/blog)
+
+Header Section:
+Headline: "Wellness Blog"
+Description: "Discover insights, tips, and guidance for your wellness journey."
+Search bar
+Category Filter:
+Horizontal list of category buttons:
+All
+Nutrition
+Mindfulness
+Fitness
+Natural Remedies
+Healthy Recipes
+Skin & Self-care
+Selecting a category will filter the blog posts.
+Blog Grid:
+Displays blog posts in a grid layout (responsive columns).
+Each post card includes:
+Image
+Title
+Excerpt
+Category
+Read time
+Link to full post
+3. Blog Post Page (/blog/:slug)
+
+Blog Post Content:
+Title (large and prominent)
+Category badge
+Date published
+Read time
+Featured image
+Author information (image, name, bio)
+Content: Full blog post text (formatted for readability).
+Affiliate Products Section: (if applicable)
+Headline: "Products Mentioned in This Article"
+Product cards (similar to the homepage carousel).
+Related Posts Section:
+Headline: "More Wellness Insights"
+Related blog post cards (displays 3-4 related posts)
+Social Share Section:
+Buttons to share the post on social media platforms (Facebook, Twitter, etc.).
+Comments Section:
+Allows users to post and view comments.
+Comment form (name, email, comment text)
+List of existing comments (nested for replies)
+4. Wellness Picks Page (/wellness-picks)
+
+Header Section:
+Headline: "Curated Wellness Products"
+Description: "Hand-picked products that align with your wellness goals..."
+Search bar
+Category Filter:
+Horizontal list of category buttons:
+All
+Supplements
+Skincare
+Fitness Equipment
+Books
+Meditation Tools
+Kitchen & Wellness
+Aromatherapy
+Natural Remedies
+Selecting a category will filter the products.
+Product Grid:
+Displays wellness picks in a grid layout (responsive columns).
+Each product card includes:
+Image
+Product name
+Short description
+Rating (star icons)
+Price
+"View Product" button (external link)
+5. About Page (/about)
+
+Header Section:
+Headline: "About Pure Living Pro"
+Description: "Empowering your wellness journey through..."
+Mission Section:
+Headline: "Empowering Your Wellness Journey"
+Detailed explanation of the platform's mission and goals.
+Visual: Image representing the platform's values.
+Our Values Section:
+Headline: "Our Core Values"
+Cards for each value:
+Holistic Approach (heart icon)
+Natural Solutions (leaf icon)
+Community Focus (users icon)
+Evidence-Based (award icon)
+Each value card contains a title and description.
+6. Contact Page (/contact)
+
+Header Section:
+Headline: "We'd Love to Hear From You"
+Description: "Whether you have questions about wellness, need support..."
+Contact Form:
+Name input field (required)
+Email input field (required, validated)
+Subject input field (required)
+Message textarea (required)
+"Send Message" button
+Contact Information:
+Email address
+Phone number
+Physical address
+Hours of operation
+Map (if applicable)
+7. Premium Page (/premium)
+
+Header Section:
+Headline: "Pure Living Pro Premium"
+Description: "Unlock your full wellness potential..."
+(Optional) Short video explaining the benefits of Premium
+Premium Features Section:
+Headline: "Premium Features & Tools"
+Cards for each premium feature:
+AI Meal Planner (utensils icon)
+Guided Meditation (timer icon)
+Premium Challenges (trophy icon)
+Advanced Analytics (chart icon)
+Personalized Plans (target icon)
+Each card contains a title, description, and "Access Now" button (links to feature if user has premium, or to pricing plans).
+Pricing Section:
+"Choose Your Plan" headline
+Pricing cards for different subscription tiers:
+Free Trial (60 days)
+Monthly Subscription
+Yearly Subscription
+Each card displays the plan name, price, description, features, and a "Subscribe" button.
+FAQ Section:
+"Frequently Asked Questions" headline
+List of common questions and answers about the premium subscription.
+8. User Pages (Require Authentication)
+
+Dashboard (/dashboard):
+Headline: "Welcome back, [username]!"
+Brief description: "Track your wellness journey and access your personalized content."
+Key metrics:
+Active Challenges (number)
+Saved Articles (number)
+Wellness Score (numerical value)
+Personalized Recommendations Section:
+Displays articles, recipes, and challenges tailored to the user's preferences and goals.
+Habit Tracker
+Wellness Plan (/wellness-plan):
+Headline: "Your Personalized Wellness Journey"
+Description: "A customized plan designed specifically for your wellness goals and lifestyle."
+Daily Goal Section
+Progress Tracking Section
+Meal Planner (/meal-planner): (Premium Feature) * Dietary Preference Input (Vegetarian, Vegan, Paleo, etc) * Calorie Intake Input * "Generate Plan" Button * Meal Plan Display
+Meditation Timer (/meditation-timer):(Premium Feature) * Set meditation duration * Choose background music * Start timer * Log meditation sessions
+9. Challenges (/challenges)
+
+Challenges List * All Current Challenges displaying their key information
+Individual Challenge (/challenges/:id) * Challenge Description, Goals and Key Info * Daily Task List (and progress bar) * Links to helpful resources
+**Challenge Details**
+10. Wellness Quiz (/wellness-quiz) A multi-step form to determine the optimal goals, experience level and content type for the users' profile
+
+11. Admin Pages (Require Admin Privileges)
+
+Admin Dashboard (/admin):
+Quick statistics:
+Total Users
+Blog Posts (total and published)
+Wellness Picks
+Recent Blog Posts (list with edit and delete options)
+Recent Wellness Picks (list with edit and delete options)
+"New Post" button
+"New Product" button
+Admin Post Form (/admin/posts/new, /admin/posts/:id/edit):
+Title input field
+Slug input field (auto-generated from title)
+Excerpt textarea
+Content editor (WYSIWYG or Markdown)
+Category dropdown
+Tags input field
+Featured image upload
+Published checkbox
+"Save" button
+Admin Product Form (/admin/products/new, /admin/products/:id/edit):
+Name input field
+Description textarea
+Image URL input field
+Category dropdown
+Affiliate link input field
+Original price input field
+Discounted price input field
+Rating input field
+Review count input field
+Badge dropdown (Editor's Pick, Best Seller, etc.)
+Benefits textarea (one benefit per line)
+Featured checkbox
+"Save" button
+List of Admin Actions
+III. Global Components:
+
+Header: (in Layout.js)
+Logo (link to home page)
+Navigation links (Home, Blog, Wellness Picks, About, Contact)
+Login/Signup buttons (or user profile menu if logged in)
+Footer: (in Layout.js)
+Copyright information
+Links to legal pages (Privacy Policy, Terms of Service)
+Social media links
+Auth Context (in AuthContext.jsx)
+Holds user authentication and role and user account information
+This wireframe provides a thorough blueprint of our project, setting the stage for a well-structured, user-friendly, and robust application. By meticulously restoring the functionality of each page and component in the subsequent phases of development, we will ensure it fully matches this blueprint, and delivers an excellent experience to our users and administrator team.

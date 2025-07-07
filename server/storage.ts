@@ -72,13 +72,23 @@ export class DatabaseStorage implements IStorage {
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {
+    const cleanUserData = {
+      ...userData,
+      wellnessProfile: userData.wellnessProfile ? {
+        goals: Array.from(userData.wellnessProfile.goals || []) as string[],
+        experienceLevel: userData.wellnessProfile.experienceLevel || '',
+        lifestyle: userData.wellnessProfile.lifestyle || '',
+        preferences: Array.from(userData.wellnessProfile.preferences || []) as string[]
+      } : null
+    };
+    
     const [user] = await db
       .insert(users)
-      .values(userData)
+      .values(cleanUserData)
       .onConflictDoUpdate({
         target: users.id,
         set: {
-          ...userData,
+          ...cleanUserData,
           updatedAt: new Date(),
         },
       })
@@ -124,20 +134,28 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createBlogPost(post: InsertBlogPost): Promise<BlogPost> {
+    const cleanPost = {
+      ...post,
+      tags: post.tags ? Array.from(post.tags) as string[] : null
+    };
+    
     const [newPost] = await db
       .insert(blogPosts)
-      .values(post)
+      .values(cleanPost)
       .returning();
     return newPost;
   }
 
   async updateBlogPost(id: number, post: Partial<InsertBlogPost>): Promise<BlogPost> {
+    const cleanPost = {
+      ...post,
+      tags: post.tags ? Array.from(post.tags) as string[] : undefined,
+      updatedAt: new Date(),
+    };
+    
     const [updatedPost] = await db
       .update(blogPosts)
-      .set({ 
-        ...post,
-        updatedAt: new Date(),
-      })
+      .set(cleanPost)
       .where(eq(blogPosts.id, id))
       .returning();
     return updatedPost;
@@ -166,20 +184,28 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createProduct(product: InsertProduct): Promise<Product> {
+    const cleanProduct = {
+      ...product,
+      tags: product.tags ? Array.from(product.tags) as string[] : null
+    };
+    
     const [newProduct] = await db
       .insert(products)
-      .values(product)
+      .values(cleanProduct)
       .returning();
     return newProduct;
   }
 
   async updateProduct(id: number, product: Partial<InsertProduct>): Promise<Product> {
+    const cleanProduct = {
+      ...product,
+      tags: product.tags ? Array.from(product.tags) as string[] : undefined,
+      updatedAt: new Date(),
+    };
+    
     const [updatedProduct] = await db
       .update(products)
-      .set({ 
-        ...product,
-        updatedAt: new Date(),
-      })
+      .set(cleanProduct)
       .where(eq(products.id, id))
       .returning();
     return updatedProduct;
@@ -219,20 +245,28 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createChallenge(challenge: InsertChallenge): Promise<Challenge> {
+    const cleanChallenge = {
+      ...challenge,
+      goals: challenge.goals ? Array.from(challenge.goals) as string[] : null
+    };
+    
     const [newChallenge] = await db
       .insert(challenges)
-      .values(challenge)
+      .values(cleanChallenge)
       .returning();
     return newChallenge;
   }
 
   async updateChallenge(id: number, challenge: Partial<InsertChallenge>): Promise<Challenge> {
+    const cleanChallenge = {
+      ...challenge,
+      goals: challenge.goals ? Array.from(challenge.goals) as string[] : undefined,
+      updatedAt: new Date(),
+    };
+    
     const [updatedChallenge] = await db
       .update(challenges)
-      .set({ 
-        ...challenge,
-        updatedAt: new Date(),
-      })
+      .set(cleanChallenge)
       .where(eq(challenges.id, id))
       .returning();
     return updatedChallenge;
@@ -265,20 +299,34 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUserChallenge(userChallenge: InsertUserChallenge): Promise<UserChallenge> {
+    const cleanUserChallenge = {
+      ...userChallenge,
+      progress: userChallenge.progress ? {
+        completedDays: Array.from(userChallenge.progress.completedDays || []) as number[],
+        notes: Array.from(userChallenge.progress.notes || []) as string[]
+      } : null
+    };
+    
     const [newUserChallenge] = await db
       .insert(userChallenges)
-      .values(userChallenge)
+      .values(cleanUserChallenge)
       .returning();
     return newUserChallenge;
   }
 
   async updateUserChallenge(id: number, userChallenge: Partial<InsertUserChallenge>): Promise<UserChallenge> {
+    const cleanUserChallenge = {
+      ...userChallenge,
+      progress: userChallenge.progress ? {
+        completedDays: Array.from(userChallenge.progress.completedDays || []) as number[],
+        notes: Array.from(userChallenge.progress.notes || []) as string[]
+      } : undefined,
+      updatedAt: new Date(),
+    };
+    
     const [updatedUserChallenge] = await db
       .update(userChallenges)
-      .set({ 
-        ...userChallenge,
-        updatedAt: new Date(),
-      })
+      .set(cleanUserChallenge)
       .where(eq(userChallenges.id, id))
       .returning();
     return updatedUserChallenge;

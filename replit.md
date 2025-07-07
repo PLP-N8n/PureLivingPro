@@ -114,7 +114,16 @@ Pure Living Pro is a comprehensive wellness and health platform built as a full-
 
 Preferred communication style: Simple, everyday language.
 
+## Project Blueprint
+
+The project follows a detailed wireframe specification with:
+- Public pages: Home, Blog, Wellness Picks, About, Contact, Premium
+- User pages: Dashboard, Wellness Plan, Meal Planner, Meditation Timer, Challenges
+- Admin pages: Content management and system configuration
+- Features: AI-powered wellness coaching, premium subscriptions, personalized recommendations
+
 ## Changelog
 
 Changelog:
-- July 07, 2025. Initial setup
+- July 07, 2025. Initial setup with complete database schema and API integrations
+- July 07, 2025. Added comprehensive wireframe specification for all platform features

@@ -1,226 +1,377 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import Navbar from "@/components/layout/navbar";
-import Footer from "@/components/layout/footer";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ShoppingBag, Search, Star, ExternalLink, Heart } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Search, Star, ExternalLink, Heart, Filter, ShoppingBag, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
+
+interface Product {
+  id: number;
+  name: string;
+  price: string;
+  description: string | null;
+  category: string | null;
+  rating: string | null;
+  imageUrl: string | null;
+  affiliateLink: string | null;
+  isRecommended: boolean | null;
+  tags?: string[] | null;
+}
 
 export default function WellnessPicks() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [priceRange, setPriceRange] = useState("all");
 
-  const { data: products, isLoading } = useQuery({
+  const { data: products = [], isLoading } = useQuery<Product[]>({
     queryKey: ["/api/products"],
-    retry: false,
   });
 
   const categories = [
-    "All",
-    "Supplements",
-    "Skincare",
-    "Fitness",
-    "Meditation",
-    "Nutrition",
-    "Sleep",
-    "Aromatherapy"
+    { id: "all", name: "All Products", icon: "🛍️", description: "All curated wellness products" },
+    { id: "supplements", name: "Supplements", icon: "💊", description: "Vitamins and nutritional supplements" },
+    { id: "skincare", name: "Skincare", icon: "✨", description: "Natural skincare and beauty products" },
+    { id: "fitness", name: "Fitness", icon: "🏋️", description: "Exercise equipment and accessories" },
+    { id: "nutrition", name: "Nutrition", icon: "🥗", description: "Healthy food and nutrition products" },
+    { id: "wellness-tools", name: "Wellness Tools", icon: "🧘", description: "Meditation and wellness accessories" },
+    { id: "home", name: "Home & Living", icon: "🏡", description: "Healthy home and lifestyle products" }
   ];
 
-  const filteredProducts = products?.filter((product: any) => {
+  const priceRanges = [
+    { id: "all", name: "All Prices", range: [0, Infinity] },
+    { id: "under-25", name: "Under $25", range: [0, 25] },
+    { id: "25-50", name: "$25 - $50", range: [25, 50] },
+    { id: "50-100", name: "$50 - $100", range: [50, 100] },
+    { id: "over-100", name: "Over $100", range: [100, Infinity] }
+  ];
+
+  const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         product.description?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === "" || selectedCategory === "All" || 
-                           product.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  }) || [];
+                         (product.description && product.description.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
+    
+    const productPrice = parseFloat(product.price.replace(/[^0-9.]/g, ''));
+    const selectedRange = priceRanges.find(range => range.id === priceRange);
+    const matchesPrice = !selectedRange || 
+                        (productPrice >= selectedRange.range[0] && productPrice <= selectedRange.range[1]);
+    
+    return matchesSearch && matchesCategory && matchesPrice;
+  });
+
+  const recommendedProducts = filteredProducts.filter(product => product.isRecommended);
+  const otherProducts = filteredProducts.filter(product => !product.isRecommended);
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-sage-25">
-        <Navbar />
-        <div className="pt-24 pb-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <Card key={i} className="animate-pulse">
-                  <Skeleton className="h-48 w-full" />
-                  <CardContent className="p-6">
-                    <Skeleton className="h-4 w-20 mb-2" />
-                    <Skeleton className="h-6 w-full mb-2" />
-                    <Skeleton className="h-4 w-full mb-4" />
-                    <Skeleton className="h-8 w-24" />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </div>
-        <Footer />
+      <div className="min-h-screen bg-sage-25 flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-sage-600 border-t-transparent rounded-full" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-sage-25">
-      <Navbar />
-      
-      {/* Hero Section */}
-      <section className="pt-24 pb-16 wellness-gradient">
+    <div className="min-h-screen bg-sage-25 pt-16">
+      {/* Header Section */}
+      <section className="bg-gradient-to-br from-sage-50 to-green-50 py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-            >
-              <div className="inline-flex items-center bg-amber-100 text-amber-700 px-4 py-2 rounded-full mb-6">
-                <Heart className="w-5 h-5 mr-2" />
-                Wellness Picks
-              </div>
-              <h1 className="text-4xl md:text-5xl font-bold text-sage-800 mb-6">
-                Curated Wellness Products
-              </h1>
-              <p className="text-xl text-sage-600 max-w-3xl mx-auto mb-8">
-                Hand-picked products that align with your wellness goals, thoroughly researched and recommended by our experts.
-              </p>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Search and Filters */}
-      <section className="py-8 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row gap-6 items-center">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-sage-400" />
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="text-center max-w-4xl mx-auto"
+          >
+            <Badge className="bg-sage-100 text-sage-700 mb-6">
+              <ShoppingBag className="w-4 h-4 mr-2" />
+              Wellness Picks
+            </Badge>
+            <h1 className="text-4xl md:text-6xl font-bold text-sage-800 mb-6 leading-tight">
+              Curated{" "}
+              <span className="text-transparent bg-gradient-to-r from-sage-600 to-green-500 bg-clip-text">
+                Wellness Products
+              </span>
+            </h1>
+            <p className="text-xl text-sage-600 mb-8">
+              Thoughtfully selected products to support your wellness journey. Each item is tested, 
+              reviewed, and recommended by our team of wellness experts.
+            </p>
+            
+            {/* Search Bar */}
+            <div className="relative max-w-md mx-auto">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sage-400 h-5 w-5" />
               <Input
                 type="text"
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 border-sage-200 focus:border-sage-500 focus:ring-sage-500"
+                className="pl-10 pr-4 py-3 text-lg border-sage-200 focus:border-sage-400 rounded-xl"
               />
             </div>
-            
-            <div className="flex flex-wrap gap-2">
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Filters Section */}
+      <section className="py-12 bg-white border-b border-sage-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Category Filter */}
+          <div className="mb-8">
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-bold text-sage-800 mb-2">Shop by Category</h2>
+              <p className="text-sage-600">Browse our curated selection by product type</p>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
               {categories.map((category) => (
-                <Button
-                  key={category}
-                  variant={selectedCategory === category || (selectedCategory === "" && category === "All") ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedCategory(category === "All" ? "" : category)}
-                  className={selectedCategory === category || (selectedCategory === "" && category === "All") 
-                    ? "bg-sage-600 hover:bg-sage-700 text-white" 
-                    : "border-sage-200 text-sage-600 hover:bg-sage-50"
-                  }
+                <motion.div
+                  key={category.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
                 >
-                  {category}
-                </Button>
+                  <Button
+                    variant={selectedCategory === category.id ? "default" : "outline"}
+                    className={`h-auto p-4 flex flex-col items-center text-center w-full ${
+                      selectedCategory === category.id
+                        ? "bg-sage-600 hover:bg-sage-700 text-white"
+                        : "border-sage-200 text-sage-700 hover:bg-sage-50"
+                    }`}
+                    onClick={() => setSelectedCategory(category.id)}
+                  >
+                    <span className="text-2xl mb-2">{category.icon}</span>
+                    <span className="font-medium text-sm">{category.name}</span>
+                  </Button>
+                </motion.div>
               ))}
+            </div>
+          </div>
+
+          {/* Price Filter */}
+          <div className="flex items-center justify-center">
+            <div className="flex items-center gap-2">
+              <Filter className="w-4 h-4 text-sage-600" />
+              <span className="text-sage-700 font-medium mr-3">Price Range:</span>
+              <div className="flex flex-wrap gap-2">
+                {priceRanges.map((range) => (
+                  <Button
+                    key={range.id}
+                    variant={priceRange === range.id ? "default" : "outline"}
+                    size="sm"
+                    className={priceRange === range.id
+                      ? "bg-sage-600 hover:bg-sage-700 text-white"
+                      : "border-sage-200 text-sage-600 hover:bg-sage-50"
+                    }
+                    onClick={() => setPriceRange(range.id)}
+                  >
+                    {range.name}
+                  </Button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Products Grid */}
-      <section className="py-16 bg-sage-25">
+      {/* Products Section */}
+      <section className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {selectedCategory !== "all" && (
+            <div className="mb-8">
+              <h2 className="text-3xl font-bold text-sage-800 mb-2">
+                {categories.find(cat => cat.id === selectedCategory)?.icon}{" "}
+                {categories.find(cat => cat.id === selectedCategory)?.name}
+              </h2>
+              <p className="text-sage-600">
+                {categories.find(cat => cat.id === selectedCategory)?.description}
+              </p>
+            </div>
+          )}
+
           {filteredProducts.length === 0 ? (
             <div className="text-center py-16">
-              <ShoppingBag className="w-16 h-16 text-sage-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-sage-700 mb-2">No products found</h3>
-              <p className="text-sage-600">Try adjusting your search or filter criteria.</p>
+              <div className="text-6xl mb-4">🛍️</div>
+              <h3 className="text-2xl font-semibold text-sage-800 mb-2">No products found</h3>
+              <p className="text-sage-600 mb-6">
+                {searchQuery 
+                  ? "Try adjusting your search terms or filters." 
+                  : "We're working on adding products to this category. Check back soon!"
+                }
+              </p>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setSearchQuery("");
+                  setSelectedCategory("all");
+                  setPriceRange("all");
+                }}
+                className="border-sage-600 text-sage-600 hover:bg-sage-50"
+              >
+                View All Products
+              </Button>
             </div>
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredProducts.map((product: any, index: number) => (
-                <motion.div
-                  key={product.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                >
-                  <Card className="h-full hover:shadow-lg transition-all duration-300 card-hover organic-border overflow-hidden">
-                    <div className="aspect-video bg-gradient-to-r from-sage-100 to-sage-200 flex items-center justify-center">
-                      <img
-                        src={product.imageUrl || `https://images.unsplash.com/photo-1584017911766-d451b3d0e843?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300`}
-                        alt={product.name}
-                        className="w-full h-full object-cover"
+            <>
+              <div className="flex items-center justify-between mb-8">
+                <p className="text-sage-600">
+                  Showing {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''}
+                  {searchQuery && ` for "${searchQuery}"`}
+                </p>
+                {(searchQuery || selectedCategory !== "all" || priceRange !== "all") && (
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => {
+                      setSearchQuery("");
+                      setSelectedCategory("all");
+                      setPriceRange("all");
+                    }}
+                    className="text-sage-600 hover:bg-sage-50"
+                  >
+                    Clear filters
+                  </Button>
+                )}
+              </div>
+
+              {/* Recommended Products */}
+              {recommendedProducts.length > 0 && (
+                <div className="mb-16">
+                  <div className="flex items-center gap-2 mb-8">
+                    <Sparkles className="w-6 h-6 text-amber-500" />
+                    <h2 className="text-3xl font-bold text-sage-800">Staff Picks</h2>
+                    <Badge className="bg-amber-100 text-amber-700">Recommended</Badge>
+                  </div>
+                  
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {recommendedProducts.map((product, index) => (
+                      <ProductCard key={product.id} product={product} index={index} isRecommended={true} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Other Products */}
+              {otherProducts.length > 0 && (
+                <div>
+                  {recommendedProducts.length > 0 && (
+                    <h2 className="text-3xl font-bold text-sage-800 mb-8">More Products</h2>
+                  )}
+                  
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {otherProducts.map((product, index) => (
+                      <ProductCard 
+                        key={product.id} 
+                        product={product} 
+                        index={index + recommendedProducts.length} 
+                        isRecommended={false} 
                       />
-                    </div>
-                    <CardHeader>
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center space-x-2">
-                          <Badge className="bg-sage-100 text-sage-700">
-                            {product.category}
-                          </Badge>
-                          {product.isRecommended && (
-                            <Badge className="bg-green-100 text-green-700">
-                              Editor's Pick
-                            </Badge>
-                          )}
-                        </div>
-                        {product.rating && (
-                          <div className="flex items-center space-x-1">
-                            <Star className="w-4 h-4 text-amber-400 fill-current" />
-                            <span className="text-sm text-sage-600">{product.rating}</span>
-                          </div>
-                        )}
-                      </div>
-                      <CardTitle className="text-sage-800">
-                        {product.name}
-                      </CardTitle>
-                      <CardDescription className="text-sage-600">
-                        {product.description}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex items-center justify-between mb-4">
-                        <span className="text-2xl font-bold text-sage-800">
-                          £{product.price}
-                        </span>
-                      </div>
-                      <div className="space-y-2">
-                        {product.affiliateLink ? (
-                          <Button 
-                            className="w-full bg-sage-600 hover:bg-sage-700 text-white"
-                            onClick={() => window.open(product.affiliateLink, '_blank')}
-                          >
-                            <ShoppingBag className="w-4 h-4 mr-2" />
-                            Shop Now
-                            <ExternalLink className="w-4 h-4 ml-2" />
-                          </Button>
-                        ) : (
-                          <Button 
-                            className="w-full bg-sage-600 hover:bg-sage-700 text-white"
-                            disabled
-                          >
-                            <ShoppingBag className="w-4 h-4 mr-2" />
-                            Coming Soon
-                          </Button>
-                        )}
-                        <Button 
-                          variant="outline" 
-                          className="w-full border-sage-200 text-sage-600 hover:bg-sage-50"
-                        >
-                          Learn More
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>
-
-      <Footer />
     </div>
+  );
+}
+
+function ProductCard({ product, index, isRecommended }: { 
+  product: Product; 
+  index: number; 
+  isRecommended: boolean; 
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, delay: index * 0.1 }}
+    >
+      <Card className="h-full hover:shadow-lg transition-all duration-300 cursor-pointer group border-sage-100 hover:border-sage-200">
+        <div className="relative">
+          <div className="aspect-square bg-gradient-to-br from-sage-100 to-green-100 rounded-t-lg flex items-center justify-center">
+            {product.imageUrl ? (
+              <img 
+                src={product.imageUrl} 
+                alt={product.name}
+                className="w-full h-full object-cover rounded-t-lg"
+              />
+            ) : (
+              <span className="text-4xl">🌿</span>
+            )}
+          </div>
+          {isRecommended && (
+            <Badge className="absolute top-3 left-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white">
+              <Sparkles className="w-3 h-3 mr-1" />
+              Staff Pick
+            </Badge>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="absolute top-3 right-3 bg-white/80 hover:bg-white text-sage-600 rounded-full p-2"
+          >
+            <Heart className="w-4 h-4" />
+          </Button>
+        </div>
+        
+        <CardHeader>
+          <div className="flex items-center justify-between mb-2">
+            <Badge variant="secondary" className="bg-sage-100 text-sage-700">
+              {product.category || "Wellness"}
+            </Badge>
+            {product.rating && (
+              <div className="flex items-center gap-1">
+                <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                <span className="text-sm text-sage-600">{product.rating}</span>
+              </div>
+            )}
+          </div>
+          <CardTitle className="text-xl group-hover:text-sage-600 transition-colors leading-tight">
+            {product.name}
+          </CardTitle>
+        </CardHeader>
+        
+        <CardContent>
+          <CardDescription className="text-sage-600 mb-4 line-clamp-2">
+            {product.description || "High-quality wellness product carefully selected by our team."}
+          </CardDescription>
+          
+          <div className="flex items-center justify-between mb-4">
+            <div className="text-2xl font-bold text-sage-800">
+              {product.price}
+            </div>
+            {product.affiliateLink && (
+              <Button
+                size="sm"
+                className="bg-sage-600 hover:bg-sage-700 text-white"
+                onClick={() => window.open(product.affiliateLink!, '_blank')}
+              >
+                <ExternalLink className="w-4 h-4 mr-1" />
+                Shop Now
+              </Button>
+            )}
+          </div>
+
+          {product.tags && product.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {product.tags.slice(0, 3).map((tag, tagIndex) => (
+                <Badge 
+                  key={tagIndex} 
+                  variant="outline" 
+                  className="text-xs border-sage-200 text-sage-600"
+                >
+                  {tag}
+                </Badge>
+              ))}
+              {product.tags.length > 3 && (
+                <Badge variant="outline" className="text-xs border-sage-200 text-sage-600">
+                  +{product.tags.length - 3}
+                </Badge>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 }
