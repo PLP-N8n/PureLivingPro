@@ -22,6 +22,235 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Blog Posts API
+  app.get('/api/blog-posts', async (req, res) => {
+    try {
+      const { limit, offset, category } = req.query;
+      const posts = await storage.getBlogPosts(
+        parseInt(limit as string) || 10,
+        parseInt(offset as string) || 0,
+        category as string
+      );
+      res.json(posts);
+    } catch (error) {
+      console.error("Error fetching blog posts:", error);
+      res.status(500).json({ message: "Failed to fetch blog posts" });
+    }
+  });
+
+  app.get('/api/blog-posts/:slug', async (req, res) => {
+    try {
+      const post = await storage.getBlogPost(req.params.slug);
+      if (!post) {
+        return res.status(404).json({ message: "Blog post not found" });
+      }
+      res.json(post);
+    } catch (error) {
+      console.error("Error fetching blog post:", error);
+      res.status(500).json({ message: "Failed to fetch blog post" });
+    }
+  });
+
+  // Products API
+  app.get('/api/products', async (req, res) => {
+    try {
+      const { limit, offset, category } = req.query;
+      const products = await storage.getProducts(
+        parseInt(limit as string) || 10,
+        parseInt(offset as string) || 0,
+        category as string
+      );
+      res.json(products);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      res.status(500).json({ message: "Failed to fetch products" });
+    }
+  });
+
+  app.get('/api/products/search', async (req, res) => {
+    try {
+      const { q } = req.query;
+      if (!q) {
+        return res.status(400).json({ message: "Search query required" });
+      }
+      const products = await storage.searchProducts(q as string);
+      res.json(products);
+    } catch (error) {
+      console.error("Error searching products:", error);
+      res.status(500).json({ message: "Failed to search products" });
+    }
+  });
+
+  // Challenges API
+  app.get('/api/challenges', async (req, res) => {
+    try {
+      const { limit, offset } = req.query;
+      const challenges = await storage.getChallenges(
+        parseInt(limit as string) || 10,
+        parseInt(offset as string) || 0
+      );
+      res.json(challenges);
+    } catch (error) {
+      console.error("Error fetching challenges:", error);
+      res.status(500).json({ message: "Failed to fetch challenges" });
+    }
+  });
+
+  // Admin API - Protected routes
+  app.get('/api/admin/stats', isAuthenticated, async (req, res) => {
+    try {
+      // Get basic statistics
+      const [posts, products, challenges] = await Promise.all([
+        storage.getBlogPosts(1000), // Get all posts for count
+        storage.getProducts(1000), // Get all products for count
+        storage.getChallenges(1000) // Get all challenges for count
+      ]);
+
+      const stats = {
+        totalPosts: posts.length,
+        totalProducts: products.length,
+        activeChallenges: challenges.filter(c => c.isActive).length,
+        totalUsers: 1, // Placeholder - implement user counting later
+      };
+
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching admin stats:", error);
+      res.status(500).json({ message: "Failed to fetch statistics" });
+    }
+  });
+
+  app.get('/api/admin/blog-posts', isAuthenticated, async (req, res) => {
+    try {
+      const posts = await storage.getBlogPosts(1000); // Get all posts for admin
+      res.json(posts);
+    } catch (error) {
+      console.error("Error fetching admin blog posts:", error);
+      res.status(500).json({ message: "Failed to fetch blog posts" });
+    }
+  });
+
+  app.post('/api/admin/blog-posts', isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      const postData = {
+        ...req.body,
+        authorId: userId,
+      };
+      const post = await storage.createBlogPost(postData);
+      res.status(201).json(post);
+    } catch (error) {
+      console.error("Error creating blog post:", error);
+      res.status(500).json({ message: "Failed to create blog post" });
+    }
+  });
+
+  app.put('/api/admin/blog-posts/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const post = await storage.updateBlogPost(id, req.body);
+      res.json(post);
+    } catch (error) {
+      console.error("Error updating blog post:", error);
+      res.status(500).json({ message: "Failed to update blog post" });
+    }
+  });
+
+  app.delete('/api/admin/blog-posts/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteBlogPost(id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting blog post:", error);
+      res.status(500).json({ message: "Failed to delete blog post" });
+    }
+  });
+
+  app.get('/api/admin/products', isAuthenticated, async (req, res) => {
+    try {
+      const products = await storage.getProducts(1000); // Get all products for admin
+      res.json(products);
+    } catch (error) {
+      console.error("Error fetching admin products:", error);
+      res.status(500).json({ message: "Failed to fetch products" });
+    }
+  });
+
+  app.post('/api/admin/products', isAuthenticated, async (req, res) => {
+    try {
+      const product = await storage.createProduct(req.body);
+      res.status(201).json(product);
+    } catch (error) {
+      console.error("Error creating product:", error);
+      res.status(500).json({ message: "Failed to create product" });
+    }
+  });
+
+  app.put('/api/admin/products/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const product = await storage.updateProduct(id, req.body);
+      res.json(product);
+    } catch (error) {
+      console.error("Error updating product:", error);
+      res.status(500).json({ message: "Failed to update product" });
+    }
+  });
+
+  app.delete('/api/admin/products/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteProduct(id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      res.status(500).json({ message: "Failed to delete product" });
+    }
+  });
+
+  app.get('/api/admin/challenges', isAuthenticated, async (req, res) => {
+    try {
+      const challenges = await storage.getChallenges(1000); // Get all challenges for admin
+      res.json(challenges);
+    } catch (error) {
+      console.error("Error fetching admin challenges:", error);
+      res.status(500).json({ message: "Failed to fetch challenges" });
+    }
+  });
+
+  app.post('/api/admin/challenges', isAuthenticated, async (req, res) => {
+    try {
+      const challenge = await storage.createChallenge(req.body);
+      res.status(201).json(challenge);
+    } catch (error) {
+      console.error("Error creating challenge:", error);
+      res.status(500).json({ message: "Failed to create challenge" });
+    }
+  });
+
+  app.put('/api/admin/challenges/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const challenge = await storage.updateChallenge(id, req.body);
+      res.json(challenge);
+    } catch (error) {
+      console.error("Error updating challenge:", error);
+      res.status(500).json({ message: "Failed to update challenge" });
+    }
+  });
+
+  app.delete('/api/admin/challenges/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteChallenge(id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting challenge:", error);
+      res.status(500).json({ message: "Failed to delete challenge" });
+    }
+  });
+
   // Blog routes
   app.get('/api/blog/posts', async (req, res) => {
     try {

@@ -34,6 +34,7 @@ function Router() {
           <Route path="/premium" component={Premium} />
           <Route path="/challenges" component={Challenges} />
           <Route path="/admin" component={Admin} />
+          <Route path="/admin" component={Admin} />
         </>
       )}
       <Route component={NotFound} />
