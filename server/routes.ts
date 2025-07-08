@@ -1172,6 +1172,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/wellness/ai-chat", isAuthenticated, async (req: any, res) => {
+    try {
+      const { message, context } = req.body;
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!message) {
+        return res.status(400).json({ message: "Message is required" });
+      }
+
+      // Create context for AI response
+      const userContext = {
+        name: user?.firstName || "there",
+        isPremium: user?.isPremium || false,
+        context: context || "general"
+      };
+
+      const response = await analyzeMoodAndSuggestActivities(
+        `User ${userContext.name} (${userContext.isPremium ? 'Premium' : 'Free'} member) asks: ${message}`,
+        userContext
+      );
+      
+      res.json({ response });
+    } catch (error) {
+      console.error("Error in AI chat:", error);
+      res.status(500).json({ message: "Failed to get AI response" });
+    }
+  });
+
   // Wellness profile routes
   app.put('/api/user/wellness-profile', isAuthenticated, async (req: any, res) => {
     try {

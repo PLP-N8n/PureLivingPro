@@ -177,6 +177,60 @@
       "complete": "Session Complete"
     }
   },
+  "dashboard": {
+    "welcome": "Welcome back, {{name}}!",
+    "subtitle": "Here's your wellness dashboard for today",
+    "stats": {
+      "activeChallenges": "Active Challenges",
+      "completed": "Completed",
+      "dailyProgress": "Daily Progress",
+      "dayStreak": "Day Streak"
+    },
+    "badges": {
+      "day": "Day {{count}}",
+      "streak": "{{count}} Day Streak",
+      "premiumMember": "Premium Member"
+    },
+    "sections": {
+      "todaysLog": "Today's Wellness Log",
+      "logDescription": "Track your daily wellness activities and mood",
+      "currentChallenge": "Current Challenge",
+      "wellnessPlan": "Your Wellness Plan",
+      "todaysWellness": "Today's Wellness",
+      "quickActions": "Quick Actions",
+      "aiCoach": "AI Wellness Coach",
+      "insights": "Wellness Insights",
+      "recentActivity": "Recent Activity"
+    },
+    "actions": {
+      "startMeditation": "Start Meditation",
+      "joinChallenge": "Join Challenge",
+      "getWellnessTip": "Get Wellness Tip",
+      "chatWithAI": "Chat with AI Coach",
+      "viewPlan": "View Full Plan",
+      "viewChallenges": "View All Challenges"
+    },
+    "wellness": {
+      "mood": "Mood",
+      "energy": "Energy",
+      "dailyGoals": "Daily Goals",
+      "exercise": "Exercise",
+      "meditation": "Meditation",
+      "sleep": "Sleep",
+      "water": "Water"
+    },
+    "aiCoach": {
+      "greeting": "Hi! I'm your AI wellness coach. How can I help you today?",
+      "suggestions": [
+        "How can I improve my energy levels?",
+        "What's a good meditation for stress?",
+        "Help me plan healthy meals",
+        "I need motivation for exercise"
+      ],
+      "typing": "Coach is typing...",
+      "placeholder": "Ask your AI coach anything about wellness..."
+    }
+  },
   "footer": {
     "tagline": "Your journey to wellness starts here",
     "quickLinks": "Quick Links",

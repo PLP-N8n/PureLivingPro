@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -26,15 +27,33 @@ import {
   Moon,
   Brain,
   Plus,
-  Award
+  Award,
+  MessageCircle,
+  Send,
+  Sparkles,
+  Activity,
+  Clock,
+  BarChart,
+  Users,
+  Eye
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "wouter";
 
 export default function Dashboard() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const { isAuthenticated, isLoading, user } = useAuth();
   const queryClient = useQueryClient();
+  const [aiMessage, setAiMessage] = useState("");
+  const [chatHistory, setChatHistory] = useState([
+    {
+      type: "ai",
+      message: t('dashboard.aiCoach.greeting'),
+      timestamp: new Date()
+    }
+  ]);
+  const [isAiTyping, setIsAiTyping] = useState(false);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -101,6 +120,63 @@ export default function Dashboard() {
     },
   });
 
+  // AI Chat functionality
+  const aiChatMutation = useMutation({
+    mutationFn: async (message: string) => {
+      const response = await apiRequest("POST", "/api/wellness/ai-chat", {
+        message,
+        userId: user?.id,
+        context: "dashboard"
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setChatHistory(prev => [...prev, {
+        type: "ai",
+        message: data.response,
+        timestamp: new Date()
+      }]);
+      setIsAiTyping(false);
+    },
+    onError: (error) => {
+      setIsAiTyping(false);
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to get AI response. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleAiChat = async (message: string) => {
+    if (!message.trim()) return;
+    
+    setChatHistory(prev => [...prev, {
+      type: "user",
+      message: message,
+      timestamp: new Date()
+    }]);
+    setAiMessage("");
+    setIsAiTyping(true);
+    
+    await aiChatMutation.mutateAsync(message);
+  };
+
+  const handleQuickMessage = (message: string) => {
+    handleAiChat(message);
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-sage-25 flex items-center justify-center">
@@ -155,23 +231,23 @@ export default function Dashboard() {
             transition={{ duration: 0.8 }}
           >
             <h1 className="text-4xl md:text-5xl font-bold text-sage-800 mb-4">
-              Welcome back, {user?.firstName || "Wellness Warrior"}!
+              {t('dashboard.welcome', { name: user?.firstName || "Wellness Warrior" })}
             </h1>
             <p className="text-xl text-sage-600 mb-6">
-              Here's your wellness dashboard for today.
+              {t('dashboard.subtitle')}
             </p>
             <div className="flex flex-wrap gap-3">
               <Badge className="bg-sage-100 text-sage-700 px-4 py-2">
                 <Calendar className="w-4 h-4 mr-2" />
-                Day {wellnessStreak + 1}
+                {t('dashboard.badges.day', { count: wellnessStreak + 1 })}
               </Badge>
               <Badge className="bg-amber-100 text-amber-700 px-4 py-2">
                 <Flame className="w-4 h-4 mr-2" />
-                {wellnessStreak} Day Streak
+                {t('dashboard.badges.streak', { count: wellnessStreak })}
               </Badge>
               {user?.isPremium && (
                 <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-2">
-                  Premium Member
+                  {t('dashboard.badges.premiumMember')}
                 </Badge>
               )}
             </div>
@@ -189,7 +265,7 @@ export default function Dashboard() {
                   <Target className="w-6 h-6 text-sage-600" />
                 </div>
                 <div className="text-2xl font-bold text-sage-800">{userChallenges?.length || 0}</div>
-                <p className="text-sage-600 text-sm">Active Challenges</p>
+                <p className="text-sage-600 text-sm">{t('dashboard.stats.activeChallenges')}</p>
               </CardContent>
             </Card>
             
@@ -199,7 +275,7 @@ export default function Dashboard() {
                   <Award className="w-6 h-6 text-green-600" />
                 </div>
                 <div className="text-2xl font-bold text-sage-800">{completedChallenges}</div>
-                <p className="text-sage-600 text-sm">Completed</p>
+                <p className="text-sage-600 text-sm">{t('dashboard.stats.completed')}</p>
               </CardContent>
             </Card>
             
@@ -211,7 +287,7 @@ export default function Dashboard() {
                 <div className="text-2xl font-bold text-sage-800">
                   {Math.round((completedGoals / weeklyGoals) * 100)}%
                 </div>
-                <p className="text-sage-600 text-sm">Daily Progress</p>
+                <p className="text-sage-600 text-sm">{t('dashboard.stats.dailyProgress')}</p>
               </CardContent>
             </Card>
             
@@ -221,7 +297,7 @@ export default function Dashboard() {
                   <Flame className="w-6 h-6 text-orange-600" />
                 </div>
                 <div className="text-2xl font-bold text-sage-800">{wellnessStreak}</div>
-                <p className="text-sage-600 text-sm">Day Streak</p>
+                <p className="text-sage-600 text-sm">{t('dashboard.stats.dayStreak')}</p>
               </CardContent>
             </Card>
           </div>
@@ -238,10 +314,10 @@ export default function Dashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Calendar className="w-5 h-5 text-sage-600" />
-                    Today's Wellness Log
+                    {t('dashboard.sections.todaysLog')}
                   </CardTitle>
                   <CardDescription>
-                    Track your daily wellness activities and mood
+                    {t('dashboard.sections.logDescription')}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -255,7 +331,7 @@ export default function Dashboard() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Target className="w-5 h-5 text-amber-600" />
-                      Current Challenge
+                      {t('dashboard.sections.currentChallenge')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -282,7 +358,7 @@ export default function Dashboard() {
                     <div className="mt-4 pt-4 border-t border-sage-200">
                       <Link href="/challenges">
                         <Button variant="outline" size="sm">
-                          View All Challenges
+                          {t('dashboard.actions.viewChallenges')}
                         </Button>
                       </Link>
                     </div>
@@ -296,7 +372,7 @@ export default function Dashboard() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <BookOpen className="w-5 h-5 text-sage-600" />
-                      Your Wellness Plan
+                      {t('dashboard.sections.wellnessPlan')}
                     </CardTitle>
                     <CardDescription>
                       {wellnessPlan.weeklyFocus}
@@ -315,7 +391,7 @@ export default function Dashboard() {
                       </div>
                     ))}
                     <Button variant="outline" size="sm" className="w-full">
-                      View Full Plan
+                      {t('dashboard.actions.viewPlan')}
                     </Button>
                   </CardContent>
                 </Card>
@@ -329,12 +405,12 @@ export default function Dashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Heart className="w-5 h-5 text-pink-600" />
-                    Today's Wellness
+                    {t('dashboard.sections.todaysWellness')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sage-700">Mood</span>
+                    <span className="text-sage-700">{t('dashboard.wellness.mood')}</span>
                     <div className="flex space-x-1">
                       {Array.from({ length: 5 }).map((_, i) => (
                         <Smile
@@ -349,7 +425,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sage-700">Energy</span>
+                    <span className="text-sage-700">{t('dashboard.wellness.energy')}</span>
                     <div className="flex space-x-1">
                       {Array.from({ length: 5 }).map((_, i) => (
                         <Zap
@@ -365,10 +441,82 @@ export default function Dashboard() {
                   </div>
                   <div className="pt-2">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sage-700">Daily Goals</span>
+                      <span className="text-sage-700">{t('dashboard.wellness.dailyGoals')}</span>
                       <span className="text-sage-600 text-sm">{completedGoals}/{weeklyGoals}</span>
                     </div>
                     <Progress value={(completedGoals / weeklyGoals) * 100} className="h-2" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* AI Wellness Coach */}
+              <Card className="organic-border premium-shadow">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MessageCircle className="w-5 h-5 text-sage-600" />
+                    {t('dashboard.sections.aiCoach')}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="max-h-64 overflow-y-auto space-y-3">
+                    {chatHistory.map((chat, index) => (
+                      <div key={index} className={`flex ${chat.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-[80%] p-3 rounded-lg ${
+                          chat.type === 'user' 
+                            ? 'bg-sage-100 text-sage-800' 
+                            : 'bg-[#eedfc8] text-sage-800'
+                        }`}>
+                          <p className="text-sm">{chat.message}</p>
+                        </div>
+                      </div>
+                    ))}
+                    {isAiTyping && (
+                      <div className="flex justify-start">
+                        <div className="bg-[#eedfc8] text-sage-800 p-3 rounded-lg">
+                          <p className="text-sm">{t('dashboard.aiCoach.typing')}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="grid grid-cols-1 gap-2">
+                    {t('dashboard.aiCoach.suggestions', { returnObjects: true }).map((suggestion, index) => (
+                      <Button
+                        key={index}
+                        variant="outline"
+                        size="sm"
+                        className="text-xs h-8 justify-start"
+                        onClick={() => handleQuickMessage(suggestion)}
+                        disabled={isAiTyping}
+                      >
+                        <Sparkles className="w-3 h-3 mr-2" />
+                        {suggestion}
+                      </Button>
+                    ))}
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={aiMessage}
+                      onChange={(e) => setAiMessage(e.target.value)}
+                      placeholder={t('dashboard.aiCoach.placeholder')}
+                      className="flex-1 px-3 py-2 border border-sage-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sage-500"
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          handleAiChat(aiMessage);
+                        }
+                      }}
+                      disabled={isAiTyping}
+                    />
+                    <Button
+                      size="sm"
+                      onClick={() => handleAiChat(aiMessage)}
+                      disabled={isAiTyping || !aiMessage.trim()}
+                      className="bg-sage-600 hover:bg-sage-700"
+                    >
+                      <Send className="w-4 h-4" />
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -378,20 +526,20 @@ export default function Dashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Plus className="w-5 h-5 text-sage-600" />
-                    Quick Actions
+                    {t('dashboard.sections.quickActions')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <Link href="/meditation-timer">
                     <Button variant="outline" size="sm" className="w-full justify-start">
                       <Brain className="w-4 h-4 mr-2" />
-                      Start Meditation
+                      {t('dashboard.actions.startMeditation')}
                     </Button>
                   </Link>
                   <Link href="/challenges">
                     <Button variant="outline" size="sm" className="w-full justify-start">
                       <Target className="w-4 h-4 mr-2" />
-                      Join Challenge
+                      {t('dashboard.actions.joinChallenge')}
                     </Button>
                   </Link>
                   <Button
@@ -402,36 +550,97 @@ export default function Dashboard() {
                     disabled={generateContentMutation.isPending}
                   >
                     <BookOpen className="w-4 h-4 mr-2" />
-                    Get Wellness Tip
+                    {t('dashboard.actions.getWellnessTip')}
                   </Button>
                 </CardContent>
               </Card>
 
-              {/* Sleep Tracker */}
+              {/* Wellness Insights */}
               <Card className="organic-border premium-shadow">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Moon className="w-5 h-5 text-indigo-600" />
-                    Sleep Summary
+                    <BarChart className="w-5 h-5 text-sage-600" />
+                    {t('dashboard.sections.insights')}
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-sage-800 mb-2">
-                      {todayLog?.sleep || 0}h
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sage-700 text-sm">{t('dashboard.wellness.sleep')}</span>
+                      <span className="font-semibold text-sage-800">{todayLog?.sleep || 0}h</span>
                     </div>
-                    <p className="text-sage-600 text-sm mb-4">Last night's sleep</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sage-700 text-sm">{t('dashboard.wellness.water')}</span>
+                      <span className="font-semibold text-sage-800">{todayLog?.water || 0}/8 glasses</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sage-700 text-sm">{t('dashboard.wellness.exercise')}</span>
+                      <span className="text-green-600 text-sm">
+                        {todayLog?.exercise ? '✓ Complete' : '○ Pending'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sage-700 text-sm">{t('dashboard.wellness.meditation')}</span>
+                      <span className="text-blue-600 text-sm">
+                        {todayLog?.meditation ? '✓ Complete' : '○ Pending'}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="pt-3 border-t border-sage-200">
+                    <div className="text-xs text-sage-600 mb-2">Weekly Trend</div>
                     <div className="flex justify-center space-x-1">
                       {Array.from({ length: 7 }).map((_, i) => (
                         <div
                           key={i}
-                          className={`w-2 h-8 rounded-full ${
-                            i < Math.floor((todayLog?.sleep || 0) / 1.2)
-                              ? 'bg-indigo-400'
+                          className={`w-2 h-6 rounded-full ${
+                            i < 5 // Mock trend data
+                              ? 'bg-sage-400'
                               : 'bg-sage-200'
                           }`}
                         />
                       ))}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Recent Activity */}
+              <Card className="organic-border premium-shadow">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Activity className="w-5 h-5 text-amber-600" />
+                    {t('dashboard.sections.recentActivity')}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                        <Brain className="w-4 h-4 text-green-600" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-sage-800">Completed meditation</p>
+                        <p className="text-xs text-sage-600">2 hours ago</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                        <Droplets className="w-4 h-4 text-blue-600" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-sage-800">Logged water intake</p>
+                        <p className="text-xs text-sage-600">4 hours ago</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
+                        <Target className="w-4 h-4 text-amber-600" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-sage-800">Joined new challenge</p>
+                        <p className="text-xs text-sage-600">Yesterday</p>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
