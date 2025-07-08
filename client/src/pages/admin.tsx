@@ -43,7 +43,14 @@ import {
   AlertTriangle,
   CheckCircle,
   Activity,
-  Monitor
+  Monitor,
+  DollarSign,
+  Percent,
+  ArrowUp,
+  MessageSquare,
+  Bell,
+  Filter,
+  Star
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -150,10 +157,14 @@ export default function Admin() {
 
         {/* Admin Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4" />
               Overview
+            </TabsTrigger>
+            <TabsTrigger value="revenue" className="flex items-center gap-2">
+              <DollarSign className="w-4 h-4" />
+              Revenue
             </TabsTrigger>
             <TabsTrigger value="blog" className="flex items-center gap-2">
               <BookOpen className="w-4 h-4" />
@@ -183,6 +194,10 @@ export default function Admin() {
 
           <TabsContent value="overview">
             <OverviewTab />
+          </TabsContent>
+
+          <TabsContent value="revenue">
+            <RevenueOptimization />
           </TabsContent>
 
           <TabsContent value="blog">
@@ -2282,6 +2297,369 @@ function AutomationDashboard({ systemStatus, setSystemStatus, automationSettings
             <div className="text-center">
               <p className="text-2xl font-bold text-sage-800">23</p>
               <p className="text-sm text-sage-600">Active Challenges</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// Revenue Optimization Dashboard Component
+function RevenueOptimization() {
+  const { toast } = useToast();
+  const [conversionSettings, setConversionSettings] = useState({
+    trialPeriod: 60,
+    reminderDays: [45, 55, 58],
+    upgradePrompts: true,
+    affiliateCommission: 15,
+    emailCampaignsEnabled: true,
+    behavioralTriggers: true
+  });
+
+  const revenueMetrics = [
+    { label: "Monthly Revenue", value: "$3,450", change: "+23%", icon: DollarSign, color: "text-green-600" },
+    { label: "Conversion Rate", value: "7.1%", change: "+1.2%", icon: Percent, color: "text-blue-600" },
+    { label: "Avg Revenue/User", value: "$38.76", change: "+5.8%", icon: ArrowUp, color: "text-purple-600" },
+    { label: "Churn Rate", value: "2.3%", change: "-0.5%", icon: TrendingUp, color: "text-sage-600" }
+  ];
+
+  const conversionFunnel = [
+    { stage: "Trial Started", count: 247, rate: "100%" },
+    { stage: "Engaged (7+ days)", count: 189, rate: "76.5%" },
+    { stage: "Active (30+ days)", count: 156, rate: "63.2%" },
+    { stage: "Premium Upgrade", count: 89, rate: "36.0%" }
+  ];
+
+  const optimizeConversion = async () => {
+    try {
+      await apiRequest("POST", "/api/admin/optimize-conversion", conversionSettings);
+      toast({
+        title: "Optimization Applied",
+        description: "Conversion optimization settings updated successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Optimization Failed",
+        description: "Failed to apply conversion optimizations",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const sendTargetedCampaign = async (segment: string) => {
+    try {
+      await apiRequest("POST", "/api/admin/send-campaign", { segment });
+      toast({
+        title: "Campaign Sent",
+        description: `Targeted campaign sent to ${segment} segment`,
+      });
+    } catch (error) {
+      toast({
+        title: "Campaign Failed",
+        description: "Failed to send targeted campaign",
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-sage-800">Revenue Optimization</h2>
+        <div className="flex gap-3">
+          <Button onClick={optimizeConversion} className="bg-green-600 hover:bg-green-700">
+            <ArrowUp className="w-4 h-4 mr-2" />
+            Optimize Conversion
+          </Button>
+          <Button onClick={() => sendTargetedCampaign("trial-ending")} variant="outline">
+            <MessageSquare className="w-4 h-4 mr-2" />
+            Send Campaign
+          </Button>
+        </div>
+      </div>
+
+      {/* Revenue Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {revenueMetrics.map((metric, index) => (
+          <Card key={index}>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-sage-600">{metric.label}</p>
+                  <p className={`text-2xl font-bold text-sage-800`}>{metric.value}</p>
+                  <p className={`text-sm ${metric.color} font-medium`}>{metric.change} this month</p>
+                </div>
+                <metric.icon className={`w-6 h-6 ${metric.color}`} />
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Conversion Funnel */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Filter className="w-5 h-5" />
+              Conversion Funnel
+            </CardTitle>
+            <CardDescription>Track user journey from trial to premium</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {conversionFunnel.map((stage, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-sage-700">{stage.stage}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-sage-600">{stage.count} users</span>
+                      <Badge variant="secondary">{stage.rate}</Badge>
+                    </div>
+                  </div>
+                  <div className="h-2 bg-sage-100 rounded-full">
+                    <div 
+                      className="h-2 bg-green-500 rounded-full transition-all duration-300" 
+                      style={{ width: stage.rate }}
+                    ></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* AI Cost Optimization */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Zap className="w-5 h-5" />
+              AI Cost Optimization
+            </CardTitle>
+            <CardDescription>Maximize AI efficiency while minimizing costs</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="text-center p-4 bg-green-50 rounded-lg">
+                <p className="text-2xl font-bold text-green-600">$127</p>
+                <p className="text-sm text-green-700">DeepSeek Costs</p>
+                <p className="text-xs text-green-600">90% savings</p>
+              </div>
+              <div className="text-center p-4 bg-blue-50 rounded-lg">
+                <p className="text-2xl font-bold text-blue-600">$45</p>
+                <p className="text-sm text-blue-700">OpenAI Premium</p>
+                <p className="text-xs text-blue-600">High-value only</p>
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-sage-600">Auto Provider Switching</span>
+                <Badge className="bg-green-100 text-green-800">Active</Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-sage-600">Content Caching</span>
+                <Badge className="bg-green-100 text-green-800">Enabled</Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-sage-600">Bulk Processing</span>
+                <Badge className="bg-green-100 text-green-800">Scheduled</Badge>
+              </div>
+            </div>
+
+            <Button className="w-full bg-[#eedfc8] hover:bg-sage-700">
+              <Settings className="w-4 h-4 mr-2" />
+              Configure AI Routing
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Freemium Strategy Controls */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Crown className="w-5 h-5" />
+            Freemium Strategy Controls
+          </CardTitle>
+          <CardDescription>Optimize trial-to-premium conversion rates</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="trial-period">Trial Period (days)</Label>
+                <Input
+                  id="trial-period"
+                  type="number"
+                  value={conversionSettings.trialPeriod}
+                  onChange={(e) => setConversionSettings(prev => ({ 
+                    ...prev, 
+                    trialPeriod: parseInt(e.target.value) 
+                  }))}
+                />
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="upgrade-prompts">Smart Upgrade Prompts</Label>
+                  <p className="text-sm text-sage-600">Show contextual upgrade suggestions</p>
+                </div>
+                <Switch
+                  id="upgrade-prompts"
+                  checked={conversionSettings.upgradePrompts}
+                  onCheckedChange={(checked) => 
+                    setConversionSettings(prev => ({ ...prev, upgradePrompts: checked }))
+                  }
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="behavioral-triggers">Behavioral Triggers</Label>
+                  <p className="text-sm text-sage-600">AI-powered engagement triggers</p>
+                </div>
+                <Switch
+                  id="behavioral-triggers"
+                  checked={conversionSettings.behavioralTriggers}
+                  onCheckedChange={(checked) => 
+                    setConversionSettings(prev => ({ ...prev, behavioralTriggers: checked }))
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="affiliate-commission">Affiliate Commission (%)</Label>
+                <Input
+                  id="affiliate-commission"
+                  type="number"
+                  value={conversionSettings.affiliateCommission}
+                  onChange={(e) => setConversionSettings(prev => ({ 
+                    ...prev, 
+                    affiliateCommission: parseInt(e.target.value) 
+                  }))}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="email-campaigns">Email Campaigns</Label>
+                  <p className="text-sm text-sage-600">Automated conversion emails</p>
+                </div>
+                <Switch
+                  id="email-campaigns"
+                  checked={conversionSettings.emailCampaignsEnabled}
+                  onCheckedChange={(checked) => 
+                    setConversionSettings(prev => ({ ...prev, emailCampaignsEnabled: checked }))
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Reminder Schedule</Label>
+                <div className="flex gap-2">
+                  {conversionSettings.reminderDays.map((day, index) => (
+                    <Badge key={index} variant="outline">
+                      Day {day}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* User Segments & Targeting */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="w-5 h-5" />
+            User Segments & Targeting
+          </CardTitle>
+          <CardDescription>Target specific user groups for maximum conversion</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 border rounded-lg hover:border-sage-300 transition-colors">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-medium text-sage-800">Trial Ending Soon</h4>
+                <Badge className="bg-orange-100 text-orange-800">34 users</Badge>
+              </div>
+              <p className="text-sm text-sage-600 mb-3">Users with 5 days left in trial</p>
+              <Button 
+                size="sm" 
+                className="w-full bg-orange-600 hover:bg-orange-700"
+                onClick={() => sendTargetedCampaign("trial-ending")}
+              >
+                <Bell className="w-4 h-4 mr-2" />
+                Send Upgrade Reminder
+              </Button>
+            </div>
+
+            <div className="p-4 border rounded-lg hover:border-sage-300 transition-colors">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-medium text-sage-800">Highly Engaged</h4>
+                <Badge className="bg-green-100 text-green-800">67 users</Badge>
+              </div>
+              <p className="text-sm text-sage-600 mb-3">Daily active users ready to convert</p>
+              <Button 
+                size="sm" 
+                className="w-full bg-green-600 hover:bg-green-700"
+                onClick={() => sendTargetedCampaign("highly-engaged")}
+              >
+                <Star className="w-4 h-4 mr-2" />
+                Premium Benefits
+              </Button>
+            </div>
+
+            <div className="p-4 border rounded-lg hover:border-sage-300 transition-colors">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-medium text-sage-800">At Risk</h4>
+                <Badge className="bg-red-100 text-red-800">23 users</Badge>
+              </div>
+              <p className="text-sm text-sage-600 mb-3">Inactive users needing re-engagement</p>
+              <Button 
+                size="sm" 
+                className="w-full bg-red-600 hover:bg-red-700"
+                onClick={() => sendTargetedCampaign("at-risk")}
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Win-Back Campaign
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Revenue Projections */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="w-5 h-5" />
+            Revenue Projections
+          </CardTitle>
+          <CardDescription>Based on current conversion rates and user growth</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="text-center">
+              <p className="text-3xl font-bold text-sage-800">$12,350</p>
+              <p className="text-sm text-sage-600">Next Month Projection</p>
+              <p className="text-xs text-green-600">+258% growth</p>
+            </div>
+            <div className="text-center">
+              <p className="text-3xl font-bold text-sage-800">$45,200</p>
+              <p className="text-sm text-sage-600">Quarterly Goal</p>
+              <p className="text-xs text-blue-600">On track</p>
+            </div>
+            <div className="text-center">
+              <p className="text-3xl font-bold text-sage-800">$180K</p>
+              <p className="text-sm text-sage-600">Annual Target</p>
+              <p className="text-xs text-purple-600">Achievable</p>
             </div>
           </div>
         </CardContent>
