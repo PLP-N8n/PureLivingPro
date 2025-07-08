@@ -5,6 +5,10 @@ import {
   challenges,
   userChallenges,
   dailyLogs,
+  wellnessPlans,
+  wellnessAssessments,
+  coachingSessions,
+  wellnessGoals,
   type User,
   type UpsertUser,
   type BlogPost,
@@ -12,11 +16,19 @@ import {
   type Challenge,
   type UserChallenge,
   type DailyLog,
+  type WellnessPlan,
+  type WellnessAssessment,
+  type CoachingSession,
+  type WellnessGoal,
   type InsertBlogPost,
   type InsertProduct,
   type InsertChallenge,
   type InsertUserChallenge,
   type InsertDailyLog,
+  type InsertWellnessPlan,
+  type InsertWellnessAssessment,
+  type InsertCoachingSession,
+  type InsertWellnessGoal,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte, ilike, or } from "drizzle-orm";
@@ -62,6 +74,31 @@ export interface IStorage {
   getDailyLog(userId: string, date: Date): Promise<DailyLog | undefined>;
   createDailyLog(dailyLog: InsertDailyLog): Promise<DailyLog>;
   updateDailyLog(id: number, dailyLog: Partial<InsertDailyLog>): Promise<DailyLog>;
+  
+  // Wellness coaching operations
+  getWellnessPlans(userId: string): Promise<WellnessPlan[]>;
+  getWellnessPlan(id: number): Promise<WellnessPlan | undefined>;
+  createWellnessPlan(plan: InsertWellnessPlan): Promise<WellnessPlan>;
+  updateWellnessPlan(id: number, plan: Partial<InsertWellnessPlan>): Promise<WellnessPlan>;
+  deleteWellnessPlan(id: number): Promise<void>;
+  
+  // Wellness assessments
+  getWellnessAssessments(userId: string, planId?: number): Promise<WellnessAssessment[]>;
+  getWellnessAssessment(id: number): Promise<WellnessAssessment | undefined>;
+  createWellnessAssessment(assessment: InsertWellnessAssessment): Promise<WellnessAssessment>;
+  
+  // Coaching sessions
+  getCoachingSessions(userId: string, planId?: number): Promise<CoachingSession[]>;
+  getCoachingSession(id: number): Promise<CoachingSession | undefined>;
+  createCoachingSession(session: InsertCoachingSession): Promise<CoachingSession>;
+  updateCoachingSession(id: number, session: Partial<InsertCoachingSession>): Promise<CoachingSession>;
+  
+  // Wellness goals
+  getWellnessGoals(userId: string, planId?: number): Promise<WellnessGoal[]>;
+  getWellnessGoal(id: number): Promise<WellnessGoal | undefined>;
+  createWellnessGoal(goal: InsertWellnessGoal): Promise<WellnessGoal>;
+  updateWellnessGoal(id: number, goal: Partial<InsertWellnessGoal>): Promise<WellnessGoal>;
+  deleteWellnessGoal(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -377,6 +414,156 @@ export class DatabaseStorage implements IStorage {
       .where(eq(dailyLogs.id, id))
       .returning();
     return updatedLog;
+  }
+
+  // Wellness coaching operations
+  async getWellnessPlans(userId: string): Promise<WellnessPlan[]> {
+    return await db
+      .select()
+      .from(wellnessPlans)
+      .where(eq(wellnessPlans.userId, userId))
+      .orderBy(desc(wellnessPlans.createdAt));
+  }
+
+  async getWellnessPlan(id: number): Promise<WellnessPlan | undefined> {
+    const [plan] = await db
+      .select()
+      .from(wellnessPlans)
+      .where(eq(wellnessPlans.id, id));
+    return plan;
+  }
+
+  async createWellnessPlan(plan: InsertWellnessPlan): Promise<WellnessPlan> {
+    const [newPlan] = await db
+      .insert(wellnessPlans)
+      .values([plan])
+      .returning();
+    return newPlan;
+  }
+
+  async updateWellnessPlan(id: number, plan: Partial<InsertWellnessPlan>): Promise<WellnessPlan> {
+    const [updatedPlan] = await db
+      .update(wellnessPlans)
+      .set({ ...plan, updatedAt: new Date() })
+      .where(eq(wellnessPlans.id, id))
+      .returning();
+    return updatedPlan;
+  }
+
+  async deleteWellnessPlan(id: number): Promise<void> {
+    await db.delete(wellnessPlans).where(eq(wellnessPlans.id, id));
+  }
+
+  // Wellness assessments
+  async getWellnessAssessments(userId: string, planId?: number): Promise<WellnessAssessment[]> {
+    const conditions = [eq(wellnessAssessments.userId, userId)];
+    if (planId) {
+      conditions.push(eq(wellnessAssessments.planId, planId));
+    }
+    
+    return await db
+      .select()
+      .from(wellnessAssessments)
+      .where(and(...conditions))
+      .orderBy(desc(wellnessAssessments.createdAt));
+  }
+
+  async getWellnessAssessment(id: number): Promise<WellnessAssessment | undefined> {
+    const [assessment] = await db
+      .select()
+      .from(wellnessAssessments)
+      .where(eq(wellnessAssessments.id, id));
+    return assessment;
+  }
+
+  async createWellnessAssessment(assessment: InsertWellnessAssessment): Promise<WellnessAssessment> {
+    const [newAssessment] = await db
+      .insert(wellnessAssessments)
+      .values([assessment])
+      .returning();
+    return newAssessment;
+  }
+
+  // Coaching sessions
+  async getCoachingSessions(userId: string, planId?: number): Promise<CoachingSession[]> {
+    const conditions = [eq(coachingSessions.userId, userId)];
+    if (planId) {
+      conditions.push(eq(coachingSessions.planId, planId));
+    }
+    
+    return await db
+      .select()
+      .from(coachingSessions)
+      .where(and(...conditions))
+      .orderBy(desc(coachingSessions.createdAt));
+  }
+
+  async getCoachingSession(id: number): Promise<CoachingSession | undefined> {
+    const [session] = await db
+      .select()
+      .from(coachingSessions)
+      .where(eq(coachingSessions.id, id));
+    return session;
+  }
+
+  async createCoachingSession(session: InsertCoachingSession): Promise<CoachingSession> {
+    const [newSession] = await db
+      .insert(coachingSessions)
+      .values([session])
+      .returning();
+    return newSession;
+  }
+
+  async updateCoachingSession(id: number, session: Partial<InsertCoachingSession>): Promise<CoachingSession> {
+    const [updatedSession] = await db
+      .update(coachingSessions)
+      .set(session)
+      .where(eq(coachingSessions.id, id))
+      .returning();
+    return updatedSession;
+  }
+
+  // Wellness goals
+  async getWellnessGoals(userId: string, planId?: number): Promise<WellnessGoal[]> {
+    const conditions = [eq(wellnessGoals.userId, userId)];
+    if (planId) {
+      conditions.push(eq(wellnessGoals.planId, planId));
+    }
+    
+    return await db
+      .select()
+      .from(wellnessGoals)
+      .where(and(...conditions))
+      .orderBy(desc(wellnessGoals.createdAt));
+  }
+
+  async getWellnessGoal(id: number): Promise<WellnessGoal | undefined> {
+    const [goal] = await db
+      .select()
+      .from(wellnessGoals)
+      .where(eq(wellnessGoals.id, id));
+    return goal;
+  }
+
+  async createWellnessGoal(goal: InsertWellnessGoal): Promise<WellnessGoal> {
+    const [newGoal] = await db
+      .insert(wellnessGoals)
+      .values([goal])
+      .returning();
+    return newGoal;
+  }
+
+  async updateWellnessGoal(id: number, goal: Partial<InsertWellnessGoal>): Promise<WellnessGoal> {
+    const [updatedGoal] = await db
+      .update(wellnessGoals)
+      .set({ ...goal, updatedAt: new Date() })
+      .where(eq(wellnessGoals.id, id))
+      .returning();
+    return updatedGoal;
+  }
+
+  async deleteWellnessGoal(id: number): Promise<void> {
+    await db.delete(wellnessGoals).where(eq(wellnessGoals.id, id));
   }
 }
 

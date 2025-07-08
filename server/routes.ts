@@ -788,6 +788,176 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Wellness coaching endpoints
+  app.get('/api/wellness-plans', isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      const plans = await storage.getWellnessPlans(userId);
+      res.json(plans);
+    } catch (error) {
+      console.error("Error fetching wellness plans:", error);
+      res.status(500).json({ message: "Failed to fetch wellness plans" });
+    }
+  });
+
+  app.post('/api/wellness-plans', isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      const planData = req.body;
+      const plan = await storage.createWellnessPlan({ ...planData, userId });
+      res.json(plan);
+    } catch (error) {
+      console.error("Error creating wellness plan:", error);
+      res.status(500).json({ message: "Failed to create wellness plan" });
+    }
+  });
+
+  app.get('/api/wellness-plans/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const plan = await storage.getWellnessPlan(id);
+      if (!plan) {
+        return res.status(404).json({ message: "Wellness plan not found" });
+      }
+      res.json(plan);
+    } catch (error) {
+      console.error("Error fetching wellness plan:", error);
+      res.status(500).json({ message: "Failed to fetch wellness plan" });
+    }
+  });
+
+  app.put('/api/wellness-plans/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const planData = req.body;
+      const plan = await storage.updateWellnessPlan(id, planData);
+      res.json(plan);
+    } catch (error) {
+      console.error("Error updating wellness plan:", error);
+      res.status(500).json({ message: "Failed to update wellness plan" });
+    }
+  });
+
+  app.post('/api/wellness-assessments', isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      const assessmentData = req.body;
+      const assessment = await storage.createWellnessAssessment({ ...assessmentData, userId });
+      res.json(assessment);
+    } catch (error) {
+      console.error("Error creating wellness assessment:", error);
+      res.status(500).json({ message: "Failed to create wellness assessment" });
+    }
+  });
+
+  app.get('/api/wellness-assessments', isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      const planId = req.query.planId ? parseInt(req.query.planId as string) : undefined;
+      const assessments = await storage.getWellnessAssessments(userId, planId);
+      res.json(assessments);
+    } catch (error) {
+      console.error("Error fetching wellness assessments:", error);
+      res.status(500).json({ message: "Failed to fetch wellness assessments" });
+    }
+  });
+
+  app.post('/api/coaching-sessions', isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      const sessionData = req.body;
+      const session = await storage.createCoachingSession({ ...sessionData, userId });
+      res.json(session);
+    } catch (error) {
+      console.error("Error creating coaching session:", error);
+      res.status(500).json({ message: "Failed to create coaching session" });
+    }
+  });
+
+  app.get('/api/coaching-sessions', isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      const planId = req.query.planId ? parseInt(req.query.planId as string) : undefined;
+      const sessions = await storage.getCoachingSessions(userId, planId);
+      res.json(sessions);
+    } catch (error) {
+      console.error("Error fetching coaching sessions:", error);
+      res.status(500).json({ message: "Failed to fetch coaching sessions" });
+    }
+  });
+
+  app.post('/api/wellness-goals', isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      const goalData = req.body;
+      const goal = await storage.createWellnessGoal({ ...goalData, userId });
+      res.json(goal);
+    } catch (error) {
+      console.error("Error creating wellness goal:", error);
+      res.status(500).json({ message: "Failed to create wellness goal" });
+    }
+  });
+
+  app.get('/api/wellness-goals', isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      const planId = req.query.planId ? parseInt(req.query.planId as string) : undefined;
+      const goals = await storage.getWellnessGoals(userId, planId);
+      res.json(goals);
+    } catch (error) {
+      console.error("Error fetching wellness goals:", error);
+      res.status(500).json({ message: "Failed to fetch wellness goals" });
+    }
+  });
+
+  app.put('/api/wellness-goals/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const goalData = req.body;
+      const goal = await storage.updateWellnessGoal(id, goalData);
+      res.json(goal);
+    } catch (error) {
+      console.error("Error updating wellness goal:", error);
+      res.status(500).json({ message: "Failed to update wellness goal" });
+    }
+  });
+
+  // AI-powered wellness plan generation
+  app.post('/api/generate-wellness-plan', isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      const { goals, preferences, fitnessLevel, healthConditions } = req.body;
+      
+      const { generateWellnessPlan } = await import("./openai");
+      const planContent = await generateWellnessPlan({
+        goals,
+        preferences,
+        experienceLevel: fitnessLevel,
+        lifestyle: "active"
+      });
+      
+      const plan = await storage.createWellnessPlan({
+        userId,
+        title: planContent.title,
+        description: planContent.weeklyFocus,
+        goals: goals
+      });
+      
+      res.json(plan);
+    } catch (error: any) {
+      console.error("Error generating wellness plan:", error);
+      
+      if (error.status === 429 || error.message?.includes('quota')) {
+        res.status(429).json({ 
+          message: "AI quota exceeded. Please try again later.",
+          type: "quota_exceeded"
+        });
+      } else {
+        res.status(500).json({ message: "Failed to generate wellness plan" });
+      }
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

@@ -14,6 +14,7 @@ import MeditationTimer from "@/pages/meditation-timer";
 import Dashboard from "@/pages/dashboard";
 import Premium from "@/pages/premium";
 import Challenges from "@/pages/challenges";
+import WellnessPlan from "@/pages/wellness-plan";
 import Admin from "@/pages/admin";
 
 function Router() {
@@ -34,6 +35,7 @@ function Router() {
           <Route path="/wellness-picks" component={WellnessPicks} />
           <Route path="/meditation-timer" component={MeditationTimer} />
           <Route path="/dashboard" component={Dashboard} />
+          <Route path="/wellness-plan" component={WellnessPlan} />
           <Route path="/premium" component={Premium} />
           <Route path="/challenges" component={Challenges} />
           <Route path="/admin" component={Admin} />
