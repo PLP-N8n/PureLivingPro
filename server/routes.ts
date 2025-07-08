@@ -251,6 +251,148 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Automated Blog Creation - Complete automation from title + category
+  app.post('/api/admin/auto-create-blog', isAuthenticated, async (req, res) => {
+    try {
+      const { title, category = "wellness", provider = "deepseek", autoPublish = false } = req.body;
+      
+      if (!title) {
+        return res.status(400).json({ message: "Title is required" });
+      }
+
+      // Step 1: Generate content with AI
+      let generatedContent;
+      if (provider === 'deepseek') {
+        const { generateWellnessBlogPostDeepSeek } = await import("./deepseek");
+        generatedContent = await generateWellnessBlogPostDeepSeek(title, category);
+      } else {
+        const { generateWellnessBlogPost } = await import("./openai");
+        generatedContent = await generateWellnessBlogPost(title, category);
+      }
+
+      // Step 2: Create slug from title
+      const slug = title
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .trim('-');
+
+      // Step 3: Auto-create and save blog post
+      const blogPostData = {
+        title: generatedContent.title || title,
+        slug: slug,
+        content: generatedContent.content,
+        excerpt: generatedContent.excerpt,
+        category: category,
+        tags: typeof generatedContent.tags === 'string' ? generatedContent.tags.split(',').map(t => t.trim()) : generatedContent.tags,
+        readTime: generatedContent.readTime || 5,
+        isPublished: autoPublish,
+        isPremium: false
+      };
+
+      const savedPost = await storage.createBlogPost(blogPostData);
+
+      res.json({
+        success: true,
+        message: `Blog post ${autoPublish ? 'created and published' : 'created as draft'}`,
+        post: savedPost,
+        generationTime: "~30 seconds",
+        provider: provider.toUpperCase()
+      });
+
+    } catch (error: any) {
+      console.error("Error in auto blog creation:", error);
+      
+      if (error.status === 429 || error.message?.includes('quota')) {
+        res.status(429).json({ 
+          message: "AI quota exceeded. Please check your API credits.",
+          type: "quota_exceeded"
+        });
+      } else {
+        res.status(500).json({ 
+          message: "Failed to auto-create blog post",
+          error: error.message 
+        });
+      }
+    }
+  });
+
+  // Bulk Blog Creation - Create multiple posts from titles array
+  app.post('/api/admin/bulk-create-blogs', isAuthenticated, async (req, res) => {
+    try {
+      const { titles, category = "wellness", provider = "deepseek", autoPublish = false } = req.body;
+      
+      if (!titles || !Array.isArray(titles) || titles.length === 0) {
+        return res.status(400).json({ message: "Array of titles is required" });
+      }
+
+      if (titles.length > 5) {
+        return res.status(400).json({ message: "Maximum 5 posts can be created at once" });
+      }
+
+      const results = [];
+      
+      for (const title of titles) {
+        try {
+          // Generate content
+          let generatedContent;
+          if (provider === 'deepseek') {
+            const { generateWellnessBlogPostDeepSeek } = await import("./deepseek");
+            generatedContent = await generateWellnessBlogPostDeepSeek(title, category);
+          } else {
+            const { generateWellnessBlogPost } = await import("./openai");
+            generatedContent = await generateWellnessBlogPost(title, category);
+          }
+
+          // Create slug
+          const slug = title
+            .toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .trim('-');
+
+          // Save post
+          const blogPostData = {
+            title: generatedContent.title || title,
+            slug: slug,
+            content: generatedContent.content,
+            excerpt: generatedContent.excerpt,
+            category: category,
+            tags: typeof generatedContent.tags === 'string' ? generatedContent.tags.split(',').map(t => t.trim()) : generatedContent.tags,
+            readTime: generatedContent.readTime || 5,
+            isPublished: autoPublish,
+            isPremium: false
+          };
+
+          const savedPost = await storage.createBlogPost(blogPostData);
+          results.push({ success: true, title: title, post: savedPost });
+
+        } catch (error: any) {
+          results.push({ success: false, title: title, error: error.message });
+        }
+      }
+
+      const successCount = results.filter(r => r.success).length;
+      const failureCount = results.filter(r => !r.success).length;
+
+      res.json({
+        success: true,
+        message: `Bulk creation complete: ${successCount} successful, ${failureCount} failed`,
+        results: results,
+        provider: provider.toUpperCase()
+      });
+
+    } catch (error: any) {
+      console.error("Error in bulk blog creation:", error);
+      res.status(500).json({ 
+        message: "Failed to create bulk blog posts",
+        error: error.message 
+      });
+    }
+  });
+
   // AI Content Generation Test (no auth required)
   app.post('/api/test/generate-content', async (req, res) => {
     try {

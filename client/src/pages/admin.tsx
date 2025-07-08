@@ -408,6 +408,77 @@ function BlogManagement() {
     },
   });
 
+  // Auto Blog Creation States
+  const [autoTitle, setAutoTitle] = useState("");
+  const [autoCategory, setAutoCategory] = useState("wellness");
+  const [autoProvider, setAutoProvider] = useState("deepseek");
+  const [autoPublish, setAutoPublish] = useState(false);
+  const [bulkTitles, setBulkTitles] = useState("");
+
+  const autoCreateMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return await apiRequest("POST", "/api/admin/auto-create-blog", data);
+    },
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/blog-posts"] });
+      setAutoTitle("");
+      toast({
+        title: "Auto-Creation Complete!",
+        description: response.message,
+      });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Auto-Creation Failed",
+        description: "Failed to automatically create blog post",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const bulkCreateMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return await apiRequest("POST", "/api/admin/bulk-create-blogs", data);
+    },
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/blog-posts"] });
+      setBulkTitles("");
+      toast({
+        title: "Bulk Creation Complete!",
+        description: response.message,
+      });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Bulk Creation Failed",
+        description: "Failed to create multiple blog posts",
+        variant: "destructive",
+      });
+    },
+  });
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -420,26 +491,190 @@ function BlogManagement() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-sage-800">Blog Posts</h2>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-sage-600 hover:bg-sage-700">
-              <Plus className="w-4 h-4 mr-2" />
-              Create Post
+        <div className="flex gap-2">
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="border-sage-600 text-sage-600 hover:bg-sage-50">
+                <Plus className="w-4 h-4 mr-2" />
+                Manual Create
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Create New Blog Post</DialogTitle>
+                <DialogDescription>
+                  Add a new blog post to your wellness platform
+                </DialogDescription>
+              </DialogHeader>
+              <BlogPostForm 
+                onSubmit={(data) => createMutation.mutate(data)}
+                isLoading={createMutation.isPending}
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+
+      {/* Automated Blog Creation Section */}
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Single Auto-Create */}
+        <Card className="bg-gradient-to-br from-emerald-50 to-sage-50 border-emerald-200">
+          <CardHeader>
+            <CardTitle className="text-emerald-800 flex items-center gap-2">
+              <Target className="w-5 h-5" />
+              Auto-Create Blog Post
+            </CardTitle>
+            <CardDescription>
+              Generate a complete blog post from just a title and category using AI
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="auto-title">Blog Post Title</Label>
+              <Input
+                id="auto-title"
+                placeholder="e.g., Morning Meditation Benefits for Busy Professionals"
+                value={autoTitle}
+                onChange={(e) => setAutoTitle(e.target.value)}
+                className="mt-1"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Label htmlFor="auto-category">Category</Label>
+                <Select value={autoCategory} onValueChange={setAutoCategory}>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="wellness">Wellness</SelectItem>
+                    <SelectItem value="mindfulness">Mindfulness</SelectItem>
+                    <SelectItem value="nutrition">Nutrition</SelectItem>
+                    <SelectItem value="fitness">Fitness</SelectItem>
+                    <SelectItem value="mental-health">Mental Health</SelectItem>
+                    <SelectItem value="lifestyle">Lifestyle</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="auto-provider">AI Provider</Label>
+                <Select value={autoProvider} onValueChange={setAutoProvider}>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="deepseek">DeepSeek (Cost-Effective)</SelectItem>
+                    <SelectItem value="openai">OpenAI (Premium)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="auto-publish"
+                checked={autoPublish}
+                onCheckedChange={setAutoPublish}
+              />
+              <Label htmlFor="auto-publish">Auto-publish immediately</Label>
+            </div>
+            <Button 
+              onClick={() => autoCreateMutation.mutate({
+                title: autoTitle,
+                category: autoCategory,
+                provider: autoProvider,
+                autoPublish: autoPublish
+              })}
+              disabled={!autoTitle || autoCreateMutation.isPending}
+              className="w-full bg-emerald-600 hover:bg-emerald-700"
+            >
+              {autoCreateMutation.isPending ? "Creating..." : "Auto-Create Blog Post"}
             </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Create New Blog Post</DialogTitle>
-              <DialogDescription>
-                Add a new blog post to your wellness platform
-              </DialogDescription>
-            </DialogHeader>
-            <BlogPostForm 
-              onSubmit={(data) => createMutation.mutate(data)}
-              isLoading={createMutation.isPending}
-            />
-          </DialogContent>
-        </Dialog>
+          </CardContent>
+        </Card>
+
+        {/* Bulk Auto-Create */}
+        <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+          <CardHeader>
+            <CardTitle className="text-blue-800 flex items-center gap-2">
+              <BookOpen className="w-5 h-5" />
+              Bulk Auto-Create
+            </CardTitle>
+            <CardDescription>
+              Create multiple blog posts at once (up to 5)
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="bulk-titles">Blog Post Titles (one per line)</Label>
+              <Textarea
+                id="bulk-titles"
+                placeholder={`Benefits of Morning Yoga
+Healthy Meal Prep Tips
+Stress Relief Techniques
+Sleep Hygiene Guide
+Mindful Walking Practice`}
+                value={bulkTitles}
+                onChange={(e) => setBulkTitles(e.target.value)}
+                rows={5}
+                className="mt-1"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Label htmlFor="bulk-category">Category</Label>
+                <Select value={autoCategory} onValueChange={setAutoCategory}>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="wellness">Wellness</SelectItem>
+                    <SelectItem value="mindfulness">Mindfulness</SelectItem>
+                    <SelectItem value="nutrition">Nutrition</SelectItem>
+                    <SelectItem value="fitness">Fitness</SelectItem>
+                    <SelectItem value="mental-health">Mental Health</SelectItem>
+                    <SelectItem value="lifestyle">Lifestyle</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="bulk-provider">AI Provider</Label>
+                <Select value={autoProvider} onValueChange={setAutoProvider}>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="deepseek">DeepSeek (Cost-Effective)</SelectItem>
+                    <SelectItem value="openai">OpenAI (Premium)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="bulk-auto-publish"
+                checked={autoPublish}
+                onCheckedChange={setAutoPublish}
+              />
+              <Label htmlFor="bulk-auto-publish">Auto-publish all posts</Label>
+            </div>
+            <Button 
+              onClick={() => {
+                const titles = bulkTitles.split('\n').filter(t => t.trim()).slice(0, 5);
+                if (titles.length === 0) return;
+                bulkCreateMutation.mutate({
+                  titles: titles,
+                  category: autoCategory,
+                  provider: autoProvider,
+                  autoPublish: autoPublish
+                });
+              }}
+              disabled={!bulkTitles.trim() || bulkCreateMutation.isPending}
+              className="w-full bg-blue-600 hover:bg-blue-700"
+            >
+              {bulkCreateMutation.isPending ? "Creating Posts..." : `Create ${bulkTitles.split('\n').filter(t => t.trim()).slice(0, 5).length} Posts`}
+            </Button>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid gap-6">
