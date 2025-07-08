@@ -32,6 +32,15 @@ import {
   type InsertCoachingSession,
   type InsertWellnessGoal,
   type InsertFitnessData,
+  wellnessQuizResponses,
+  type WellnessQuizResponse,
+  type InsertWellnessQuizResponse,
+  aiCoachingSessions,
+  type AiCoachingSession,
+  type InsertAiCoachingSession,
+  affiliateProducts,
+  type AffiliateProduct,
+  type InsertAffiliateProduct,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte, ilike, or } from "drizzle-orm";
@@ -108,6 +117,34 @@ export interface IStorage {
   createFitnessData(data: InsertFitnessData): Promise<FitnessData>;
   bulkCreateFitnessData(data: InsertFitnessData[]): Promise<FitnessData[]>;
   updateUserDeviceTokens(userId: string, deviceType: string, tokens: { accessToken?: string; refreshToken?: string; userId?: string }): Promise<void>;
+  
+  // Wellness quiz operations
+  createWellnessQuizResponse(response: InsertWellnessQuizResponse): Promise<WellnessQuizResponse>;
+  updateUserWellnessProfile(userId: string, profile: {
+    wellnessGoals: string[];
+    fitnessLevel: string;
+    preferredExercises: string[];
+    stressLevel: number;
+    sleepQuality: string;
+    nutritionHabits: string;
+    timeAvailability: string;
+    onboardingCompleted: boolean;
+  }): Promise<void>;
+  
+  // AI coaching operations
+  createAiCoachingSession(session: InsertAiCoachingSession): Promise<AiCoachingSession>;
+  getAiCoachingSessions(userId: string): Promise<AiCoachingSession[]>;
+  updateAiCoachingSession(sessionId: number, updates: Partial<InsertAiCoachingSession>): Promise<AiCoachingSession>;
+  
+  // Affiliate products operations
+  getAffiliateProducts(filters: {
+    category?: string;
+    search?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<AffiliateProduct[]>;
+  createAffiliateProduct(product: InsertAffiliateProduct): Promise<AffiliateProduct>;
+  updateAffiliateProduct(id: number, updates: Partial<InsertAffiliateProduct>): Promise<AffiliateProduct>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -621,6 +658,112 @@ export class DatabaseStorage implements IStorage {
     }
 
     await db.update(users).set(updateData).where(eq(users.id, userId));
+  }
+
+  // Wellness quiz operations
+  async createWellnessQuizResponse(response: InsertWellnessQuizResponse): Promise<WellnessQuizResponse> {
+    const [quizResponse] = await db
+      .insert(wellnessQuizResponses)
+      .values(response)
+      .returning();
+    return quizResponse;
+  }
+
+  async updateUserWellnessProfile(userId: string, profile: {
+    wellnessGoals: string[];
+    fitnessLevel: string;
+    preferredExercises: string[];
+    stressLevel: number;
+    sleepQuality: string;
+    nutritionHabits: string;
+    timeAvailability: string;
+    onboardingCompleted: boolean;
+  }): Promise<void> {
+    await db
+      .update(users)
+      .set({
+        wellnessGoals: profile.wellnessGoals,
+        fitnessLevel: profile.fitnessLevel,
+        preferredExercises: profile.preferredExercises,
+        stressLevel: profile.stressLevel,
+        sleepQuality: profile.sleepQuality,
+        nutritionHabits: profile.nutritionHabits,
+        timeAvailability: profile.timeAvailability,
+        onboardingCompleted: profile.onboardingCompleted,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId));
+  }
+
+  // AI coaching operations
+  async createAiCoachingSession(session: InsertAiCoachingSession): Promise<AiCoachingSession> {
+    const [coachingSession] = await db
+      .insert(aiCoachingSessions)
+      .values(session)
+      .returning();
+    return coachingSession;
+  }
+
+  async getAiCoachingSessions(userId: string): Promise<AiCoachingSession[]> {
+    return await db
+      .select()
+      .from(aiCoachingSessions)
+      .where(eq(aiCoachingSessions.userId, userId))
+      .orderBy(desc(aiCoachingSessions.updatedAt));
+  }
+
+  async updateAiCoachingSession(sessionId: number, updates: Partial<InsertAiCoachingSession>): Promise<AiCoachingSession> {
+    const [session] = await db
+      .update(aiCoachingSessions)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(aiCoachingSessions.id, sessionId))
+      .returning();
+    return session;
+  }
+
+  // Affiliate products operations
+  async getAffiliateProducts(filters: {
+    category?: string;
+    search?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<AffiliateProduct[]> {
+    let query = db.select().from(affiliateProducts).where(eq(affiliateProducts.isActive, true));
+
+    if (filters.category) {
+      query = query.where(eq(affiliateProducts.category, filters.category));
+    }
+
+    if (filters.search) {
+      query = query.where(
+        or(
+          ilike(affiliateProducts.title, `%${filters.search}%`),
+          ilike(affiliateProducts.description, `%${filters.search}%`)
+        )
+      );
+    }
+
+    return await query
+      .limit(filters.limit || 20)
+      .offset(filters.offset || 0)
+      .orderBy(desc(affiliateProducts.isTopPick), desc(affiliateProducts.rating));
+  }
+
+  async createAffiliateProduct(product: InsertAffiliateProduct): Promise<AffiliateProduct> {
+    const [newProduct] = await db
+      .insert(affiliateProducts)
+      .values(product)
+      .returning();
+    return newProduct;
+  }
+
+  async updateAffiliateProduct(id: number, updates: Partial<InsertAffiliateProduct>): Promise<AffiliateProduct> {
+    const [product] = await db
+      .update(affiliateProducts)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(affiliateProducts.id, id))
+      .returning();
+    return product;
   }
 }
 

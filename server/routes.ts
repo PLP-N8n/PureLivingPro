@@ -1800,6 +1800,171 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Wellness Quiz Routes
+  app.post("/api/wellness-quiz", isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { answers } = req.body;
+      
+      if (!userId || !answers) {
+        return res.status(400).json({ message: "Invalid request" });
+      }
+
+      // Save quiz responses
+      for (const answer of answers) {
+        await storage.createWellnessQuizResponse({
+          userId,
+          questionId: answer.questionId,
+          answer: answer.answer
+        });
+      }
+
+      // Update user wellness profile
+      await storage.updateUserWellnessProfile(userId, {
+        wellnessGoals: answers.find(a => a.questionId === "wellness_goals")?.answer || [],
+        fitnessLevel: answers.find(a => a.questionId === "current_fitness")?.answer || "",
+        preferredExercises: answers.find(a => a.questionId === "exercise_preferences")?.answer || [],
+        stressLevel: parseInt(answers.find(a => a.questionId === "stress_level")?.answer || "3"),
+        sleepQuality: answers.find(a => a.questionId === "sleep_quality")?.answer || "",
+        nutritionHabits: answers.find(a => a.questionId === "nutrition_habits")?.answer || "",
+        timeAvailability: answers.find(a => a.questionId === "time_availability")?.answer || "",
+        onboardingCompleted: true
+      });
+
+      res.json({ message: "Quiz completed successfully" });
+    } catch (error) {
+      console.error("Error processing wellness quiz:", error);
+      res.status(500).json({ message: "Failed to process quiz" });
+    }
+  });
+
+  // AI Coaching Routes
+  app.post("/api/ai-coach/chat", isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { message, context } = req.body;
+      
+      if (!userId || !message) {
+        return res.status(400).json({ message: "Invalid request" });
+      }
+
+      // Generate AI response using OpenAI
+      const aiResponse = await generatePersonalizedContent(
+        message,
+        context?.userGoals || [],
+        "wellness_coaching"
+      );
+
+      // Create coaching session
+      const sessionData = {
+        userId,
+        title: message.substring(0, 50) + "...",
+        messages: [
+          {
+            id: Date.now().toString(),
+            type: "user" as const,
+            content: message,
+            timestamp: new Date().toISOString()
+          },
+          {
+            id: (Date.now() + 1).toString(),
+            type: "ai" as const,
+            content: aiResponse,
+            timestamp: new Date().toISOString(),
+            suggestions: [
+              "Can you give me more specific advice?",
+              "What are the next steps?",
+              "How can I track my progress?"
+            ],
+            insights: [
+              {
+                type: "recommendation" as const,
+                title: "Personalized Tip",
+                description: "Based on your goals, consider starting with small, consistent actions.",
+                icon: "Target"
+              }
+            ]
+          }
+        ],
+        mood: context?.currentMood || "neutral",
+        context: context || {}
+      };
+
+      const session = await storage.createAiCoachingSession(sessionData);
+
+      res.json({
+        message: aiResponse,
+        suggestions: sessionData.messages[1].suggestions,
+        insights: sessionData.messages[1].insights,
+        sessionId: session.id
+      });
+    } catch (error) {
+      console.error("Error in AI coaching:", error);
+      res.status(500).json({ message: "Failed to process coaching request" });
+    }
+  });
+
+  app.get("/api/ai-coach/history", isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const sessions = await storage.getAiCoachingSessions(userId);
+      res.json(sessions);
+    } catch (error) {
+      console.error("Error fetching coaching history:", error);
+      res.status(500).json({ message: "Failed to fetch history" });
+    }
+  });
+
+  app.get("/api/ai-coach/sessions", isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const sessions = await storage.getAiCoachingSessions(userId);
+      
+      // Format for recent sessions display
+      const formattedSessions = sessions.map(session => ({
+        id: session.id,
+        title: session.title,
+        date: session.createdAt?.toLocaleDateString() || "",
+        messageCount: session.messages.length,
+        lastMessage: session.messages[session.messages.length - 1]?.content.substring(0, 50) + "..." || "",
+        mood: session.mood || "neutral"
+      }));
+
+      res.json(formattedSessions);
+    } catch (error) {
+      console.error("Error fetching coaching sessions:", error);
+      res.status(500).json({ message: "Failed to fetch sessions" });
+    }
+  });
+
+  // Affiliate Products Routes
+  app.get("/api/affiliate-products", async (req, res) => {
+    try {
+      const { category, search, limit = 20, offset = 0 } = req.query;
+      const products = await storage.getAffiliateProducts({
+        category: category as string,
+        search: search as string,
+        limit: parseInt(limit as string),
+        offset: parseInt(offset as string)
+      });
+      res.json(products);
+    } catch (error) {
+      console.error("Error fetching affiliate products:", error);
+      res.status(500).json({ message: "Failed to fetch products" });
+    }
+  });
+
+  app.post("/api/affiliate-products", async (req, res) => {
+    try {
+      const productData = req.body;
+      const product = await storage.createAffiliateProduct(productData);
+      res.json(product);
+    } catch (error) {
+      console.error("Error creating affiliate product:", error);
+      res.status(500).json({ message: "Failed to create product" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

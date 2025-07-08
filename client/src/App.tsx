@@ -16,6 +16,9 @@ import Premium from "@/pages/premium";
 import Challenges from "@/pages/challenges";
 import WellnessPlan from "@/pages/wellness-plan";
 import DeviceIntegration from "@/pages/device-integration";
+import WellnessQuiz from "@/pages/WellnessQuiz";
+import AIChatCoach from "@/pages/AIChatCoach";
+import AffiliateProducts from "@/pages/AffiliateProducts";
 import Admin from "@/pages/admin";
 
 function Router() {
@@ -40,6 +43,9 @@ function Router() {
           <Route path="/premium" component={Premium} />
           <Route path="/challenges" component={Challenges} />
           <Route path="/device-integration" component={DeviceIntegration} />
+          <Route path="/wellness-quiz" component={WellnessQuiz} />
+          <Route path="/ai-coach" component={AIChatCoach} />
+          <Route path="/affiliate-products" component={AffiliateProducts} />
           <Route path="/admin" component={Admin} />
         </>
       )}

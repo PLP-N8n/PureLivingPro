@@ -41,6 +41,14 @@ export const users = pgTable("users", {
     lifestyle: string;
     preferences: string[];
   }>(),
+  wellnessGoals: text("wellness_goals").array(),
+  fitnessLevel: varchar("fitness_level"),
+  preferredExercises: text("preferred_exercises").array(),
+  stressLevel: integer("stress_level"),
+  sleepQuality: varchar("sleep_quality"),
+  nutritionHabits: varchar("nutrition_habits"),
+  timeAvailability: varchar("time_availability"),
+  onboardingCompleted: boolean("onboarding_completed").default(false),
   // Wearable device integrations
   fitbitAccessToken: varchar("fitbit_access_token"),
   fitbitRefreshToken: varchar("fitbit_refresh_token"),
@@ -415,6 +423,74 @@ export const insertFitnessDataSchema = createInsertSchema(fitnessData).omit({
 // Types
 export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
+
+// Wellness Quiz Responses
+export const wellnessQuizResponses = pgTable("wellness_quiz_responses", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").references(() => users.id),
+  questionId: varchar("question_id").notNull(),
+  answer: jsonb("answer").$type<string | string[]>().notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// AI Coaching Sessions
+export const aiCoachingSessions = pgTable("ai_coaching_sessions", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").references(() => users.id),
+  title: varchar("title", { length: 255 }),
+  messages: jsonb("messages").$type<Array<{
+    id: string;
+    type: "user" | "ai";
+    content: string;
+    timestamp: string;
+    suggestions?: string[];
+    insights?: Array<{
+      type: "progress" | "recommendation" | "motivation";
+      title: string;
+      description: string;
+      icon: string;
+    }>;
+  }>>().notNull(),
+  mood: varchar("mood", { length: 50 }),
+  context: jsonb("context").$type<{
+    userGoals: string[];
+    currentMood: string;
+    recentActivity: string;
+  }>(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Affiliate Products
+export const affiliateProducts = pgTable("affiliate_products", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  originalPrice: decimal("original_price", { precision: 10, scale: 2 }),
+  rating: decimal("rating", { precision: 3, scale: 2 }),
+  reviewCount: integer("review_count").default(0),
+  category: varchar("category", { length: 100 }),
+  platform: varchar("platform", { length: 50 }), // amazon, clickbank, other
+  affiliateLink: varchar("affiliate_link").notNull(),
+  imageUrl: varchar("image_url"),
+  features: text("features").array(),
+  benefits: text("benefits").array(),
+  tags: text("tags").array(),
+  isTopPick: boolean("is_top_pick").default(false),
+  isPremium: boolean("is_premium").default(false),
+  commission: decimal("commission", { precision: 5, scale: 2 }),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export type WellnessQuizResponse = typeof wellnessQuizResponses.$inferSelect;
+export type InsertWellnessQuizResponse = typeof wellnessQuizResponses.$inferInsert;
+export type AiCoachingSession = typeof aiCoachingSessions.$inferSelect;
+export type InsertAiCoachingSession = typeof aiCoachingSessions.$inferInsert;
+export type AffiliateProduct = typeof affiliateProducts.$inferSelect;
+export type InsertAffiliateProduct = typeof affiliateProducts.$inferInsert;
 export type BlogPost = typeof blogPosts.$inferSelect;
 export type Product = typeof products.$inferSelect;
 export type Challenge = typeof challenges.$inferSelect;
