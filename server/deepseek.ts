@@ -39,7 +39,7 @@ async function callDeepSeek(messages: DeepSeekMessage[], temperature = 0.7): Pro
           'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`,
           'Content-Type': 'application/json'
         },
-        timeout: 30000
+        timeout: 60000
       }
     );
 
