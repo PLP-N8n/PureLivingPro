@@ -436,15 +436,16 @@ export class DatabaseStorage implements IStorage {
   async createWellnessPlan(plan: InsertWellnessPlan): Promise<WellnessPlan> {
     const [newPlan] = await db
       .insert(wellnessPlans)
-      .values([plan])
+      .values(plan)
       .returning();
     return newPlan;
   }
 
   async updateWellnessPlan(id: number, plan: Partial<InsertWellnessPlan>): Promise<WellnessPlan> {
+    const updateData: any = { ...plan, updatedAt: new Date() };
     const [updatedPlan] = await db
       .update(wellnessPlans)
-      .set({ ...plan, updatedAt: new Date() })
+      .set(updateData)
       .where(eq(wellnessPlans.id, id))
       .returning();
     return updatedPlan;
@@ -479,7 +480,7 @@ export class DatabaseStorage implements IStorage {
   async createWellnessAssessment(assessment: InsertWellnessAssessment): Promise<WellnessAssessment> {
     const [newAssessment] = await db
       .insert(wellnessAssessments)
-      .values([assessment])
+      .values(assessment)
       .returning();
     return newAssessment;
   }
@@ -509,15 +510,16 @@ export class DatabaseStorage implements IStorage {
   async createCoachingSession(session: InsertCoachingSession): Promise<CoachingSession> {
     const [newSession] = await db
       .insert(coachingSessions)
-      .values([session])
+      .values(session)
       .returning();
     return newSession;
   }
 
   async updateCoachingSession(id: number, session: Partial<InsertCoachingSession>): Promise<CoachingSession> {
+    const updateData: any = { ...session, updatedAt: new Date() };
     const [updatedSession] = await db
       .update(coachingSessions)
-      .set(session)
+      .set(updateData)
       .where(eq(coachingSessions.id, id))
       .returning();
     return updatedSession;
@@ -548,15 +550,16 @@ export class DatabaseStorage implements IStorage {
   async createWellnessGoal(goal: InsertWellnessGoal): Promise<WellnessGoal> {
     const [newGoal] = await db
       .insert(wellnessGoals)
-      .values([goal])
+      .values(goal)
       .returning();
     return newGoal;
   }
 
   async updateWellnessGoal(id: number, goal: Partial<InsertWellnessGoal>): Promise<WellnessGoal> {
+    const updateData: any = { ...goal, updatedAt: new Date() };
     const [updatedGoal] = await db
       .update(wellnessGoals)
-      .set({ ...goal, updatedAt: new Date() })
+      .set(updateData)
       .where(eq(wellnessGoals.id, id))
       .returning();
     return updatedGoal;

@@ -314,6 +314,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (provider === 'deepseek') {
         const { generateWellnessBlogPostDeepSeek } = await import("./deepseek");
         generatedContent = await generateWellnessBlogPostDeepSeek(title, category);
+      } else if (provider === 'gemini') {
+        const { generateWellnessBlogPostGemini } = await import("./gemini");
+        generatedContent = await generateWellnessBlogPostGemini(title, category);
       } else {
         const { generateWellnessBlogPost } = await import("./openai");
         generatedContent = await generateWellnessBlogPost(title, category);
@@ -389,6 +392,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (provider === 'deepseek') {
             const { generateWellnessBlogPostDeepSeek } = await import("./deepseek");
             generatedContent = await generateWellnessBlogPostDeepSeek(title, category);
+          } else if (provider === 'gemini') {
+            const { generateWellnessBlogPostGemini } = await import("./gemini");
+            generatedContent = await generateWellnessBlogPostGemini(title, category);
           } else {
             const { generateWellnessBlogPost } = await import("./openai");
             generatedContent = await generateWellnessBlogPost(title, category);
@@ -456,6 +462,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (provider === 'deepseek') {
         const { generateWellnessBlogPostDeepSeek } = await import("./deepseek");
         content = await generateWellnessBlogPostDeepSeek(prompt, category);
+      } else if (provider === 'gemini') {
+        const { generateWellnessBlogPostGemini } = await import("./gemini");
+        content = await generateWellnessBlogPostGemini(prompt, category);
       } else {
         const { generateWellnessBlogPost } = await import("./openai");
         content = await generateWellnessBlogPost(prompt, category);
