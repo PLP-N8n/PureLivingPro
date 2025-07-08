@@ -16,6 +16,18 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 
+// Import wellness category images
+import fitnessImg from "@assets/Fitness_1751936986685.jpeg";
+import fitness2Img from "@assets/fitness2_1751936986686.jpeg";
+import healthyRecipesImg from "@assets/Healthy Recipies_1751936986687.jpeg";
+import homepageImg from "@assets/Homepage_1751936986687.jpeg";
+import logoFinal from "@assets/Logo Final _1751936986687.jpeg";
+import mindfulnessImg from "@assets/Mindfulness & Meditation_1751936986688.jpeg";
+import naturalRemediesImg from "@assets/Natural Remidies_1751936986688.jpeg";
+import nutritionImg from "@assets/Nutrition_1751936986688.jpeg";
+import premiumSupplementsImg from "@assets/Premium Suppliments_1751936986689.jpeg";
+import skinCareImg from "@assets/Skin Care_1751936986689.jpeg";
+
 export default function Landing() {
   return (
     <div className="min-h-screen bg-sage-25">
@@ -24,9 +36,11 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-sage-500 to-sage-600 rounded-xl flex items-center justify-center">
-                <Leaf className="w-6 h-6 text-white" />
-              </div>
+              <img 
+                src={logoFinal} 
+                alt="Pure Living Pro Logo" 
+                className="w-10 h-10 rounded-xl object-cover"
+              />
               <span className="text-xl font-bold text-sage-700">Pure Living Pro</span>
             </div>
             <div className="hidden md:flex items-center space-x-8">
@@ -502,9 +516,11 @@ export default function Landing() {
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center space-x-3 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-br from-sage-400 to-sage-500 rounded-lg flex items-center justify-center">
-                  <Leaf className="w-5 h-5 text-white" />
-                </div>
+                <img 
+                  src={logoFinal} 
+                  alt="Pure Living Pro Logo" 
+                  className="w-8 h-8 rounded-lg object-cover"
+                />
                 <span className="text-lg font-bold">Pure Living Pro</span>
               </div>
               <p className="text-sage-300 text-sm">

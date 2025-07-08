@@ -7,6 +7,16 @@ import { Button } from "@/components/ui/button";
 import { Search, Star, ExternalLink, Heart, Filter, ShoppingBag, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 
+// Import wellness category images for visual enhancement
+import fitnessImg from "@assets/Fitness_1751936986685.jpeg";
+import fitness2Img from "@assets/fitness2_1751936986686.jpeg";
+import healthyRecipesImg from "@assets/Healthy Recipies_1751936986687.jpeg";
+import mindfulnessImg from "@assets/Mindfulness & Meditation_1751936986688.jpeg";
+import naturalRemediesImg from "@assets/Natural Remidies_1751936986688.jpeg";
+import nutritionImg from "@assets/Nutrition_1751936986688.jpeg";
+import premiumSupplementsImg from "@assets/Premium Suppliments_1751936986689.jpeg";
+import skinCareImg from "@assets/Skin Care_1751936986689.jpeg";
+
 interface Product {
   id: number;
   name: string;
@@ -30,13 +40,13 @@ export default function WellnessPicks() {
   });
 
   const categories = [
-    { id: "all", name: "All Products", icon: "🛍️", description: "All curated wellness products" },
-    { id: "supplements", name: "Supplements", icon: "💊", description: "Vitamins and nutritional supplements" },
-    { id: "skincare", name: "Skincare", icon: "✨", description: "Natural skincare and beauty products" },
-    { id: "fitness", name: "Fitness", icon: "🏋️", description: "Exercise equipment and accessories" },
-    { id: "nutrition", name: "Nutrition", icon: "🥗", description: "Healthy food and nutrition products" },
-    { id: "wellness-tools", name: "Wellness Tools", icon: "🧘", description: "Meditation and wellness accessories" },
-    { id: "home", name: "Home & Living", icon: "🏡", description: "Healthy home and lifestyle products" }
+    { id: "all", name: "All Products", icon: "🛍️", description: "All curated wellness products", image: null },
+    { id: "supplements", name: "Supplements", icon: "💊", description: "Vitamins and nutritional supplements", image: premiumSupplementsImg },
+    { id: "skincare", name: "Skincare", icon: "✨", description: "Natural skincare and beauty products", image: skinCareImg },
+    { id: "fitness", name: "Fitness", icon: "🏋️", description: "Exercise equipment and accessories", image: fitnessImg },
+    { id: "nutrition", name: "Nutrition", icon: "🥗", description: "Healthy food and nutrition products", image: nutritionImg },
+    { id: "wellness-tools", name: "Wellness Tools", icon: "🧘", description: "Meditation and wellness accessories", image: mindfulnessImg },
+    { id: "home", name: "Home & Living", icon: "🏡", description: "Healthy home and lifestyle products", image: naturalRemediesImg }
   ];
 
   const priceRanges = [
