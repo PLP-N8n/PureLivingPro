@@ -542,6 +542,7 @@ function BlogPostForm({
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
+  const [aiProvider, setAiProvider] = useState("deepseek");
   const { toast } = useToast();
 
   const categories = [
@@ -564,7 +565,8 @@ function BlogPostForm({
       const response = await apiRequest("POST", "/api/admin/generate-content", {
         prompt: aiPrompt,
         category: formData.category,
-        type: "blog_post"
+        type: "blog_post",
+        provider: aiProvider
       });
 
       setFormData(prev => ({
@@ -611,7 +613,8 @@ function BlogPostForm({
       const response = await apiRequest("POST", "/api/admin/optimize-seo", {
         title: formData.title,
         content: formData.content,
-        category: formData.category
+        category: formData.category,
+        provider: aiProvider
       });
 
       setFormData(prev => ({
@@ -653,8 +656,21 @@ function BlogPostForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* AI Content Generation */}
       <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-4 rounded-lg border">
-        <Label className="text-lg font-semibold text-purple-800">AI Content Generator</Label>
-        <p className="text-sm text-purple-600 mb-3">Generate high-quality wellness content automatically</p>
+        <div className="flex items-center justify-between mb-2">
+          <Label className="text-lg font-semibold text-purple-800">AI Content Generator</Label>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-purple-600">Provider:</span>
+            <select 
+              className="text-xs border rounded px-2 py-1"
+              value={aiProvider}
+              onChange={(e) => setAiProvider(e.target.value)}
+            >
+              <option value="deepseek">DeepSeek (Cost-Effective)</option>
+              <option value="openai">OpenAI GPT-4o</option>
+            </select>
+          </div>
+        </div>
+        <p className="text-sm text-purple-600 mb-3">Generate high-quality wellness content automatically with {aiProvider === 'deepseek' ? 'cost-effective' : 'premium'} AI</p>
         <div className="flex gap-2">
           <Input
             placeholder="Enter topic: e.g., 'Benefits of meditation for stress relief'"

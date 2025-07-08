@@ -251,17 +251,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // AI Content Generation Routes
+  // AI Content Generation Routes (with DeepSeek fallback)
   app.post('/api/admin/generate-content', isAuthenticated, async (req, res) => {
     try {
-      const { prompt, category, type } = req.body;
+      const { prompt, category, type, provider = 'deepseek' } = req.body;
       
       if (!prompt) {
         return res.status(400).json({ message: "Prompt is required" });
       }
 
-      const { generateWellnessBlogPost } = await import("./openai");
-      const content = await generateWellnessBlogPost(prompt, category || "wellness");
+      let content;
+      
+      if (provider === 'deepseek') {
+        const { generateWellnessBlogPostDeepSeek } = await import("./deepseek");
+        content = await generateWellnessBlogPostDeepSeek(prompt, category || "wellness");
+      } else {
+        const { generateWellnessBlogPost } = await import("./openai");
+        content = await generateWellnessBlogPost(prompt, category || "wellness");
+      }
       
       res.json(content);
     } catch (error: any) {
@@ -269,7 +276,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (error.status === 429 || error.message?.includes('quota')) {
         res.status(429).json({ 
-          message: "OpenAI quota exceeded. Please check your billing and add credits.",
+          message: "AI quota exceeded. Please check your API credits.",
           type: "quota_exceeded"
         });
       } else {
@@ -280,14 +287,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/admin/optimize-seo', isAuthenticated, async (req, res) => {
     try {
-      const { title, content, category } = req.body;
+      const { title, content, category, provider = 'deepseek' } = req.body;
       
       if (!title || !content) {
         return res.status(400).json({ message: "Title and content are required" });
       }
 
-      const { optimizeContentForSEO } = await import("./openai");
-      const optimizedContent = await optimizeContentForSEO(title, content, category || "wellness");
+      let optimizedContent;
+      
+      if (provider === 'deepseek') {
+        const { optimizeContentForSEODeepSeek } = await import("./deepseek");
+        optimizedContent = await optimizeContentForSEODeepSeek(title, content, category || "wellness");
+      } else {
+        const { optimizeContentForSEO } = await import("./openai");
+        optimizedContent = await optimizeContentForSEO(title, content, category || "wellness");
+      }
       
       res.json(optimizedContent);
     } catch (error: any) {
@@ -295,7 +309,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (error.status === 429 || error.message?.includes('quota')) {
         res.status(429).json({ 
-          message: "OpenAI quota exceeded. Please add credits to continue.",
+          message: "AI quota exceeded. Please add credits to continue.",
           type: "quota_exceeded"
         });
       } else {
@@ -306,14 +320,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/admin/generate-product-description', isAuthenticated, async (req, res) => {
     try {
-      const { productName, category, features } = req.body;
+      const { productName, category, features, provider = 'deepseek' } = req.body;
       
       if (!productName) {
         return res.status(400).json({ message: "Product name is required" });
       }
 
-      const { generateProductDescription } = await import("./openai");
-      const description = await generateProductDescription(productName, category, features);
+      let description;
+      
+      if (provider === 'deepseek') {
+        const { generateProductDescriptionDeepSeek } = await import("./deepseek");
+        description = await generateProductDescriptionDeepSeek(productName, category, features);
+      } else {
+        const { generateProductDescription } = await import("./openai");
+        description = await generateProductDescription(productName, category, features);
+      }
       
       res.json({ description });
     } catch (error: any) {
@@ -321,7 +342,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (error.status === 429 || error.message?.includes('quota')) {
         res.status(429).json({ 
-          message: "OpenAI quota exceeded. Please add credits to continue.",
+          message: "AI quota exceeded. Please add credits to continue.",
           type: "quota_exceeded"
         });
       } else {
