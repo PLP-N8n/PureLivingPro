@@ -540,10 +540,97 @@ function BlogPostForm({
     tags: initialData?.tags?.join(", ") || "",
   });
 
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState("");
+  const { toast } = useToast();
+
   const categories = [
     "nutrition", "mindfulness", "fitness", "natural-remedies", 
     "recipes", "skincare", "mental-health"
   ];
+
+  const generateContent = async () => {
+    if (!aiPrompt.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a topic or idea for content generation",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const response = await apiRequest("POST", "/api/admin/generate-content", {
+        prompt: aiPrompt,
+        category: formData.category,
+        type: "blog_post"
+      });
+
+      setFormData(prev => ({
+        ...prev,
+        title: response.title || prev.title,
+        content: response.content || prev.content,
+        excerpt: response.excerpt || prev.excerpt,
+        tags: response.tags || prev.tags,
+        readTime: response.readTime || prev.readTime,
+      }));
+
+      toast({
+        title: "Success",
+        description: "AI content generated successfully!",
+      });
+      setAiPrompt("");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to generate content. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const optimizeForSEO = async () => {
+    if (!formData.title || !formData.content) {
+      toast({
+        title: "Error", 
+        description: "Please add title and content before SEO optimization",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const response = await apiRequest("POST", "/api/admin/optimize-seo", {
+        title: formData.title,
+        content: formData.content,
+        category: formData.category
+      });
+
+      setFormData(prev => ({
+        ...prev,
+        title: response.optimizedTitle || prev.title,
+        excerpt: response.metaDescription || prev.excerpt,
+        tags: response.keywords || prev.tags,
+      }));
+
+      toast({
+        title: "Success",
+        description: "Content optimized for SEO!",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to optimize content. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -556,9 +643,44 @@ function BlogPostForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {/* AI Content Generation */}
+      <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-4 rounded-lg border">
+        <Label className="text-lg font-semibold text-purple-800">AI Content Generator</Label>
+        <p className="text-sm text-purple-600 mb-3">Generate high-quality wellness content automatically</p>
+        <div className="flex gap-2">
+          <Input
+            placeholder="Enter topic: e.g., 'Benefits of meditation for stress relief'"
+            value={aiPrompt}
+            onChange={(e) => setAiPrompt(e.target.value)}
+            className="flex-1"
+          />
+          <Button 
+            type="button" 
+            onClick={generateContent}
+            disabled={isGenerating}
+            className="bg-purple-600 hover:bg-purple-700"
+          >
+            {isGenerating && <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />}
+            Generate
+          </Button>
+        </div>
+      </div>
+
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="title">Title</Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="title">Title</Label>
+            <Button 
+              type="button" 
+              variant="outline" 
+              size="sm"
+              onClick={optimizeForSEO}
+              disabled={isGenerating}
+            >
+              {isGenerating && <div className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full mr-1" />}
+              SEO Optimize
+            </Button>
+          </div>
           <Input
             id="title"
             value={formData.title}

@@ -251,6 +251,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Content Generation Routes
+  app.post('/api/admin/generate-content', isAuthenticated, async (req, res) => {
+    try {
+      const { prompt, category, type } = req.body;
+      
+      if (!prompt) {
+        return res.status(400).json({ message: "Prompt is required" });
+      }
+
+      const { generateWellnessBlogPost } = await import("./openai");
+      const content = await generateWellnessBlogPost(prompt, category || "wellness");
+      
+      res.json(content);
+    } catch (error) {
+      console.error("Error generating content:", error);
+      res.status(500).json({ message: "Failed to generate content" });
+    }
+  });
+
+  app.post('/api/admin/optimize-seo', isAuthenticated, async (req, res) => {
+    try {
+      const { title, content, category } = req.body;
+      
+      if (!title || !content) {
+        return res.status(400).json({ message: "Title and content are required" });
+      }
+
+      const { optimizeContentForSEO } = await import("./openai");
+      const optimizedContent = await optimizeContentForSEO(title, content, category || "wellness");
+      
+      res.json(optimizedContent);
+    } catch (error) {
+      console.error("Error optimizing content:", error);
+      res.status(500).json({ message: "Failed to optimize content" });
+    }
+  });
+
+  app.post('/api/admin/generate-product-description', isAuthenticated, async (req, res) => {
+    try {
+      const { productName, category, features } = req.body;
+      
+      if (!productName) {
+        return res.status(400).json({ message: "Product name is required" });
+      }
+
+      const { generateProductDescription } = await import("./openai");
+      const description = await generateProductDescription(productName, category, features);
+      
+      res.json({ description });
+    } catch (error) {
+      console.error("Error generating product description:", error);
+      res.status(500).json({ message: "Failed to generate product description" });
+    }
+  });
+
   // Blog routes
   app.get('/api/blog/posts', async (req, res) => {
     try {
