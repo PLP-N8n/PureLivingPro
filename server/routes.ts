@@ -251,6 +251,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Content Generation Test (no auth required)
+  app.post('/api/test/generate-content', async (req, res) => {
+    try {
+      const { prompt, category = "wellness", provider = "deepseek" } = req.body;
+      
+      if (!prompt) {
+        return res.status(400).json({ message: "Prompt is required" });
+      }
+
+      let content;
+      
+      if (provider === 'deepseek') {
+        const { generateWellnessBlogPostDeepSeek } = await import("./deepseek");
+        content = await generateWellnessBlogPostDeepSeek(prompt, category);
+      } else {
+        const { generateWellnessBlogPost } = await import("./openai");
+        content = await generateWellnessBlogPost(prompt, category);
+      }
+      
+      res.json({
+        success: true,
+        provider: provider.toUpperCase(),
+        generatedContent: content,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error: any) {
+      console.error("Error generating content:", error);
+      res.status(500).json({ 
+        success: false,
+        error: error.message,
+        provider: req.body.provider || "deepseek"
+      });
+    }
+  });
+
   // AI Content Generation Routes (with DeepSeek fallback)
   app.post('/api/admin/generate-content', isAuthenticated, async (req, res) => {
     try {
