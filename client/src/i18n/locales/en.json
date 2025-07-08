@@ -45,6 +45,36 @@
       "settings": "Settings",
       "automation": "Automation",
       "revenue": "Revenue"
+    },
+    "settings": {
+      "title": "Platform Settings",
+      "subtitle": "Configure your wellness platform preferences",
+      "sections": {
+        "general": "General Settings",
+        "content": "Content Management",
+        "notifications": "Notifications",
+        "ai": "AI Configuration",
+        "security": "Security & Privacy",
+        "integrations": "Integrations",
+        "appearance": "Appearance",
+        "advanced": "Advanced Settings"
+      },
+      "language": {
+        "title": "Language & Localization",
+        "subtitle": "Configure platform language settings",
+        "defaultLanguage": "Default Language",
+        "supportedLanguages": "Supported Languages",
+        "autoDetect": "Auto-detect user language",
+        "rtlSupport": "Right-to-left language support"
+      },
+      "platform": {
+        "title": "Platform Configuration",
+        "siteName": "Site Name",
+        "tagline": "Tagline",
+        "description": "Platform Description",
+        "timezone": "Default Timezone",
+        "maintenanceMode": "Maintenance Mode"
+      }
     }
   },
   "landing": {

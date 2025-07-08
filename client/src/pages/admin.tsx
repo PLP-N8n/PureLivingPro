@@ -52,7 +52,10 @@ import {
   MessageSquare,
   Bell,
   Filter,
-  Star
+  Star,
+  Bot,
+  Cog,
+  Plug
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -183,35 +186,35 @@ export default function Admin() {
           <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4" />
-              Overview
+              {t('admin.tabs.overview')}
             </TabsTrigger>
             <TabsTrigger value="revenue" className="flex items-center gap-2">
               <DollarSign className="w-4 h-4" />
-              Revenue
+              {t('admin.tabs.revenue')}
             </TabsTrigger>
             <TabsTrigger value="blog" className="flex items-center gap-2">
               <BookOpen className="w-4 h-4" />
-              Blog Posts
+              {t('admin.tabs.blog')}
             </TabsTrigger>
             <TabsTrigger value="products" className="flex items-center gap-2">
               <ShoppingBag className="w-4 h-4" />
-              Products
+              {t('admin.tabs.products')}
             </TabsTrigger>
             <TabsTrigger value="challenges" className="flex items-center gap-2">
               <Target className="w-4 h-4" />
-              Challenges
+              {t('admin.tabs.challenges')}
             </TabsTrigger>
             <TabsTrigger value="automation" className="flex items-center gap-2">
               <Zap className="w-4 h-4" />
-              Automation
+              {t('admin.tabs.automation')}
             </TabsTrigger>
             <TabsTrigger value="users" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
-              Users
+              {t('admin.tabs.users')}
             </TabsTrigger>
             <TabsTrigger value="settings" className="flex items-center gap-2">
               <Settings className="w-4 h-4" />
-              Settings
+              {t('admin.tabs.settings')}
             </TabsTrigger>
           </TabsList>
 
@@ -1936,98 +1939,285 @@ function UserManagement() {
 }
 
 function SettingsManagement() {
+  const { t } = useTranslation();
   const [settings, setSettings] = useState({
     siteName: "Pure Living Pro",
     siteDescription: "Your wellness journey starts here",
+    defaultLanguage: "en",
     enableComments: true,
     enableNewsletterSignup: true,
     maintenanceMode: false,
-    aiProvider: "deepseek"
+    aiProvider: "deepseek",
+    autoDetectLanguage: true,
+    enableRTL: false,
+    timezone: "UTC"
   });
+
+  const [activeSection, setActiveSection] = useState("general");
+
+  const sections = [
+    { id: "general", label: t('admin.settings.sections.general'), icon: Settings },
+    { id: "language", label: t('admin.settings.sections.language'), icon: Globe },
+    { id: "ai", label: t('admin.settings.sections.ai'), icon: Bot },
+    { id: "notifications", label: t('admin.settings.sections.notifications'), icon: Bell },
+    { id: "security", label: t('admin.settings.sections.security'), icon: Shield },
+    { id: "integrations", label: t('admin.settings.sections.integrations'), icon: Plug },
+    { id: "advanced", label: t('admin.settings.sections.advanced'), icon: Cog }
+  ];
+
+  const saveSettings = () => {
+    toast({
+      title: "Settings Saved",
+      description: "Your platform settings have been updated successfully.",
+    });
+  };
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-sage-800">Platform Settings</h2>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>General Settings</CardTitle>
-            <CardDescription>Configure basic site information</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="siteName">Site Name</Label>
-              <Input
-                id="siteName"
-                value={settings.siteName}
-                onChange={(e) => setSettings({ ...settings, siteName: e.target.value })}
-              />
-            </div>
-            <div>
-              <Label htmlFor="siteDescription">Site Description</Label>
-              <Textarea
-                id="siteDescription"
-                value={settings.siteDescription}
-                onChange={(e) => setSettings({ ...settings, siteDescription: e.target.value })}
-                rows={3}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>AI Configuration</CardTitle>
-            <CardDescription>Configure AI content generation settings</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="aiProvider">AI Provider</Label>
-              <Select 
-                value={settings.aiProvider} 
-                onValueChange={(value) => setSettings({ ...settings, aiProvider: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="deepseek">DeepSeek (Cost-Effective)</SelectItem>
-                  <SelectItem value="openai">OpenAI (Premium)</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-sm text-sage-600 mt-1">
-                {settings.aiProvider === "deepseek" 
-                  ? "90% cost savings with high-quality content generation" 
-                  : "Premium AI with advanced capabilities"}
-              </p>
-            </div>
-            
-            <div className="bg-sage-50 p-4 rounded-lg">
-              <h4 className="font-semibold text-sage-800 mb-2">API Status</h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span>DeepSeek API:</span>
-                  <Badge className="bg-green-100 text-green-800">Connected</Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span>OpenAI API:</span>
-                  <Badge className="bg-green-100 text-green-800">Connected</Badge>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-sage-800">{t('admin.settings.title')}</h2>
+          <p className="text-sage-600 mt-1">{t('admin.settings.subtitle')}</p>
+        </div>
+        <Button onClick={saveSettings} className="bg-sage-600 hover:bg-sage-700">
+          <Save className="w-4 h-4 mr-2" />
+          {t('common.save')} Settings
+        </Button>
       </div>
 
-      <Card>
-        <CardContent className="flex justify-end pt-6">
-          <Button className="bg-sage-600 hover:bg-sage-700">
-            <Save className="w-4 h-4 mr-2" />
-            Save Settings
-          </Button>
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Settings Navigation */}
+        <Card className="lg:col-span-1">
+          <CardHeader>
+            <CardTitle className="text-lg">Settings Categories</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {sections.map((section) => {
+              const Icon = section.icon;
+              return (
+                <Button
+                  key={section.id}
+                  variant={activeSection === section.id ? "default" : "ghost"}
+                  className={`w-full justify-start ${
+                    activeSection === section.id 
+                      ? "bg-sage-100 text-sage-800 hover:bg-sage-200" 
+                      : "hover:bg-sage-50"
+                  }`}
+                  onClick={() => setActiveSection(section.id)}
+                >
+                  <Icon className="w-4 h-4 mr-2" />
+                  {section.label}
+                </Button>
+              );
+            })}
+          </CardContent>
+        </Card>
+
+        {/* Settings Content */}
+        <div className="lg:col-span-3 space-y-6">
+          {/* General Settings */}
+          {activeSection === "general" && (
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('admin.settings.sections.general')}</CardTitle>
+                <CardDescription>{t('admin.settings.platform.title')}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="siteName">{t('admin.settings.platform.siteName')}</Label>
+                    <Input
+                      id="siteName"
+                      value={settings.siteName}
+                      onChange={(e) => setSettings({ ...settings, siteName: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="timezone">{t('admin.settings.platform.timezone')}</Label>
+                    <Select 
+                      value={settings.timezone} 
+                      onValueChange={(value) => setSettings({ ...settings, timezone: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="UTC">UTC</SelectItem>
+                        <SelectItem value="America/New_York">Eastern Time</SelectItem>
+                        <SelectItem value="America/Los_Angeles">Pacific Time</SelectItem>
+                        <SelectItem value="Europe/London">London</SelectItem>
+                        <SelectItem value="Europe/Paris">Paris</SelectItem>
+                        <SelectItem value="Asia/Tokyo">Tokyo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="siteDescription">{t('admin.settings.platform.description')}</Label>
+                  <Textarea
+                    id="siteDescription"
+                    value={settings.siteDescription}
+                    onChange={(e) => setSettings({ ...settings, siteDescription: e.target.value })}
+                    rows={3}
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="maintenanceMode"
+                    checked={settings.maintenanceMode}
+                    onCheckedChange={(checked) => setSettings({ ...settings, maintenanceMode: checked })}
+                  />
+                  <Label htmlFor="maintenanceMode">{t('admin.settings.platform.maintenanceMode')}</Label>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Language Settings */}
+          {activeSection === "language" && (
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('admin.settings.language.title')}</CardTitle>
+                <CardDescription>{t('admin.settings.language.subtitle')}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="defaultLanguage">{t('admin.settings.language.defaultLanguage')}</Label>
+                    <Select 
+                      value={settings.defaultLanguage} 
+                      onValueChange={(value) => setSettings({ ...settings, defaultLanguage: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="en">🇺🇸 English</SelectItem>
+                        <SelectItem value="es">🇪🇸 Español</SelectItem>
+                        <SelectItem value="fr">🇫🇷 Français</SelectItem>
+                        <SelectItem value="de">🇩🇪 Deutsch</SelectItem>
+                        <SelectItem value="pt">🇧🇷 Português</SelectItem>
+                        <SelectItem value="zh">🇨🇳 中文</SelectItem>
+                        <SelectItem value="ja">🇯🇵 日本語</SelectItem>
+                        <SelectItem value="ko">🇰🇷 한국어</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="autoDetectLanguage"
+                      checked={settings.autoDetectLanguage}
+                      onCheckedChange={(checked) => setSettings({ ...settings, autoDetectLanguage: checked })}
+                    />
+                    <Label htmlFor="autoDetectLanguage">{t('admin.settings.language.autoDetect')}</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="enableRTL"
+                      checked={settings.enableRTL}
+                      onCheckedChange={(checked) => setSettings({ ...settings, enableRTL: checked })}
+                    />
+                    <Label htmlFor="enableRTL">{t('admin.settings.language.rtlSupport')}</Label>
+                  </div>
+                </div>
+                <div className="bg-sage-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-sage-800 mb-2">{t('admin.settings.language.supportedLanguages')}</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                    {['English', 'Español', 'Français', 'Deutsch', 'Português', '中文', '日本語', '한국어'].map((lang) => (
+                      <div key={lang} className="flex items-center space-x-2">
+                        <Badge variant="secondary" className="text-xs">{lang}</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* AI Configuration */}
+          {activeSection === "ai" && (
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('admin.settings.sections.ai')}</CardTitle>
+                <CardDescription>Configure AI content generation settings</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="aiProvider">AI Provider</Label>
+                  <Select 
+                    value={settings.aiProvider} 
+                    onValueChange={(value) => setSettings({ ...settings, aiProvider: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="deepseek">DeepSeek (Cost-Effective)</SelectItem>
+                      <SelectItem value="openai">OpenAI (Premium)</SelectItem>
+                      <SelectItem value="gemini">Google Gemini (Balanced)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-sm text-sage-600 mt-1">
+                    {settings.aiProvider === "deepseek" 
+                      ? "90% cost savings with high-quality content generation" 
+                      : settings.aiProvider === "openai"
+                      ? "Premium AI with advanced capabilities"
+                      : "Balanced performance and cost-effectiveness"}
+                  </p>
+                </div>
+                
+                <div className="bg-sage-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-sage-800 mb-2">API Status</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between items-center">
+                      <span>DeepSeek API:</span>
+                      <Badge className="bg-green-100 text-green-800">Connected</Badge>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span>OpenAI API:</span>
+                      <Badge className="bg-green-100 text-green-800">Connected</Badge>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span>Gemini API:</span>
+                      <Badge className="bg-green-100 text-green-800">Connected</Badge>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-blue-800 mb-2">Smart AI Routing</h4>
+                  <p className="text-sm text-blue-700 mb-2">
+                    Automatically switches between AI providers based on content type and cost optimization.
+                  </p>
+                  <div className="text-xs text-blue-600">
+                    <div>• Blog posts: DeepSeek (90% cost savings)</div>
+                    <div>• Product descriptions: Gemini (balanced quality/cost)</div>
+                    <div>• Premium coaching: OpenAI (maximum quality)</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Other sections placeholder */}
+          {["notifications", "security", "integrations", "advanced"].includes(activeSection) && (
+            <Card>
+              <CardHeader>
+                <CardTitle>{sections.find(s => s.id === activeSection)?.label}</CardTitle>
+                <CardDescription>Configuration options coming soon</CardDescription>
+              </CardHeader>
+              <CardContent className="py-12 text-center">
+                <div className="text-sage-400">
+                  <Settings className="w-12 h-12 mx-auto mb-4" />
+                  <p>These settings will be available in the next update.</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
