@@ -184,7 +184,7 @@ export default function Admin() {
           </TabsContent>
 
           <TabsContent value="settings">
-            <SettingsTab />
+            <SettingsManagement />
           </TabsContent>
         </Tabs>
       </div>
