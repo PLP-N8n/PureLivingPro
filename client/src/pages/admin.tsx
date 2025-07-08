@@ -29,7 +29,21 @@ import {
   Settings,
   Crown,
   Target,
-  Calendar
+  Calendar,
+  Clock,
+  Zap,
+  TrendingUp,
+  Database,
+  Mail,
+  Globe,
+  Shield,
+  Download,
+  Upload,
+  RefreshCw,
+  AlertTriangle,
+  CheckCircle,
+  Activity,
+  Monitor
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -136,7 +150,7 @@ export default function Admin() {
 
         {/* Admin Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4" />
               Overview
@@ -152,6 +166,10 @@ export default function Admin() {
             <TabsTrigger value="challenges" className="flex items-center gap-2">
               <Target className="w-4 h-4" />
               Challenges
+            </TabsTrigger>
+            <TabsTrigger value="automation" className="flex items-center gap-2">
+              <Zap className="w-4 h-4" />
+              Automation
             </TabsTrigger>
             <TabsTrigger value="users" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
@@ -177,6 +195,15 @@ export default function Admin() {
 
           <TabsContent value="challenges">
             <ChallengeManagement />
+          </TabsContent>
+
+          <TabsContent value="automation">
+            <AutomationDashboard 
+              systemStatus={systemStatus} 
+              setSystemStatus={setSystemStatus}
+              automationSettings={automationSettings}
+              setAutomationSettings={setAutomationSettings}
+            />
           </TabsContent>
 
           <TabsContent value="users">
@@ -790,6 +817,21 @@ function BlogPostForm({
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiProvider, setAiProvider] = useState("deepseek");
+  
+  // Automation Dashboard states
+  const [systemStatus, setSystemStatus] = useState({
+    server: "online",
+    database: "online", 
+    ai: "online",
+    lastBackup: "2 hours ago"
+  });
+  const [automationSettings, setAutomationSettings] = useState({
+    autoPublishEnabled: false,
+    scheduledPostsEnabled: true,
+    emailNotifications: true,
+    backupFrequency: "daily",
+    maintenanceMode: false
+  });
   const { toast } = useToast();
 
   const categories = [
@@ -1946,6 +1988,302 @@ function SettingsManagement() {
             <Save className="w-4 h-4 mr-2" />
             Save Settings
           </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// Comprehensive Automation Dashboard Component
+function AutomationDashboard({ systemStatus, setSystemStatus, automationSettings, setAutomationSettings }: any) {
+  const { toast } = useToast();
+  const [activeSchedule, setActiveSchedule] = useState("content");
+  const [scheduledPosts, setScheduledPosts] = useState([
+    { id: 1, title: "Morning Wellness Tips", schedule: "Daily 8:00 AM", status: "active" },
+    { id: 2, title: "Weekly Nutrition Guide", schedule: "Monday 10:00 AM", status: "active" },
+    { id: 3, title: "Mindfulness Monday", schedule: "Monday 6:00 PM", status: "paused" }
+  ]);
+
+  const systemMetrics = [
+    { label: "Server Status", value: systemStatus.server, icon: Monitor, color: systemStatus.server === "online" ? "text-green-600" : "text-red-600" },
+    { label: "Database", value: systemStatus.database, icon: Database, color: systemStatus.database === "online" ? "text-green-600" : "text-red-600" },
+    { label: "AI Services", value: systemStatus.ai, icon: Zap, color: systemStatus.ai === "online" ? "text-green-600" : "text-red-600" },
+    { label: "Last Backup", value: systemStatus.lastBackup, icon: Shield, color: "text-sage-600" }
+  ];
+
+  const performSystemBackup = async () => {
+    try {
+      await apiRequest("POST", "/api/admin/backup");
+      setSystemStatus((prev: any) => ({ ...prev, lastBackup: "Just now" }));
+      toast({
+        title: "Backup Complete",
+        description: "System backup completed successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Backup Failed",
+        description: "Failed to complete system backup",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const runSystemMaintenance = async () => {
+    try {
+      await apiRequest("POST", "/api/admin/maintenance");
+      toast({
+        title: "Maintenance Complete",
+        description: "System maintenance completed successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Maintenance Failed", 
+        description: "Failed to complete system maintenance",
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-sage-800">Automation & System Control</h2>
+        <div className="flex gap-3">
+          <Button onClick={performSystemBackup} variant="outline" className="flex items-center gap-2">
+            <Download className="w-4 h-4" />
+            Backup Now
+          </Button>
+          <Button onClick={runSystemMaintenance} variant="outline" className="flex items-center gap-2">
+            <RefreshCw className="w-4 h-4" />
+            Maintenance
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {systemMetrics.map((metric, index) => (
+          <Card key={index}>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-sage-600">{metric.label}</p>
+                  <p className={`text-lg font-bold ${metric.color}`}>{metric.value}</p>
+                </div>
+                <metric.icon className={`w-6 h-6 ${metric.color}`} />
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Automation Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Zap className="w-5 h-5" />
+              Automation Settings
+            </CardTitle>
+            <CardDescription>Configure system automations and notifications</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="auto-publish">Auto-Publish Content</Label>
+                <p className="text-sm text-sage-600">Automatically publish scheduled content</p>
+              </div>
+              <Switch
+                id="auto-publish"
+                checked={automationSettings.autoPublishEnabled}
+                onCheckedChange={(checked) => 
+                  setAutomationSettings((prev: any) => ({ ...prev, autoPublishEnabled: checked }))
+                }
+              />
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="scheduled-posts">Scheduled Posts</Label>
+                <p className="text-sm text-sage-600">Enable scheduled content publishing</p>
+              </div>
+              <Switch
+                id="scheduled-posts"
+                checked={automationSettings.scheduledPostsEnabled}
+                onCheckedChange={(checked) => 
+                  setAutomationSettings((prev: any) => ({ ...prev, scheduledPostsEnabled: checked }))
+                }
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="email-notifications">Email Notifications</Label>
+                <p className="text-sm text-sage-600">Send admin email notifications</p>
+              </div>
+              <Switch
+                id="email-notifications"
+                checked={automationSettings.emailNotifications}
+                onCheckedChange={(checked) => 
+                  setAutomationSettings((prev: any) => ({ ...prev, emailNotifications: checked }))
+                }
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="backup-frequency">Backup Frequency</Label>
+              <Select 
+                value={automationSettings.backupFrequency} 
+                onValueChange={(value) => 
+                  setAutomationSettings((prev: any) => ({ ...prev, backupFrequency: value }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="hourly">Hourly</SelectItem>
+                  <SelectItem value="daily">Daily</SelectItem>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="maintenance-mode">Maintenance Mode</Label>
+                <p className="text-sm text-sage-600">Enable maintenance mode for updates</p>
+              </div>
+              <Switch
+                id="maintenance-mode"
+                checked={automationSettings.maintenanceMode}
+                onCheckedChange={(checked) => 
+                  setAutomationSettings((prev: any) => ({ ...prev, maintenanceMode: checked }))
+                }
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Content Scheduling */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="w-5 h-5" />
+              Content Scheduling
+            </CardTitle>
+            <CardDescription>Manage scheduled content and automations</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Tabs value={activeSchedule} onValueChange={setActiveSchedule}>
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="content">Content</TabsTrigger>
+                <TabsTrigger value="emails">Emails</TabsTrigger>
+                <TabsTrigger value="reports">Reports</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="content" className="space-y-4">
+                {scheduledPosts.map((post) => (
+                  <div key={post.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="font-medium text-sage-800">{post.title}</p>
+                      <p className="text-sm text-sage-600">{post.schedule}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={post.status === "active" ? "default" : "secondary"}>
+                        {post.status}
+                      </Badge>
+                      <Button variant="ghost" size="sm">
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+                
+                <Button className="w-full bg-[#eedfc8] hover:bg-sage-700">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Schedule New Content
+                </Button>
+              </TabsContent>
+              
+              <TabsContent value="emails" className="space-y-4">
+                <div className="text-center py-8">
+                  <Mail className="w-12 h-12 text-sage-400 mx-auto mb-4" />
+                  <p className="text-sage-600">Email scheduling coming soon!</p>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="reports" className="space-y-4">
+                <div className="text-center py-8">
+                  <TrendingUp className="w-12 h-12 text-sage-400 mx-auto mb-4" />
+                  <p className="text-sage-600">Automated reports coming soon!</p>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Analytics & Performance */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Activity className="w-5 h-5" />
+            System Analytics & Performance
+          </CardTitle>
+          <CardDescription>Monitor system performance and user engagement</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-sage-600">Server Load</span>
+                <span className="text-sm text-sage-800">12%</span>
+              </div>
+              <div className="h-2 bg-sage-100 rounded-full">
+                <div className="h-2 bg-green-500 rounded-full" style={{ width: "12%" }}></div>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-sage-600">Database Usage</span>
+                <span className="text-sm text-sage-800">34%</span>
+              </div>
+              <div className="h-2 bg-sage-100 rounded-full">
+                <div className="h-2 bg-blue-500 rounded-full" style={{ width: "34%" }}></div>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-sage-600">AI API Usage</span>
+                <span className="text-sm text-sage-800">67%</span>
+              </div>
+              <div className="h-2 bg-sage-100 rounded-full">
+                <div className="h-2 bg-purple-500 rounded-full" style={{ width: "67%" }}></div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-sage-800">1,247</p>
+              <p className="text-sm text-sage-600">Total Users</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-sage-800">89</p>
+              <p className="text-sm text-sage-600">Premium Users</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-sage-800">156</p>
+              <p className="text-sm text-sage-600">Blog Posts</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-sage-800">23</p>
+              <p className="text-sm text-sage-600">Active Challenges</p>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

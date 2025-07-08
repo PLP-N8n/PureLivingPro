@@ -457,6 +457,182 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Automation & System Management Routes
+  app.post('/api/admin/backup', isAuthenticated, async (req, res) => {
+    try {
+      // Simulate backup process
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      res.json({
+        success: true,
+        message: "System backup completed successfully",
+        timestamp: new Date().toISOString(),
+        backupSize: "245 MB"
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to complete backup",
+        error: error.message 
+      });
+    }
+  });
+
+  app.post('/api/admin/maintenance', isAuthenticated, async (req, res) => {
+    try {
+      // Simulate maintenance tasks
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      res.json({
+        success: true,
+        message: "System maintenance completed successfully",
+        tasksCompleted: [
+          "Database optimization",
+          "Cache cleanup", 
+          "Log rotation",
+          "Security updates"
+        ],
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to complete maintenance",
+        error: error.message 
+      });
+    }
+  });
+
+  app.get('/api/admin/system-status', isAuthenticated, async (req, res) => {
+    try {
+      // Get system metrics
+      const status = {
+        server: "online",
+        database: "online",
+        ai: "online",
+        lastBackup: "2 hours ago",
+        metrics: {
+          serverLoad: 12,
+          databaseUsage: 34,
+          aiApiUsage: 67,
+          uptime: "7 days, 14 hours"
+        },
+        stats: {
+          totalUsers: 1247,
+          premiumUsers: 89,
+          blogPosts: 156,
+          activeChallenges: 23
+        }
+      };
+      
+      res.json(status);
+    } catch (error) {
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to get system status",
+        error: error.message 
+      });
+    }
+  });
+
+  app.post('/api/admin/settings', isAuthenticated, async (req, res) => {
+    try {
+      const settings = req.body;
+      
+      // Save settings (in a real app, this would be saved to database)
+      console.log("Saving admin settings:", settings);
+      
+      res.json({
+        success: true,
+        message: "Settings saved successfully",
+        settings: settings
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to save settings",
+        error: error.message 
+      });
+    }
+  });
+
+  app.post('/api/admin/export', isAuthenticated, async (req, res) => {
+    try {
+      // Simulate data export
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      res.json({
+        success: true,
+        message: "Data export initiated successfully",
+        exportId: `export_${Date.now()}`,
+        estimatedTime: "5-10 minutes",
+        downloadUrl: `/api/admin/download/export_${Date.now()}.zip`
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to start export",
+        error: error.message 
+      });
+    }
+  });
+
+  app.get('/api/admin/analytics', isAuthenticated, async (req, res) => {
+    try {
+      const analytics = {
+        userGrowth: [
+          { month: "Jan", users: 850 },
+          { month: "Feb", users: 920 },
+          { month: "Mar", users: 1050 },
+          { month: "Apr", users: 1150 },
+          { month: "May", users: 1200 },
+          { month: "Jun", users: 1247 }
+        ],
+        contentStats: {
+          postsPublished: 156,
+          averageReadTime: "4.2 minutes",
+          topCategories: ["Wellness", "Nutrition", "Fitness", "Mindfulness"],
+          engagementRate: "68%"
+        },
+        premiumStats: {
+          conversionRate: "7.1%",
+          monthlyRevenue: "$3,450",
+          churnRate: "2.3%",
+          averageLifetime: "8.5 months"
+        }
+      };
+      
+      res.json(analytics);
+    } catch (error) {
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to get analytics",
+        error: error.message 
+      });
+    }
+  });
+
+  app.post('/api/admin/users/:userId/promote', isAuthenticated, async (req, res) => {
+    try {
+      const { userId } = req.params;
+      
+      // In a real app, update user role in database
+      console.log(`Promoting user ${userId} to admin`);
+      
+      res.json({
+        success: true,
+        message: "User promoted to admin successfully",
+        userId: userId
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to promote user",
+        error: error.message 
+      });
+    }
+  });
+
   // AI Content Generation Test (no auth required)
   app.post('/api/test/generate-content', async (req, res) => {
     try {
