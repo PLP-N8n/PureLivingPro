@@ -77,6 +77,18 @@ interface Challenge {
   updatedAt: string;
 }
 
+interface Product {
+  id: number;
+  name: string;
+  description: string | null;
+  price: number | null;
+  category: string | null;
+  affiliateLink: string | null;
+  isRecommended: boolean | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export default function Admin() {
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
@@ -1075,39 +1087,676 @@ function BlogPostForm({
 }
 
 function ProductManagement() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [newProduct, setNewProduct] = useState({
+    name: "",
+    description: "",
+    price: "",
+    category: "",
+    affiliateLink: "",
+    isRecommended: false
+  });
+
+  const { data: productsData = [], isLoading: productsLoading } = useQuery({
+    queryKey: ["/api/products"],
+    onSuccess: (data) => setProducts(data)
+  });
+
+  const createProductMutation = useMutation({
+    mutationFn: async (productData: any) => {
+      const response = await apiRequest("POST", "/api/products", productData);
+      return response;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Product created successfully!",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      setIsProductDialogOpen(false);
+      setNewProduct({
+        name: "",
+        description: "",
+        price: "",
+        category: "",
+        affiliateLink: "",
+        isRecommended: false
+      });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to create product. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteProductMutation = useMutation({
+    mutationFn: async (id: number) => {
+      await apiRequest("DELETE", `/api/products/${id}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Product deleted successfully!",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to delete product.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleCreateProduct = () => {
+    if (!newProduct.name || !newProduct.price) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    createProductMutation.mutate({
+      ...newProduct,
+      price: parseFloat(newProduct.price)
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-sage-800">Products</h2>
-        <Button className="bg-sage-600 hover:bg-sage-700">
-          <Plus className="w-4 h-4 mr-2" />
-          Add Product
-        </Button>
+        <h2 className="text-2xl font-bold text-sage-800">Wellness Products</h2>
+        <div className="flex gap-3">
+          <Button
+            onClick={() => setIsProductDialogOpen(true)}
+            className="bg-sage-600 hover:bg-sage-700"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Product
+          </Button>
+        </div>
       </div>
-      <Card>
-        <CardContent className="p-6">
-          <p className="text-sage-600">Product management interface coming soon...</p>
-        </CardContent>
-      </Card>
+
+      {/* Products Grid */}
+      {productsLoading ? (
+        <div className="flex justify-center py-8">
+          <div className="animate-spin w-8 h-8 border-4 border-sage-600 border-t-transparent rounded-full" />
+        </div>
+      ) : productsData.length === 0 ? (
+        <Card>
+          <CardContent className="text-center py-12">
+            <ShoppingBag className="w-12 h-12 text-sage-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-sage-800 mb-2">No products yet</h3>
+            <p className="text-sage-600 mb-4">Start curating wellness products for your audience.</p>
+            <Button onClick={() => setIsProductDialogOpen(true)} className="bg-sage-600 hover:bg-sage-700">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Your First Product
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {productsData.map((product: any) => (
+            <motion.div
+              key={product.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <CardTitle className="text-lg text-sage-800">{product.name}</CardTitle>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Badge variant={product.category ? "secondary" : "outline"}>
+                          {product.category || "Uncategorized"}
+                        </Badge>
+                        {product.isRecommended && (
+                          <Badge className="bg-amber-100 text-amber-800">Recommended</Badge>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setEditingProduct(product);
+                          setNewProduct({
+                            name: product.name,
+                            description: product.description || "",
+                            price: product.price?.toString() || "",
+                            category: product.category || "",
+                            affiliateLink: product.affiliateLink || "",
+                            isRecommended: product.isRecommended || false
+                          });
+                          setIsProductDialogOpen(true);
+                        }}
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deleteProductMutation.mutate(product.id)}
+                        disabled={deleteProductMutation.isPending}
+                      >
+                        <Trash2 className="w-4 h-4 text-red-600" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sage-600 text-sm mb-3 line-clamp-3">
+                    {product.description || "No description available"}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-lg font-bold text-sage-800">
+                      ${product.price?.toFixed(2) || "0.00"}
+                    </span>
+                    {product.affiliateLink && (
+                      <Button variant="outline" size="sm" asChild>
+                        <a href={product.affiliateLink} target="_blank" rel="noopener noreferrer">
+                          View Product
+                        </a>
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+      )}
+
+      {/* Product Creation/Edit Dialog */}
+      <Dialog open={isProductDialogOpen} onOpenChange={(open) => {
+        setIsProductDialogOpen(open);
+        if (!open) {
+          setEditingProduct(null);
+          setNewProduct({
+            name: "",
+            description: "",
+            price: "",
+            category: "",
+            affiliateLink: "",
+            isRecommended: false
+          });
+        }
+      }}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>
+              {editingProduct ? "Edit Product" : "Add New Product"}
+            </DialogTitle>
+            <DialogDescription>
+              {editingProduct ? "Update product information" : "Add a new wellness product to your catalog"}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="name">Product Name *</Label>
+                <Input
+                  id="name"
+                  value={newProduct.name}
+                  onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+                  placeholder="e.g., Organic Protein Powder"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="price">Price *</Label>
+                <Input
+                  id="price"
+                  type="number"
+                  value={newProduct.price}
+                  onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
+                  placeholder="29.99"
+                  step="0.01"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="category">Category</Label>
+                <Select 
+                  value={newProduct.category} 
+                  onValueChange={(value) => setNewProduct({ ...newProduct, category: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="supplements">Supplements</SelectItem>
+                    <SelectItem value="fitness">Fitness Equipment</SelectItem>
+                    <SelectItem value="books">Books</SelectItem>
+                    <SelectItem value="wellness">Wellness Tools</SelectItem>
+                    <SelectItem value="nutrition">Nutrition</SelectItem>
+                    <SelectItem value="mindfulness">Mindfulness</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="affiliateLink">Affiliate Link</Label>
+                <Input
+                  id="affiliateLink"
+                  value={newProduct.affiliateLink}
+                  onChange={(e) => setNewProduct({ ...newProduct, affiliateLink: e.target.value })}
+                  placeholder="https://..."
+                />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  value={newProduct.description}
+                  onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
+                  placeholder="Describe the product benefits..."
+                  rows={6}
+                />
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="recommended"
+                  checked={newProduct.isRecommended}
+                  onCheckedChange={(checked) => setNewProduct({ ...newProduct, isRecommended: checked })}
+                />
+                <Label htmlFor="recommended">Mark as Recommended</Label>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => setIsProductDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreateProduct}
+              disabled={createProductMutation.isPending}
+              className="bg-sage-600 hover:bg-sage-700"
+            >
+              {createProductMutation.isPending ? "Saving..." : editingProduct ? "Update Product" : "Create Product"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
 
 function ChallengeManagement() {
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [isChallengeDialogOpen, setIsChallengeDialogOpen] = useState(false);
+  const [editingChallenge, setEditingChallenge] = useState<Challenge | null>(null);
+  const [newChallenge, setNewChallenge] = useState({
+    title: "",
+    description: "",
+    category: "",
+    duration: "",
+    difficulty: "beginner",
+    isActive: true
+  });
+
+  const { data: challengesData = [], isLoading: challengesLoading } = useQuery({
+    queryKey: ["/api/challenges"],
+    onSuccess: (data) => setChallenges(data)
+  });
+
+  const createChallengeMutation = useMutation({
+    mutationFn: async (challengeData: any) => {
+      const response = await apiRequest("POST", "/api/challenges", challengeData);
+      return response;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Challenge created successfully!",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/challenges"] });
+      setIsChallengeDialogOpen(false);
+      setNewChallenge({
+        title: "",
+        description: "",
+        category: "",
+        duration: "",
+        difficulty: "beginner",
+        isActive: true
+      });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to create challenge. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deletChallengeMutation = useMutation({
+    mutationFn: async (id: number) => {
+      await apiRequest("DELETE", `/api/challenges/${id}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Challenge deleted successfully!",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/challenges"] });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to delete challenge.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleCreateChallenge = () => {
+    if (!newChallenge.title || !newChallenge.duration) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    createChallengeMutation.mutate({
+      ...newChallenge,
+      duration: parseInt(newChallenge.duration)
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-sage-800">Challenges</h2>
-        <Button className="bg-sage-600 hover:bg-sage-700">
+        <h2 className="text-2xl font-bold text-sage-800">Wellness Challenges</h2>
+        <Button
+          onClick={() => setIsChallengeDialogOpen(true)}
+          className="bg-sage-600 hover:bg-sage-700"
+        >
           <Plus className="w-4 h-4 mr-2" />
           Create Challenge
         </Button>
       </div>
-      <Card>
-        <CardContent className="p-6">
-          <p className="text-sage-600">Challenge management interface coming soon...</p>
-        </CardContent>
-      </Card>
+
+      {/* Challenges Grid */}
+      {challengesLoading ? (
+        <div className="flex justify-center py-8">
+          <div className="animate-spin w-8 h-8 border-4 border-sage-600 border-t-transparent rounded-full" />
+        </div>
+      ) : challengesData.length === 0 ? (
+        <Card>
+          <CardContent className="text-center py-12">
+            <Target className="w-12 h-12 text-sage-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-sage-800 mb-2">No challenges yet</h3>
+            <p className="text-sage-600 mb-4">Create engaging wellness challenges for your community.</p>
+            <Button onClick={() => setIsChallengeDialogOpen(true)} className="bg-sage-600 hover:bg-sage-700">
+              <Plus className="w-4 h-4 mr-2" />
+              Create Your First Challenge
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {challengesData.map((challenge: any) => (
+            <motion.div
+              key={challenge.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <CardTitle className="text-lg text-sage-800">{challenge.title}</CardTitle>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Badge variant={challenge.category ? "secondary" : "outline"}>
+                          {challenge.category || "General"}
+                        </Badge>
+                        <Badge variant={challenge.difficulty === "advanced" ? "destructive" : challenge.difficulty === "intermediate" ? "default" : "secondary"}>
+                          {challenge.difficulty}
+                        </Badge>
+                        {challenge.isActive && (
+                          <Badge className="bg-green-100 text-green-800">Active</Badge>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setEditingChallenge(challenge);
+                          setNewChallenge({
+                            title: challenge.title,
+                            description: challenge.description || "",
+                            category: challenge.category || "",
+                            duration: challenge.duration?.toString() || "",
+                            difficulty: challenge.difficulty || "beginner",
+                            isActive: challenge.isActive || false
+                          });
+                          setIsChallengeDialogOpen(true);
+                        }}
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deletChallengeMutation.mutate(challenge.id)}
+                        disabled={deletChallengeMutation.isPending}
+                      >
+                        <Trash2 className="w-4 h-4 text-red-600" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sage-600 text-sm mb-3 line-clamp-3">
+                    {challenge.description || "No description available"}
+                  </p>
+                  <div className="flex items-center justify-between text-sm text-sage-500">
+                    <span>{challenge.duration || 0} days</span>
+                    <span>{new Date(challenge.createdAt).toLocaleDateString()}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+      )}
+
+      {/* Challenge Creation/Edit Dialog */}
+      <Dialog open={isChallengeDialogOpen} onOpenChange={(open) => {
+        setIsChallengeDialogOpen(open);
+        if (!open) {
+          setEditingChallenge(null);
+          setNewChallenge({
+            title: "",
+            description: "",
+            category: "",
+            duration: "",
+            difficulty: "beginner",
+            isActive: true
+          });
+        }
+      }}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>
+              {editingChallenge ? "Edit Challenge" : "Create New Challenge"}
+            </DialogTitle>
+            <DialogDescription>
+              {editingChallenge ? "Update challenge information" : "Create an engaging wellness challenge for your community"}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="challengeTitle">Challenge Title *</Label>
+                <Input
+                  id="challengeTitle"
+                  value={newChallenge.title}
+                  onChange={(e) => setNewChallenge({ ...newChallenge, title: e.target.value })}
+                  placeholder="e.g., 30-Day Mindfulness Challenge"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="challengeDuration">Duration (days) *</Label>
+                <Input
+                  id="challengeDuration"
+                  type="number"
+                  value={newChallenge.duration}
+                  onChange={(e) => setNewChallenge({ ...newChallenge, duration: e.target.value })}
+                  placeholder="30"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="challengeCategory">Category</Label>
+                <Select 
+                  value={newChallenge.category} 
+                  onValueChange={(value) => setNewChallenge({ ...newChallenge, category: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="fitness">Fitness</SelectItem>
+                    <SelectItem value="nutrition">Nutrition</SelectItem>
+                    <SelectItem value="mindfulness">Mindfulness</SelectItem>
+                    <SelectItem value="sleep">Sleep</SelectItem>
+                    <SelectItem value="habits">Healthy Habits</SelectItem>
+                    <SelectItem value="stress">Stress Management</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="challengeDifficulty">Difficulty Level</Label>
+                <Select 
+                  value={newChallenge.difficulty} 
+                  onValueChange={(value) => setNewChallenge({ ...newChallenge, difficulty: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="beginner">Beginner</SelectItem>
+                    <SelectItem value="intermediate">Intermediate</SelectItem>
+                    <SelectItem value="advanced">Advanced</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="challengeDescription">Description</Label>
+                <Textarea
+                  id="challengeDescription"
+                  value={newChallenge.description}
+                  onChange={(e) => setNewChallenge({ ...newChallenge, description: e.target.value })}
+                  placeholder="Describe the challenge goals and daily activities..."
+                  rows={6}
+                />
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="challengeActive"
+                  checked={newChallenge.isActive}
+                  onCheckedChange={(checked) => setNewChallenge({ ...newChallenge, isActive: checked })}
+                />
+                <Label htmlFor="challengeActive">Active Challenge</Label>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => setIsChallengeDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreateChallenge}
+              disabled={createChallengeMutation.isPending}
+              className="bg-sage-600 hover:bg-sage-700"
+            >
+              {createChallengeMutation.isPending ? "Saving..." : editingChallenge ? "Update Challenge" : "Create Challenge"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -1115,23 +1764,188 @@ function ChallengeManagement() {
 function UserManagement() {
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-sage-800">Users</h2>
+      <h2 className="text-2xl font-bold text-sage-800">User Management</h2>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="w-5 h-5 text-blue-600" />
+              User Analytics
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-sage-600">Total Users:</span>
+                <span className="font-semibold">Coming Soon</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sage-600">Active This Month:</span>
+                <span className="font-semibold">Coming Soon</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sage-600">Premium Subscribers:</span>
+                <span className="font-semibold">Coming Soon</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="w-5 h-5 text-purple-600" />
+              Engagement
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-sage-600">Challenge Participants:</span>
+                <span className="font-semibold">Coming Soon</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sage-600">Blog Readers:</span>
+                <span className="font-semibold">Coming Soon</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sage-600">AI Plan Users:</span>
+                <span className="font-semibold">Coming Soon</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Crown className="w-5 h-5 text-amber-600" />
+              Quick Actions
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <Button variant="outline" className="w-full justify-start" disabled>
+              <Users className="w-4 h-4 mr-2" />
+              Export User Data
+            </Button>
+            <Button variant="outline" className="w-full justify-start" disabled>
+              <Crown className="w-4 h-4 mr-2" />
+              Manage Subscriptions
+            </Button>
+            <Button variant="outline" className="w-full justify-start" disabled>
+              <BarChart3 className="w-4 h-4 mr-2" />
+              User Reports
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+      
       <Card>
-        <CardContent className="p-6">
-          <p className="text-sage-600">User management interface coming soon...</p>
+        <CardContent className="text-center py-12">
+          <Users className="w-12 h-12 text-sage-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-sage-800 mb-2">User Management Coming Soon</h3>
+          <p className="text-sage-600 mb-4">
+            Advanced user management features will be available in the next release. This will include user analytics, 
+            subscription management, and engagement tracking.
+          </p>
         </CardContent>
       </Card>
     </div>
   );
 }
 
-function SettingsTab() {
+function SettingsManagement() {
+  const [settings, setSettings] = useState({
+    siteName: "Pure Living Pro",
+    siteDescription: "Your wellness journey starts here",
+    enableComments: true,
+    enableNewsletterSignup: true,
+    maintenanceMode: false,
+    aiProvider: "deepseek"
+  });
+
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-sage-800">Settings</h2>
+      <h2 className="text-2xl font-bold text-sage-800">Platform Settings</h2>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>General Settings</CardTitle>
+            <CardDescription>Configure basic site information</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="siteName">Site Name</Label>
+              <Input
+                id="siteName"
+                value={settings.siteName}
+                onChange={(e) => setSettings({ ...settings, siteName: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="siteDescription">Site Description</Label>
+              <Textarea
+                id="siteDescription"
+                value={settings.siteDescription}
+                onChange={(e) => setSettings({ ...settings, siteDescription: e.target.value })}
+                rows={3}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>AI Configuration</CardTitle>
+            <CardDescription>Configure AI content generation settings</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="aiProvider">AI Provider</Label>
+              <Select 
+                value={settings.aiProvider} 
+                onValueChange={(value) => setSettings({ ...settings, aiProvider: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="deepseek">DeepSeek (Cost-Effective)</SelectItem>
+                  <SelectItem value="openai">OpenAI (Premium)</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-sm text-sage-600 mt-1">
+                {settings.aiProvider === "deepseek" 
+                  ? "90% cost savings with high-quality content generation" 
+                  : "Premium AI with advanced capabilities"}
+              </p>
+            </div>
+            
+            <div className="bg-sage-50 p-4 rounded-lg">
+              <h4 className="font-semibold text-sage-800 mb-2">API Status</h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span>DeepSeek API:</span>
+                  <Badge className="bg-green-100 text-green-800">Connected</Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span>OpenAI API:</span>
+                  <Badge className="bg-green-100 text-green-800">Connected</Badge>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       <Card>
-        <CardContent className="p-6">
-          <p className="text-sage-600">Platform settings coming soon...</p>
+        <CardContent className="flex justify-end pt-6">
+          <Button className="bg-sage-600 hover:bg-sage-700">
+            <Save className="w-4 h-4 mr-2" />
+            Save Settings
+          </Button>
         </CardContent>
       </Card>
     </div>

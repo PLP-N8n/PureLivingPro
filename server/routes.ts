@@ -10,6 +10,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
 
+  // Admin stats endpoint
+  app.get('/api/admin/stats', isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      
+      // Get comprehensive stats for admin dashboard
+      const [blogPosts, products, challenges] = await Promise.all([
+        storage.getBlogPosts(100), // Get up to 100 posts for count
+        storage.getProducts(100),   // Get up to 100 products for count
+        storage.getChallenges(100), // Get up to 100 challenges for count
+      ]);
+
+      const activeChallenges = challenges.filter((c: any) => c.isActive);
+      const publishedPosts = blogPosts.filter((p: any) => p.isPublished);
+      const premiumPosts = blogPosts.filter((p: any) => p.isPremium);
+      const recommendedProducts = products.filter((p: any) => p.isRecommended);
+
+      const stats = {
+        totalPosts: blogPosts.length,
+        publishedPosts: publishedPosts.length,
+        draftPosts: blogPosts.length - publishedPosts.length,
+        premiumPosts: premiumPosts.length,
+        totalProducts: products.length,
+        recommendedProducts: recommendedProducts.length,
+        totalChallenges: challenges.length,
+        activeChallenges: activeChallenges.length,
+        totalUsers: 0, // Will implement user count later
+        // Additional metrics
+        recentPostsThisWeek: blogPosts.filter((p: any) => {
+          const postDate = new Date(p.createdAt);
+          const weekAgo = new Date();
+          weekAgo.setDate(weekAgo.getDate() - 7);
+          return postDate > weekAgo;
+        }).length,
+        recentProductsThisWeek: products.filter((p: any) => {
+          const productDate = new Date(p.createdAt);
+          const weekAgo = new Date();
+          weekAgo.setDate(weekAgo.getDate() - 7);
+          return productDate > weekAgo;
+        }).length
+      };
+
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching admin stats:", error);
+      res.status(500).json({ message: "Failed to fetch admin stats" });
+    }
+  });
+
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
