@@ -445,7 +445,7 @@ export class DatabaseStorage implements IStorage {
   async createWellnessPlan(plan: InsertWellnessPlan): Promise<WellnessPlan> {
     const [newPlan] = await db
       .insert(wellnessPlans)
-      .values([plan])
+      .values(plan)
       .returning();
     return newPlan;
   }
@@ -489,7 +489,7 @@ export class DatabaseStorage implements IStorage {
   async createWellnessAssessment(assessment: InsertWellnessAssessment): Promise<WellnessAssessment> {
     const [newAssessment] = await db
       .insert(wellnessAssessments)
-      .values([assessment])
+      .values(assessment)
       .returning();
     return newAssessment;
   }
@@ -519,7 +519,7 @@ export class DatabaseStorage implements IStorage {
   async createCoachingSession(session: InsertCoachingSession): Promise<CoachingSession> {
     const [newSession] = await db
       .insert(coachingSessions)
-      .values([session])
+      .values(session)
       .returning();
     return newSession;
   }
@@ -559,7 +559,7 @@ export class DatabaseStorage implements IStorage {
   async createWellnessGoal(goal: InsertWellnessGoal): Promise<WellnessGoal> {
     const [newGoal] = await db
       .insert(wellnessGoals)
-      .values([goal])
+      .values(goal)
       .returning();
     return newGoal;
   }
@@ -601,7 +601,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createFitnessData(data: InsertFitnessData): Promise<FitnessData> {
-    const [result] = await db.insert(fitnessData).values([data]).returning();
+    const [result] = await db.insert(fitnessData).values(data).returning();
     return result;
   }
 

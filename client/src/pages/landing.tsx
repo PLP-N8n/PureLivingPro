@@ -92,7 +92,7 @@ export default function Landing() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Button 
                   size="lg" 
-                  className="hover:bg-tulsi-700 text-white px-8 py-4 text-lg bg-[#eedfc8]"
+                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-11 rounded-md hover:bg-tulsi-700 text-white px-8 py-4 text-lg bg-[#eedfc8]"
                   onClick={() => window.location.href = "/api/login"}
                 >
                   <Crown className="w-5 h-5 mr-2" />
