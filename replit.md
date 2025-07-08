@@ -168,3 +168,7 @@ Changelog:
 - July 08, 2025. Enhanced admin panel with fully translated interface and improved settings management
 - July 08, 2025. Implemented comprehensive settings dashboard with categorized sections and multi-language support
 - July 08, 2025. Added advanced language configuration options including RTL support and timezone settings
+- July 08, 2025. Enhanced user dashboard with comprehensive wellness tracking and AI coaching features
+- July 08, 2025. Implemented interactive AI wellness coach with real-time chat interface and personalized insights
+- July 08, 2025. Added wellness progress visualization, daily goal tracking, and recent activity feeds
+- July 08, 2025. Reorganized admin panel tabs into cleaner two-row layout for better usability and visual clarity

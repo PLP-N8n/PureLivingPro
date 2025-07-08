@@ -142,6 +142,17 @@
   },
   "admin": {
     "title": "Admin Dashboard",
+    "subtitle": "Manage your wellness platform",
+    "tabs": {
+      "overview": "Overview",
+      "revenue": "Revenue",
+      "blog": "Blog",
+      "products": "Products", 
+      "challenges": "Challenges",
+      "automation": "Automation",
+      "users": "Users",
+      "settings": "Settings"
+    },
     "overview": "Overview",
     "blogManagement": "Blog Management",
     "productManagement": "Product Management",

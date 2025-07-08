@@ -170,53 +170,94 @@ export default function Admin() {
     <div className="min-h-screen bg-sage-25 pt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-2">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="mb-8"
+        >
+          <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <Crown className="w-8 h-8 text-sage-600" />
-              <h1 className="text-3xl font-bold text-sage-800">{t('admin.title')}</h1>
+              <div>
+                <h1 className="text-3xl font-bold text-sage-800">{t('admin.title')}</h1>
+                <p className="text-sage-600 text-sm">{t('admin.subtitle')}</p>
+              </div>
             </div>
-            <LanguageSwitcher />
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 text-sm text-sage-600 bg-white/60 px-3 py-1 rounded-full">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                System Online
+              </div>
+              <LanguageSwitcher />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.location.reload()}
+                className="bg-white/80 backdrop-blur-sm"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Refresh
+              </Button>
+            </div>
           </div>
-          <p className="text-sage-600">{t('admin.subtitle')}</p>
-        </div>
+        </motion.div>
 
-        {/* Admin Tabs */}
+        {/* Admin Tabs - Organized into logical groups */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-8">
-            <TabsTrigger value="overview" className="flex items-center gap-2">
-              <BarChart3 className="w-4 h-4" />
-              {t('admin.tabs.overview')}
-            </TabsTrigger>
-            <TabsTrigger value="revenue" className="flex items-center gap-2">
-              <DollarSign className="w-4 h-4" />
-              {t('admin.tabs.revenue')}
-            </TabsTrigger>
-            <TabsTrigger value="blog" className="flex items-center gap-2">
-              <BookOpen className="w-4 h-4" />
-              {t('admin.tabs.blog')}
-            </TabsTrigger>
-            <TabsTrigger value="products" className="flex items-center gap-2">
-              <ShoppingBag className="w-4 h-4" />
-              {t('admin.tabs.products')}
-            </TabsTrigger>
-            <TabsTrigger value="challenges" className="flex items-center gap-2">
-              <Target className="w-4 h-4" />
-              {t('admin.tabs.challenges')}
-            </TabsTrigger>
-            <TabsTrigger value="automation" className="flex items-center gap-2">
-              <Zap className="w-4 h-4" />
-              {t('admin.tabs.automation')}
-            </TabsTrigger>
-            <TabsTrigger value="users" className="flex items-center gap-2">
-              <Users className="w-4 h-4" />
-              {t('admin.tabs.users')}
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="flex items-center gap-2">
-              <Settings className="w-4 h-4" />
-              {t('admin.tabs.settings')}
-            </TabsTrigger>
-          </TabsList>
+          <div className="space-y-4">
+            {/* Primary Management Section */}
+            <div>
+              <div className="flex items-center gap-2 mb-2 px-1">
+                <Monitor className="w-4 h-4 text-sage-600" />
+                <span className="text-sm font-medium text-sage-700">System Management</span>
+              </div>
+              <TabsList className="grid w-full grid-cols-4 bg-white/80 backdrop-blur-sm border border-sage-200">
+                <TabsTrigger value="overview" className="flex items-center gap-2 text-sm data-[state=active]:bg-sage-100">
+                  <BarChart3 className="w-4 h-4" />
+                  {t('admin.tabs.overview')}
+                </TabsTrigger>
+                <TabsTrigger value="revenue" className="flex items-center gap-2 text-sm data-[state=active]:bg-sage-100">
+                  <DollarSign className="w-4 h-4" />
+                  {t('admin.tabs.revenue')}
+                </TabsTrigger>
+                <TabsTrigger value="automation" className="flex items-center gap-2 text-sm data-[state=active]:bg-sage-100">
+                  <Bot className="w-4 h-4" />
+                  {t('admin.tabs.automation')}
+                </TabsTrigger>
+                <TabsTrigger value="settings" className="flex items-center gap-2 text-sm data-[state=active]:bg-sage-100">
+                  <Settings className="w-4 h-4" />
+                  {t('admin.tabs.settings')}
+                </TabsTrigger>
+              </TabsList>
+            </div>
+            
+            {/* Content Management Section */}
+            <div>
+              <div className="flex items-center gap-2 mb-2 px-1">
+                <Database className="w-4 h-4 text-sage-600" />
+                <span className="text-sm font-medium text-sage-700">Content Management</span>
+              </div>
+              <TabsList className="grid w-full grid-cols-4 bg-sage-50/80 backdrop-blur-sm border border-sage-200">
+                <TabsTrigger value="blog" className="flex items-center gap-2 text-sm data-[state=active]:bg-sage-100">
+                  <BookOpen className="w-4 h-4" />
+                  {t('admin.tabs.blog')}
+                </TabsTrigger>
+                <TabsTrigger value="products" className="flex items-center gap-2 text-sm data-[state=active]:bg-sage-100">
+                  <ShoppingBag className="w-4 h-4" />
+                  {t('admin.tabs.products')}
+                </TabsTrigger>
+                <TabsTrigger value="challenges" className="flex items-center gap-2 text-sm data-[state=active]:bg-sage-100">
+                  <Target className="w-4 h-4" />
+                  {t('admin.tabs.challenges')}
+                </TabsTrigger>
+                <TabsTrigger value="users" className="flex items-center gap-2 text-sm data-[state=active]:bg-sage-100">
+                  <Users className="w-4 h-4" />
+                  {t('admin.tabs.users')}
+                </TabsTrigger>
+              </TabsList>
+            </div>
+          </div>
 
           <TabsContent value="overview">
             <OverviewTab />
