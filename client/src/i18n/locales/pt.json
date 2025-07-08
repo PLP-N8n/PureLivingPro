@@ -1,0 +1,69 @@
+{
+  "navigation": {
+    "home": "Início",
+    "blog": "Blog",
+    "wellnessPicks": "Recomendações",
+    "about": "Sobre",
+    "contact": "Contato",
+    "premium": "Premium",
+    "dashboard": "Painel",
+    "wellnessPlan": "Plano de Bem-estar",
+    "meditation": "Meditação",
+    "challenges": "Desafios",
+    "deviceIntegration": "Integração de Dispositivos",
+    "admin": "Admin"
+  },
+  "common": {
+    "loading": "Carregando...",
+    "error": "Erro",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Excluir",
+    "create": "Criar",
+    "update": "Atualizar",
+    "search": "Pesquisar",
+    "filter": "Filtrar",
+    "next": "Próximo",
+    "previous": "Anterior",
+    "submit": "Enviar",
+    "close": "Fechar",
+    "login": "Entrar",
+    "logout": "Sair",
+    "signup": "Cadastrar",
+    "welcome": "Bem-vindo"
+  },
+  "admin": {
+    "title": "Painel Administrativo",
+    "subtitle": "Gerencie o conteúdo e configurações da sua plataforma de bem-estar",
+    "tabs": {
+      "overview": "Visão Geral",
+      "blog": "Posts do Blog",
+      "products": "Produtos",
+      "challenges": "Desafios",
+      "users": "Usuários",
+      "settings": "Configurações",
+      "automation": "Automação",
+      "revenue": "Receita"
+    }
+  },
+  "landing": {
+    "hero": {
+      "title": "Transforme Sua Jornada de Bem-estar",
+      "subtitle": "Comece com nosso centro de conteúdo gratuito, depois desbloqueie coaching personalizado com IA com nosso teste premium de 60 dias",
+      "cta": "Iniciar Teste Gratuito",
+      "learnMore": "Saiba Mais"
+    },
+    "features": {
+      "title": "Seu Companheiro Completo de Bem-estar",
+      "freeContent": {
+        "title": "Centro de Conteúdo Gratuito",
+        "description": "Acesse artigos de bem-estar curados, receitas saudáveis e desafios da comunidade"
+      },
+      "aiCoaching": {
+        "title": "Coaching de Bem-estar com IA",
+        "description": "Planos personalizados e acompanhamento inteligente para sua jornada única"
+      }
+    }
+  }
+}

@@ -1,0 +1,159 @@
+{
+  "navigation": {
+    "home": "Home",
+    "blog": "Blog",
+    "wellnessPicks": "Wellness Picks",
+    "about": "About",
+    "contact": "Contact",
+    "premium": "Premium",
+    "dashboard": "Dashboard",
+    "wellnessPlan": "Wellness Plan",
+    "meditation": "Meditation",
+    "challenges": "Challenges",
+    "deviceIntegration": "Device Integration",
+    "admin": "Admin"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "create": "Create",
+    "update": "Update",
+    "search": "Search",
+    "filter": "Filter",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "close": "Close",
+    "login": "Login",
+    "logout": "Logout",
+    "signup": "Sign Up",
+    "welcome": "Welcome"
+  },
+  "admin": {
+    "title": "Admin Dashboard",
+    "subtitle": "Manage your wellness platform content and settings",
+    "tabs": {
+      "overview": "Overview",
+      "blog": "Blog Posts",
+      "products": "Products",
+      "challenges": "Challenges",
+      "users": "Users",
+      "settings": "Settings",
+      "automation": "Automation",
+      "revenue": "Revenue"
+    }
+  },
+  "landing": {
+    "hero": {
+      "title": "Transform Your Wellness Journey",
+      "subtitle": "Start with our free content hub, then unlock personalized AI coaching with our 60-day premium trial",
+      "cta": "Start Your Free Trial",
+      "learnMore": "Learn More"
+    },
+    "features": {
+      "title": "Your Complete Wellness Companion",
+      "freeContent": {
+        "title": "Free Content Hub",
+        "description": "Access curated wellness articles, healthy recipes, and community challenges"
+      },
+      "aiCoaching": {
+        "title": "AI Wellness Coaching",
+        "description": "Get personalized wellness plans and daily guidance from your AI companion"
+      },
+      "meditation": {
+        "title": "Meditation & Mindfulness",
+        "description": "Guided meditations and mindfulness exercises for daily practice"
+      },
+      "deviceIntegration": {
+        "title": "Device Integration",
+        "description": "Connect your fitness trackers for comprehensive health monitoring"
+      }
+    },
+    "pricing": {
+      "free": {
+        "title": "Free Forever",
+        "price": "$0",
+        "features": [
+          "Wellness blog access",
+          "Basic meditation timer",
+          "Community challenges",
+          "Product recommendations"
+        ]
+      },
+      "premium": {
+        "title": "Premium",
+        "price": "$19/month",
+        "trial": "60-day free trial",
+        "features": [
+          "Everything in Free",
+          "AI wellness coaching",
+          "Personalized meal plans",
+          "Advanced meditation library",
+          "Device integration",
+          "Priority support"
+        ]
+      }
+    }
+  },
+  "blog": {
+    "title": "Wellness Blog",
+    "readMore": "Read More",
+    "categories": "Categories",
+    "tags": "Tags",
+    "author": "Author",
+    "publishedOn": "Published on",
+    "readTime": "min read",
+    "noArticles": "No articles found",
+    "searchPlaceholder": "Search articles..."
+  },
+  "admin": {
+    "title": "Admin Dashboard",
+    "overview": "Overview",
+    "blogManagement": "Blog Management",
+    "productManagement": "Product Management",
+    "challengeManagement": "Challenge Management",
+    "userManagement": "User Management",
+    "settings": "Settings",
+    "automation": "Automation",
+    "revenueOptimization": "Revenue Optimization",
+    "lastUpdated": "Last updated",
+    "refreshData": "Refresh Data",
+    "optimizeConversion": "Optimize Conversion",
+    "sendCampaign": "Send Campaign",
+    "configureAI": "Configure AI Routing"
+  },
+  "wellness": {
+    "dashboard": {
+      "title": "Wellness Dashboard",
+      "todaysGoals": "Today's Goals",
+      "weeklyProgress": "Weekly Progress",
+      "recommendations": "Recommendations"
+    },
+    "plan": {
+      "title": "Your Wellness Plan",
+      "personalizedFor": "Personalized for you",
+      "updatePreferences": "Update Preferences"
+    },
+    "meditation": {
+      "title": "Meditation Timer",
+      "selectDuration": "Select Duration",
+      "start": "Start Session",
+      "pause": "Pause",
+      "resume": "Resume",
+      "complete": "Session Complete"
+    }
+  },
+  "footer": {
+    "tagline": "Your journey to wellness starts here",
+    "quickLinks": "Quick Links",
+    "support": "Support",
+    "legal": "Legal",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "cookiePolicy": "Cookie Policy"
+  }
+}

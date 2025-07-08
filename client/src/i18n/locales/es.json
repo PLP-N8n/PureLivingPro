@@ -1,0 +1,69 @@
+{
+  "navigation": {
+    "home": "Inicio",
+    "blog": "Blog",
+    "wellnessPicks": "Recomendaciones",
+    "about": "Acerca de",
+    "contact": "Contacto",
+    "premium": "Premium",
+    "dashboard": "Panel",
+    "wellnessPlan": "Plan de Bienestar",
+    "meditation": "Meditación",
+    "challenges": "Desafíos",
+    "deviceIntegration": "Integración de Dispositivos",
+    "admin": "Administrador"
+  },
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "create": "Crear",
+    "update": "Actualizar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "submit": "Enviar",
+    "close": "Cerrar",
+    "login": "Iniciar Sesión",
+    "logout": "Cerrar Sesión",
+    "signup": "Registrarse",
+    "welcome": "Bienvenido"
+  },
+  "admin": {
+    "title": "Panel de Administración",
+    "subtitle": "Gestiona el contenido y configuración de tu plataforma de bienestar",
+    "tabs": {
+      "overview": "Resumen",
+      "blog": "Publicaciones",
+      "products": "Productos",
+      "challenges": "Desafíos",
+      "users": "Usuarios",
+      "settings": "Configuración",
+      "automation": "Automatización",
+      "revenue": "Ingresos"
+    }
+  },
+  "landing": {
+    "hero": {
+      "title": "Transforma Tu Viaje de Bienestar",
+      "subtitle": "Comienza con nuestro centro de contenido gratuito, luego desbloquea coaching personalizado con IA con nuestra prueba premium de 60 días",
+      "cta": "Comenzar Prueba Gratuita",
+      "learnMore": "Saber Más"
+    },
+    "features": {
+      "title": "Tu Compañero Completo de Bienestar",
+      "freeContent": {
+        "title": "Centro de Contenido Gratuito",
+        "description": "Accede a artículos de bienestar curados, recetas saludables y desafíos comunitarios"
+      },
+      "aiCoaching": {
+        "title": "Coaching de Bienestar con IA",
+        "description": "Planes personalizados y seguimiento inteligente para tu viaje único"
+      }
+    }
+  }
+}

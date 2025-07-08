@@ -1,0 +1,69 @@
+{
+  "navigation": {
+    "home": "홈",
+    "blog": "블로그",
+    "wellnessPicks": "웰니스 추천",
+    "about": "소개",
+    "contact": "연락처",
+    "premium": "프리미엄",
+    "dashboard": "대시보드",
+    "wellnessPlan": "웰니스 계획",
+    "meditation": "명상",
+    "challenges": "도전",
+    "deviceIntegration": "기기 연동",
+    "admin": "관리자"
+  },
+  "common": {
+    "loading": "로딩 중...",
+    "error": "오류",
+    "save": "저장",
+    "cancel": "취소",
+    "edit": "편집",
+    "delete": "삭제",
+    "create": "생성",
+    "update": "업데이트",
+    "search": "검색",
+    "filter": "필터",
+    "next": "다음",
+    "previous": "이전",
+    "submit": "제출",
+    "close": "닫기",
+    "login": "로그인",
+    "logout": "로그아웃",
+    "signup": "회원가입",
+    "welcome": "환영합니다"
+  },
+  "admin": {
+    "title": "관리자 대시보드",
+    "subtitle": "웰니스 플랫폼 콘텐츠 및 설정 관리",
+    "tabs": {
+      "overview": "개요",
+      "blog": "블로그 게시물",
+      "products": "제품",
+      "challenges": "도전",
+      "users": "사용자",
+      "settings": "설정",
+      "automation": "자동화",
+      "revenue": "수익"
+    }
+  },
+  "landing": {
+    "hero": {
+      "title": "웰니스 여정을 변화시키세요",
+      "subtitle": "무료 콘텐츠 허브로 시작하여 60일 프리미엄 체험으로 개인화된 AI 코칭을 활용하세요",
+      "cta": "무료 체험 시작",
+      "learnMore": "더 알아보기"
+    },
+    "features": {
+      "title": "완벽한 웰니스 동반자",
+      "freeContent": {
+        "title": "무료 콘텐츠 허브",
+        "description": "엄선된 웰니스 기사, 건강한 레시피, 커뮤니티 도전에 액세스"
+      },
+      "aiCoaching": {
+        "title": "AI 웰니스 코칭",
+        "description": "고유한 여정을 위한 개인화된 계획과 스마트 추적"
+      }
+    }
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "navigation": {
+    "home": "Startseite",
+    "blog": "Blog",
+    "wellnessPicks": "Wellness-Empfehlungen",
+    "about": "Über uns",
+    "contact": "Kontakt",
+    "premium": "Premium",
+    "dashboard": "Dashboard",
+    "wellnessPlan": "Wellness-Plan",
+    "meditation": "Meditation",
+    "challenges": "Herausforderungen",
+    "deviceIntegration": "Geräte-Integration",
+    "admin": "Admin"
+  },
+  "common": {
+    "loading": "Laden...",
+    "error": "Fehler",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "create": "Erstellen",
+    "update": "Aktualisieren",
+    "search": "Suchen",
+    "filter": "Filtern",
+    "next": "Weiter",
+    "previous": "Zurück",
+    "submit": "Senden",
+    "close": "Schließen",
+    "login": "Anmelden",
+    "logout": "Abmelden",
+    "signup": "Registrieren",
+    "welcome": "Willkommen"
+  },
+  "admin": {
+    "title": "Admin-Dashboard",
+    "subtitle": "Verwalten Sie Inhalte und Einstellungen Ihrer Wellness-Plattform",
+    "tabs": {
+      "overview": "Übersicht",
+      "blog": "Blog-Posts",
+      "products": "Produkte",
+      "challenges": "Herausforderungen",
+      "users": "Benutzer",
+      "settings": "Einstellungen",
+      "automation": "Automatisierung",
+      "revenue": "Umsatz"
+    }
+  },
+  "landing": {
+    "hero": {
+      "title": "Transformieren Sie Ihre Wellness-Reise",
+      "subtitle": "Beginnen Sie mit unserem kostenlosen Content-Hub und schalten Sie dann personalisiertes KI-Coaching mit unserer 60-Tage-Premium-Testversion frei",
+      "cta": "Kostenlose Testversion starten",
+      "learnMore": "Mehr erfahren"
+    },
+    "features": {
+      "title": "Ihr vollständiger Wellness-Begleiter",
+      "freeContent": {
+        "title": "Kostenloser Content-Hub",
+        "description": "Zugang zu kuratierten Wellness-Artikeln, gesunden Rezepten und Community-Herausforderungen"
+      },
+      "aiCoaching": {
+        "title": "KI-Wellness-Coaching",
+        "description": "Personalisierte Pläne und intelligente Verfolgung für Ihre einzigartige Reise"
+      }
+    }
+  }
+}

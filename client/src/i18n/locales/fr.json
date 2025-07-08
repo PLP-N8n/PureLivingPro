@@ -1,0 +1,69 @@
+{
+  "navigation": {
+    "home": "Accueil",
+    "blog": "Blog",
+    "wellnessPicks": "Sélections Bien-être",
+    "about": "À Propos",
+    "contact": "Contact",
+    "premium": "Premium",
+    "dashboard": "Tableau de Bord",
+    "wellnessPlan": "Plan de Bien-être",
+    "meditation": "Méditation",
+    "challenges": "Défis",
+    "deviceIntegration": "Intégration d'Appareils",
+    "admin": "Admin"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "create": "Créer",
+    "update": "Mettre à jour",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "submit": "Soumettre",
+    "close": "Fermer",
+    "login": "Se Connecter",
+    "logout": "Se Déconnecter",
+    "signup": "S'inscrire",
+    "welcome": "Bienvenue"
+  },
+  "admin": {
+    "title": "Tableau de Bord Admin",
+    "subtitle": "Gérez le contenu et les paramètres de votre plateforme de bien-être",
+    "tabs": {
+      "overview": "Aperçu",
+      "blog": "Articles",
+      "products": "Produits",
+      "challenges": "Défis",
+      "users": "Utilisateurs",
+      "settings": "Paramètres",
+      "automation": "Automatisation",
+      "revenue": "Revenus"
+    }
+  },
+  "landing": {
+    "hero": {
+      "title": "Transformez Votre Parcours Bien-être",
+      "subtitle": "Commencez avec notre centre de contenu gratuit, puis débloquez un coaching IA personnalisé avec notre essai premium de 60 jours",
+      "cta": "Commencer l'Essai Gratuit",
+      "learnMore": "En Savoir Plus"
+    },
+    "features": {
+      "title": "Votre Compagnon Bien-être Complet",
+      "freeContent": {
+        "title": "Centre de Contenu Gratuit",
+        "description": "Accédez à des articles de bien-être sélectionnés, des recettes saines et des défis communautaires"
+      },
+      "aiCoaching": {
+        "title": "Coaching Bien-être IA",
+        "description": "Plans personnalisés et suivi intelligent pour votre parcours unique"
+      }
+    }
+  }
+}

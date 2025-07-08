@@ -1,6 +1,8 @@
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { 
   Leaf, 
   Sparkles, 
@@ -30,6 +32,8 @@ import premiumSupplementsImg from "@assets/Premium Suppliments_1751936986689.jpe
 import skinCareImg from "@assets/Skin Care_1751936986689.jpeg";
 
 export default function Landing() {
+  const { t } = useTranslation();
+
   return (
     <div className="min-h-screen bg-sage-25">
       {/* Navigation */}
@@ -45,16 +49,17 @@ export default function Landing() {
               <span className="text-xl font-bold text-tulsi-700">Pure Living Pro</span>
             </div>
             <div className="hidden md:flex items-center space-x-8">
-              <a href="#home" className="text-sage-700 hover:text-sage-500 transition-colors">Home</a>
-              <a href="#blog" className="text-sage-600 hover:text-sage-500 transition-colors">Blog</a>
-              <a href="#products" className="text-sage-600 hover:text-sage-500 transition-colors">Wellness Picks</a>
-              <a href="#premium" className="text-sage-600 hover:text-sage-500 transition-colors">Premium</a>
+              <a href="#home" className="text-sage-700 hover:text-sage-500 transition-colors">{t('navigation.home')}</a>
+              <a href="#blog" className="text-sage-600 hover:text-sage-500 transition-colors">{t('navigation.blog')}</a>
+              <a href="#products" className="text-sage-600 hover:text-sage-500 transition-colors">{t('navigation.wellnessPicks')}</a>
+              <a href="#premium" className="text-sage-600 hover:text-sage-500 transition-colors">{t('navigation.premium')}</a>
+              <LanguageSwitcher />
               <Button 
                 onClick={() => window.location.href = "/api/login"}
                 className="bg-sage-600 hover:bg-sage-700 text-white"
               >
                 <Users className="w-4 h-4 mr-2" />
-                Sign In
+                {t('common.login')}
               </Button>
             </div>
           </div>
@@ -77,16 +82,11 @@ export default function Landing() {
               </Badge>
               
               <h1 className="text-4xl md:text-6xl font-bold text-tulsi-800 mb-6 leading-tight">
-                Your AI-Powered
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-tulsi-600 to-tulsi-500 block">
-                  Wellness Journey
-                </span>
+                {t('landing.hero.title')}
               </h1>
               
               <p className="text-xl text-tulsi-600 mb-8 leading-relaxed font-light">
-                Transform your wellness routine with personalized AI coaching, curated content, 
-                and a supportive community. Start with our rich free content, then unlock your 
-                full potential with premium features.
+                {t('landing.hero.subtitle')}
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
@@ -96,7 +96,7 @@ export default function Landing() {
                   onClick={() => window.location.href = "/api/login"}
                 >
                   <Crown className="w-5 h-5 mr-2" />
-                  Start Free Trial
+                  {t('landing.hero.cta')}
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
                 
@@ -107,7 +107,7 @@ export default function Landing() {
                   onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
                 >
                   <Play className="w-5 h-5 mr-2" />
-                  Explore Features
+                  {t('landing.hero.learnMore')}
                 </Button>
               </div>
               

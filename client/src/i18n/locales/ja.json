@@ -1,0 +1,69 @@
+{
+  "navigation": {
+    "home": "ホーム",
+    "blog": "ブログ",
+    "wellnessPicks": "ウェルネス推奨",
+    "about": "会社概要",
+    "contact": "お問い合わせ",
+    "premium": "プレミアム",
+    "dashboard": "ダッシュボード",
+    "wellnessPlan": "ウェルネスプラン",
+    "meditation": "瞑想",
+    "challenges": "チャレンジ",
+    "deviceIntegration": "デバイス統合",
+    "admin": "管理者"
+  },
+  "common": {
+    "loading": "読み込み中...",
+    "error": "エラー",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "edit": "編集",
+    "delete": "削除",
+    "create": "作成",
+    "update": "更新",
+    "search": "検索",
+    "filter": "フィルター",
+    "next": "次へ",
+    "previous": "前へ",
+    "submit": "送信",
+    "close": "閉じる",
+    "login": "ログイン",
+    "logout": "ログアウト",
+    "signup": "登録",
+    "welcome": "ようこそ"
+  },
+  "admin": {
+    "title": "管理者ダッシュボード",
+    "subtitle": "ウェルネスプラットフォームのコンテンツと設定を管理",
+    "tabs": {
+      "overview": "概要",
+      "blog": "ブログ投稿",
+      "products": "製品",
+      "challenges": "チャレンジ",
+      "users": "ユーザー",
+      "settings": "設定",
+      "automation": "自動化",
+      "revenue": "収益"
+    }
+  },
+  "landing": {
+    "hero": {
+      "title": "ウェルネスジャーニーを変革する",
+      "subtitle": "無料コンテンツハブから始めて、60日間のプレミアムトライアルでパーソナライズされたAIコーチングを解放",
+      "cta": "無料トライアルを開始",
+      "learnMore": "詳しく見る"
+    },
+    "features": {
+      "title": "あなたの完全なウェルネスコンパニオン",
+      "freeContent": {
+        "title": "無料コンテンツハブ",
+        "description": "厳選されたウェルネス記事、健康レシピ、コミュニティチャレンジにアクセス"
+      },
+      "aiCoaching": {
+        "title": "AIウェルネスコーチング",
+        "description": "あなたのユニークな旅のためのパーソナライズされたプランとスマートトラッキング"
+      }
+    }
+  }
+}

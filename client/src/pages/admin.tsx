@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -113,6 +115,7 @@ interface Product {
 export default function Admin() {
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("overview");
   
@@ -165,11 +168,14 @@ export default function Admin() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <Crown className="w-8 h-8 text-sage-600" />
-            <h1 className="text-3xl font-bold text-sage-800">Admin Dashboard</h1>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <Crown className="w-8 h-8 text-sage-600" />
+              <h1 className="text-3xl font-bold text-sage-800">{t('admin.title')}</h1>
+            </div>
+            <LanguageSwitcher />
           </div>
-          <p className="text-sage-600">Manage your wellness platform content and settings</p>
+          <p className="text-sage-600">{t('admin.subtitle')}</p>
         </div>
 
         {/* Admin Tabs */}
