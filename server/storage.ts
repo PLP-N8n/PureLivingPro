@@ -9,6 +9,7 @@ import {
   wellnessAssessments,
   coachingSessions,
   wellnessGoals,
+  fitnessData,
   type User,
   type UpsertUser,
   type BlogPost,
@@ -20,6 +21,7 @@ import {
   type WellnessAssessment,
   type CoachingSession,
   type WellnessGoal,
+  type FitnessData,
   type InsertBlogPost,
   type InsertProduct,
   type InsertChallenge,
@@ -29,6 +31,7 @@ import {
   type InsertWellnessAssessment,
   type InsertCoachingSession,
   type InsertWellnessGoal,
+  type InsertFitnessData,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte, ilike, or } from "drizzle-orm";
@@ -99,6 +102,12 @@ export interface IStorage {
   createWellnessGoal(goal: InsertWellnessGoal): Promise<WellnessGoal>;
   updateWellnessGoal(id: number, goal: Partial<InsertWellnessGoal>): Promise<WellnessGoal>;
   deleteWellnessGoal(id: number): Promise<void>;
+  
+  // Fitness data from wearable devices
+  getFitnessData(userId: string, dataType?: string, startDate?: Date, endDate?: Date): Promise<FitnessData[]>;
+  createFitnessData(data: InsertFitnessData): Promise<FitnessData>;
+  bulkCreateFitnessData(data: InsertFitnessData[]): Promise<FitnessData[]>;
+  updateUserDeviceTokens(userId: string, deviceType: string, tokens: { accessToken?: string; refreshToken?: string; userId?: string }): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -436,7 +445,7 @@ export class DatabaseStorage implements IStorage {
   async createWellnessPlan(plan: InsertWellnessPlan): Promise<WellnessPlan> {
     const [newPlan] = await db
       .insert(wellnessPlans)
-      .values(plan)
+      .values([plan])
       .returning();
     return newPlan;
   }
@@ -480,7 +489,7 @@ export class DatabaseStorage implements IStorage {
   async createWellnessAssessment(assessment: InsertWellnessAssessment): Promise<WellnessAssessment> {
     const [newAssessment] = await db
       .insert(wellnessAssessments)
-      .values(assessment)
+      .values([assessment])
       .returning();
     return newAssessment;
   }
@@ -510,7 +519,7 @@ export class DatabaseStorage implements IStorage {
   async createCoachingSession(session: InsertCoachingSession): Promise<CoachingSession> {
     const [newSession] = await db
       .insert(coachingSessions)
-      .values(session)
+      .values([session])
       .returning();
     return newSession;
   }
@@ -550,7 +559,7 @@ export class DatabaseStorage implements IStorage {
   async createWellnessGoal(goal: InsertWellnessGoal): Promise<WellnessGoal> {
     const [newGoal] = await db
       .insert(wellnessGoals)
-      .values(goal)
+      .values([goal])
       .returning();
     return newGoal;
   }
@@ -567,6 +576,51 @@ export class DatabaseStorage implements IStorage {
 
   async deleteWellnessGoal(id: number): Promise<void> {
     await db.delete(wellnessGoals).where(eq(wellnessGoals.id, id));
+  }
+
+  // Fitness data methods
+  async getFitnessData(userId: string, dataType?: string, startDate?: Date, endDate?: Date): Promise<FitnessData[]> {
+    let conditions = [eq(fitnessData.userId, userId)];
+    
+    if (dataType) {
+      conditions.push(eq(fitnessData.dataType, dataType));
+    }
+    
+    if (startDate) {
+      conditions.push(gte(fitnessData.recordedAt, startDate));
+    }
+    
+    if (endDate) {
+      conditions.push(lte(fitnessData.recordedAt, endDate));
+    }
+    
+    return db.select().from(fitnessData)
+      .where(and(...conditions))
+      .orderBy(desc(fitnessData.recordedAt))
+      .limit(100);
+  }
+
+  async createFitnessData(data: InsertFitnessData): Promise<FitnessData> {
+    const [result] = await db.insert(fitnessData).values([data]).returning();
+    return result;
+  }
+
+  async bulkCreateFitnessData(data: InsertFitnessData[]): Promise<FitnessData[]> {
+    return await db.insert(fitnessData).values(data).returning();
+  }
+
+  async updateUserDeviceTokens(userId: string, deviceType: string, tokens: { accessToken?: string; refreshToken?: string; userId?: string }): Promise<void> {
+    const updateData: any = { lastSyncAt: new Date() };
+    
+    if (deviceType === 'fitbit') {
+      if (tokens.accessToken) updateData.fitbitAccessToken = tokens.accessToken;
+      if (tokens.refreshToken) updateData.fitbitRefreshToken = tokens.refreshToken;
+      if (tokens.userId) updateData.fitbitUserId = tokens.userId;
+    } else if (deviceType === 'apple_health') {
+      updateData.appleHealthConnected = true;
+    }
+
+    await db.update(users).set(updateData).where(eq(users.id, userId));
   }
 }
 

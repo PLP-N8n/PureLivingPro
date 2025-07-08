@@ -41,6 +41,12 @@ export const users = pgTable("users", {
     lifestyle: string;
     preferences: string[];
   }>(),
+  // Wearable device integrations
+  fitbitAccessToken: varchar("fitbit_access_token"),
+  fitbitRefreshToken: varchar("fitbit_refresh_token"),
+  fitbitUserId: varchar("fitbit_user_id"),
+  appleHealthConnected: boolean("apple_health_connected").default(false),
+  lastSyncAt: timestamp("last_sync_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -203,6 +209,26 @@ export const coachingSessions = pgTable("coaching_sessions", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Fitness Data from Wearable Devices
+export const fitnessData = pgTable("fitness_data", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  deviceType: varchar("device_type", { length: 50 }).notNull(), // fitbit, apple_health, manual
+  dataType: varchar("data_type", { length: 50 }).notNull(), // steps, heart_rate, sleep, calories, distance, weight
+  value: decimal("value", { precision: 10, scale: 2 }).notNull(),
+  unit: varchar("unit", { length: 20 }).notNull(), // steps, bpm, hours, kcal, miles, lbs
+  recordedAt: timestamp("recorded_at").notNull(),
+  metadata: jsonb("metadata").$type<{
+    deviceModel?: string;
+    workoutType?: string;
+    sleepStage?: string;
+    confidence?: number;
+    [key: string]: any;
+  }>(),
+  syncedAt: timestamp("synced_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Wellness Goals - User-defined and AI-suggested goals
 export const wellnessGoals = pgTable("wellness_goals", {
   id: serial("id").primaryKey(),
@@ -235,6 +261,14 @@ export const usersRelations = relations(users, ({ many }) => ({
   wellnessAssessments: many(wellnessAssessments),
   coachingSessions: many(coachingSessions),
   wellnessGoals: many(wellnessGoals),
+  fitnessData: many(fitnessData),
+}));
+
+export const fitnessDataRelations = relations(fitnessData, ({ one }) => ({
+  user: one(users, {
+    fields: [fitnessData.userId],
+    references: [users.id],
+  }),
 }));
 
 export const wellnessPlansRelations = relations(wellnessPlans, ({ one, many }) => ({
@@ -372,6 +406,12 @@ export const insertWellnessGoalSchema = createInsertSchema(wellnessGoals).omit({
   updatedAt: true,
 });
 
+export const insertFitnessDataSchema = createInsertSchema(fitnessData).omit({
+  id: true,
+  syncedAt: true,
+  createdAt: true,
+});
+
 // Types
 export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -384,6 +424,7 @@ export type WellnessPlan = typeof wellnessPlans.$inferSelect;
 export type WellnessAssessment = typeof wellnessAssessments.$inferSelect;
 export type CoachingSession = typeof coachingSessions.$inferSelect;
 export type WellnessGoal = typeof wellnessGoals.$inferSelect;
+export type FitnessData = typeof fitnessData.$inferSelect;
 export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
 export type InsertProduct = z.infer<typeof insertProductSchema>;
 export type InsertChallenge = z.infer<typeof insertChallengeSchema>;
@@ -393,3 +434,4 @@ export type InsertWellnessPlan = z.infer<typeof insertWellnessPlanSchema>;
 export type InsertWellnessAssessment = z.infer<typeof insertWellnessAssessmentSchema>;
 export type InsertCoachingSession = z.infer<typeof insertCoachingSessionSchema>;
 export type InsertWellnessGoal = z.infer<typeof insertWellnessGoalSchema>;
+export type InsertFitnessData = z.infer<typeof insertFitnessDataSchema>;

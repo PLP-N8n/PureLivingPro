@@ -15,6 +15,7 @@ import Dashboard from "@/pages/dashboard";
 import Premium from "@/pages/premium";
 import Challenges from "@/pages/challenges";
 import WellnessPlan from "@/pages/wellness-plan";
+import DeviceIntegration from "@/pages/device-integration";
 import Admin from "@/pages/admin";
 
 function Router() {
@@ -38,6 +39,7 @@ function Router() {
           <Route path="/wellness-plan" component={WellnessPlan} />
           <Route path="/premium" component={Premium} />
           <Route path="/challenges" component={Challenges} />
+          <Route path="/device-integration" component={DeviceIntegration} />
           <Route path="/admin" component={Admin} />
         </>
       )}

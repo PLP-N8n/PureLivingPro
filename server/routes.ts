@@ -2,6 +2,15 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+// Wearable device imports
+import { 
+  exchangeFitbitCode, 
+  refreshFitbitToken, 
+  getFitbitDailyActivity, 
+  getFitbitWeeklyData, 
+  getFitbitAuthUrl,
+  type FitbitActivityData 
+} from "./fitbit";
 import { generateWellnessPlan, generatePersonalizedContent, analyzeMoodAndSuggestActivities } from "./openai";
 import { insertBlogPostSchema, insertProductSchema, insertChallengeSchema, insertUserChallengeSchema, insertDailyLogSchema } from "@shared/schema";
 import { z } from "zod";
@@ -338,7 +347,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         excerpt: generatedContent.excerpt,
         category: category,
         tags: typeof generatedContent.tags === 'string' ? generatedContent.tags.split(',').map(t => t.trim()) : generatedContent.tags,
-        readTime: generatedContent.readTime || 5,
+        readTime: (generatedContent as any).readTime || 5,
         isPublished: autoPublish,
         isPremium: false
       };
@@ -416,7 +425,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             excerpt: generatedContent.excerpt,
             category: category,
             tags: typeof generatedContent.tags === 'string' ? generatedContent.tags.split(',').map(t => t.trim()) : generatedContent.tags,
-            readTime: generatedContent.readTime || 5,
+            readTime: (generatedContent as any).readTime || 5,
             isPublished: autoPublish,
             isPremium: false
           };
@@ -1013,6 +1022,261 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         res.status(500).json({ message: "Failed to generate wellness plan" });
       }
+    }
+  });
+
+  // Helper function to sync Fitbit data to database
+  async function syncFitbitDataToDatabase(userId: string, weeklyData: FitbitActivityData[]) {
+    const fitnessDataToInsert = [];
+    
+    for (const dailyData of weeklyData) {
+      const recordedAt = new Date(dailyData.date);
+      
+      // Steps data
+      if (dailyData.steps > 0) {
+        fitnessDataToInsert.push({
+          userId,
+          deviceType: 'fitbit',
+          dataType: 'steps',
+          value: dailyData.steps.toString(),
+          unit: 'steps',
+          recordedAt,
+          metadata: {}
+        });
+      }
+      
+      // Distance data
+      if (dailyData.distance > 0) {
+        fitnessDataToInsert.push({
+          userId,
+          deviceType: 'fitbit',
+          dataType: 'distance',
+          value: dailyData.distance.toString(),
+          unit: 'miles',
+          recordedAt,
+          metadata: {}
+        });
+      }
+      
+      // Calories data
+      if (dailyData.calories > 0) {
+        fitnessDataToInsert.push({
+          userId,
+          deviceType: 'fitbit',
+          dataType: 'calories',
+          value: dailyData.calories.toString(),
+          unit: 'kcal',
+          recordedAt,
+          metadata: {}
+        });
+      }
+      
+      // Heart rate data
+      if (dailyData.heart_rate) {
+        fitnessDataToInsert.push({
+          userId,
+          deviceType: 'fitbit',
+          dataType: 'heart_rate',
+          value: dailyData.heart_rate.toString(),
+          unit: 'bpm',
+          recordedAt,
+          metadata: {}
+        });
+      }
+      
+      // Sleep data
+      if (dailyData.sleep_hours) {
+        fitnessDataToInsert.push({
+          userId,
+          deviceType: 'fitbit',
+          dataType: 'sleep',
+          value: dailyData.sleep_hours.toString(),
+          unit: 'hours',
+          recordedAt,
+          metadata: {}
+        });
+      }
+    }
+    
+    if (fitnessDataToInsert.length > 0) {
+      await storage.bulkCreateFitnessData(fitnessDataToInsert);
+    }
+  }
+
+  // ===== WEARABLE DEVICE INTEGRATION ROUTES =====
+
+  // Get device connection status
+  app.get("/api/devices/status", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const status = {
+        fitbitConnected: !!(user.fitbitAccessToken && user.fitbitRefreshToken),
+        appleHealthConnected: !!user.appleHealthConnected,
+        lastSyncAt: user.lastSyncAt,
+      };
+
+      res.json(status);
+    } catch (error) {
+      console.error("Error fetching device status:", error);
+      res.status(500).json({ message: "Error fetching device status" });
+    }
+  });
+
+  // Get Fitbit authorization URL
+  app.get("/api/devices/fitbit/auth", isAuthenticated, async (req: any, res) => {
+    try {
+      const redirectUri = `${req.protocol}://${req.hostname}/api/devices/fitbit/callback`;
+      const state = req.user.claims.sub; // Use user ID as state for security
+      
+      const authUrl = getFitbitAuthUrl(redirectUri, state);
+      res.json({ authUrl });
+    } catch (error) {
+      console.error("Error generating Fitbit auth URL:", error);
+      res.status(500).json({ message: "Error generating authorization URL" });
+    }
+  });
+
+  // Handle Fitbit OAuth callback
+  app.get("/api/devices/fitbit/callback", async (req, res) => {
+    try {
+      const { code, state, error } = req.query;
+      
+      if (error) {
+        return res.redirect(`/?error=fitbit_auth_denied`);
+      }
+      
+      if (!code || !state) {
+        return res.redirect(`/?error=fitbit_auth_invalid`);
+      }
+
+      const redirectUri = `${req.protocol}://${req.hostname}/api/devices/fitbit/callback`;
+      const tokens = await exchangeFitbitCode(code as string, redirectUri);
+      
+      // Store tokens in user account
+      await storage.updateUserDeviceTokens(state as string, 'fitbit', {
+        accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token,
+        userId: tokens.user_id,
+      });
+
+      // Sync initial data
+      try {
+        const weeklyData = await getFitbitWeeklyData(tokens.access_token);
+        await syncFitbitDataToDatabase(state as string, weeklyData);
+      } catch (syncError) {
+        console.error("Error syncing initial Fitbit data:", syncError);
+      }
+
+      res.redirect(`/?fitbit_connected=true`);
+    } catch (error) {
+      console.error("Error in Fitbit callback:", error);
+      res.redirect(`/?error=fitbit_auth_failed`);
+    }
+  });
+
+  // Sync device data manually
+  app.post("/api/devices/sync", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      let syncedDevices = [];
+
+      // Sync Fitbit data
+      if (user.fitbitAccessToken && user.fitbitRefreshToken) {
+        try {
+          let accessToken = user.fitbitAccessToken;
+          
+          // Try to get recent data, refresh token if needed
+          try {
+            const weeklyData = await getFitbitWeeklyData(accessToken);
+            await syncFitbitDataToDatabase(userId, weeklyData);
+            syncedDevices.push('fitbit');
+          } catch (apiError) {
+            // Token might be expired, try to refresh
+            const newTokens = await refreshFitbitToken(user.fitbitRefreshToken);
+            await storage.updateUserDeviceTokens(userId, 'fitbit', {
+              accessToken: newTokens.access_token,
+              refreshToken: newTokens.refresh_token,
+            });
+            
+            const weeklyData = await getFitbitWeeklyData(newTokens.access_token);
+            await syncFitbitDataToDatabase(userId, weeklyData);
+            syncedDevices.push('fitbit');
+          }
+        } catch (error) {
+          console.error("Error syncing Fitbit data:", error);
+        }
+      }
+
+      res.json({ 
+        message: "Data sync completed",
+        syncedDevices,
+        syncedAt: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error("Error syncing device data:", error);
+      res.status(500).json({ message: "Error syncing device data" });
+    }
+  });
+
+  // Get fitness data
+  app.get("/api/fitness/data", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { dataType, startDate, endDate, limit = 50 } = req.query;
+      
+      const start = startDate ? new Date(startDate as string) : undefined;
+      const end = endDate ? new Date(endDate as string) : undefined;
+      
+      const fitnessData = await storage.getFitnessData(
+        userId,
+        dataType as string,
+        start,
+        end
+      );
+
+      res.json(fitnessData.slice(0, parseInt(limit as string) || 50));
+    } catch (error) {
+      console.error("Error fetching fitness data:", error);
+      res.status(500).json({ message: "Error fetching fitness data" });
+    }
+  });
+
+  // Disconnect device
+  app.post("/api/devices/disconnect", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { deviceType } = req.body;
+      
+      if (!deviceType) {
+        return res.status(400).json({ message: "Device type is required" });
+      }
+
+      if (deviceType === 'fitbit') {
+        await storage.updateUserDeviceTokens(userId, 'fitbit', {
+          accessToken: undefined,
+          refreshToken: undefined,
+          userId: undefined,
+        });
+      } else if (deviceType === 'apple_health') {
+        await storage.updateUserDeviceTokens(userId, 'apple_health', {});
+      }
+
+      res.json({ message: `${deviceType} disconnected successfully` });
+    } catch (error) {
+      console.error("Error disconnecting device:", error);
+      res.status(500).json({ message: "Error disconnecting device" });
     }
   });
 
