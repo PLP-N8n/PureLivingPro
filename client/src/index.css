@@ -24,7 +24,20 @@
   --ring: hsl(20, 14.3%, 4.1%);
   --radius: 0.5rem;
   
-  /* Wellness color palette */
+  /* Tulsi leaf green - Primary wellness brand color */
+  --tulsi-25: hsl(140, 80%, 98%);
+  --tulsi-50: hsl(140, 60%, 95%);
+  --tulsi-100: hsl(140, 45%, 88%);
+  --tulsi-200: hsl(140, 35%, 78%);
+  --tulsi-300: hsl(140, 30%, 65%);
+  --tulsi-400: hsl(140, 28%, 52%);
+  --tulsi-500: hsl(140, 35%, 42%);
+  --tulsi-600: hsl(140, 42%, 35%);
+  --tulsi-700: hsl(140, 48%, 28%);
+  --tulsi-800: hsl(140, 52%, 22%);
+  --tulsi-900: hsl(140, 56%, 16%);
+
+  /* Sage color palette - Secondary nature tones */
   --sage-25: hsl(126, 25%, 98%);
   --sage-50: hsl(126, 20%, 96%);
   --sage-100: hsl(126, 18%, 89%);
@@ -80,12 +93,22 @@
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: -0.025em;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    letter-spacing: -0.05em;
   }
 }
 
 @layer utilities {
   .wellness-gradient {
-    background: linear-gradient(135deg, var(--sage-25) 0%, var(--sage-50) 100%);
+    background: linear-gradient(135deg, var(--tulsi-25) 0%, var(--tulsi-50) 100%);
+  }
+  
+  .tulsi-gradient {
+    background: linear-gradient(135deg, var(--tulsi-50) 0%, var(--tulsi-100) 100%);
   }
   
   .organic-border {
@@ -93,7 +116,7 @@
   }
   
   .premium-shadow {
-    box-shadow: 0 10px 25px -5px rgba(74, 124, 89, 0.1), 0 10px 10px -5px rgba(74, 124, 89, 0.04);
+    box-shadow: 0 10px 25px -5px rgba(34, 128, 83, 0.1), 0 10px 10px -5px rgba(34, 128, 83, 0.04);
   }
   
   .card-hover {

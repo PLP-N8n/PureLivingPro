@@ -114,6 +114,13 @@ Pure Living Pro is a comprehensive wellness and health platform built as a full-
 
 Preferred communication style: Simple, everyday language.
 
+### Brand Design System
+- **Primary Color**: Tulsi leaf green (nature-inspired herbal green) - representing freshness and wellness
+- **Secondary Colors**: Soft neutrals and white for minimalist, calm aesthetic
+- **Accent Colors**: Subtle earthy tones (light beige/sand) used sparingly for warmth
+- **Typography**: Clean, modern sans-serif fonts for readability and professional warmth
+- **Design Principles**: Minimalist approach with white space, simple card layouts, strong visual hierarchy, soft hover effects
+
 ## Project Blueprint
 
 The project follows a detailed wireframe specification with:
@@ -147,3 +154,7 @@ Changelog:
 - July 08, 2025. Implemented comprehensive Free vs Premium feature comparison with AI companion demo
 - July 08, 2025. Created professional landing page sections: hero, features, blog samples, product picks
 - July 08, 2025. Built responsive design emphasizing "Free Content Hub + Premium AI Companion" strategy
+- July 08, 2025. Integrated comprehensive brand design system with tulsi leaf green primary color scheme
+- July 08, 2025. Implemented clean, modern typography with professional sans-serif fonts for enhanced readability
+- July 08, 2025. Updated entire platform to reflect minimalist design principles with improved color hierarchy
+- July 08, 2025. Added wellness category images across navigation, landing page, and wellness picks sections

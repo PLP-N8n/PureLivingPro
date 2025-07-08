@@ -41,7 +41,7 @@ export default function Landing() {
                 alt="Pure Living Pro Logo" 
                 className="w-10 h-10 rounded-xl object-cover"
               />
-              <span className="text-xl font-bold text-sage-700">Pure Living Pro</span>
+              <span className="text-xl font-bold text-tulsi-700">Pure Living Pro</span>
             </div>
             <div className="hidden md:flex items-center space-x-8">
               <a href="#home" className="text-sage-700 hover:text-sage-500 transition-colors">Home</a>
