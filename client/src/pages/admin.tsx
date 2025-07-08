@@ -2244,17 +2244,248 @@ function SettingsManagement() {
             </Card>
           )}
 
-          {/* Other sections placeholder */}
-          {["notifications", "security", "integrations", "advanced"].includes(activeSection) && (
+          {/* Notifications Settings */}
+          {activeSection === "notifications" && (
             <Card>
               <CardHeader>
-                <CardTitle>{sections.find(s => s.id === activeSection)?.label}</CardTitle>
-                <CardDescription>Configuration options coming soon</CardDescription>
+                <CardTitle>{t('admin.settings.sections.notifications')}</CardTitle>
+                <CardDescription>Configure notification preferences</CardDescription>
               </CardHeader>
-              <CardContent className="py-12 text-center">
-                <div className="text-sage-400">
-                  <Settings className="w-12 h-12 mx-auto mb-4" />
-                  <p>These settings will be available in the next update.</p>
+              <CardContent className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="emailNotifications">Email Notifications</Label>
+                    <p className="text-sm text-sage-600">Send email notifications for important events</p>
+                  </div>
+                  <Switch 
+                    id="emailNotifications"
+                    checked={settings.enableNewsletterSignup}
+                    onCheckedChange={(checked) => setSettings({ ...settings, enableNewsletterSignup: checked })}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="pushNotifications">Push Notifications</Label>
+                    <p className="text-sm text-sage-600">Enable browser push notifications</p>
+                  </div>
+                  <Switch 
+                    id="pushNotifications"
+                    checked={settings.enableComments}
+                    onCheckedChange={(checked) => setSettings({ ...settings, enableComments: checked })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="notificationEmail">Admin Email</Label>
+                  <Input
+                    id="notificationEmail"
+                    type="email"
+                    placeholder="admin@purelivingpro.com"
+                    value={settings.siteName}
+                    onChange={(e) => setSettings({ ...settings, siteName: e.target.value })}
+                  />
+                  <p className="text-sm text-sage-600">Email address for system notifications</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="notificationFrequency">Notification Frequency</Label>
+                  <Select defaultValue="immediate">
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="immediate">Immediate</SelectItem>
+                      <SelectItem value="hourly">Hourly Digest</SelectItem>
+                      <SelectItem value="daily">Daily Summary</SelectItem>
+                      <SelectItem value="weekly">Weekly Report</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Security Settings */}
+          {activeSection === "security" && (
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('admin.settings.sections.security')}</CardTitle>
+                <CardDescription>Security and privacy configuration</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="maintenanceMode">Maintenance Mode</Label>
+                    <p className="text-sm text-sage-600">Enable maintenance mode to restrict access</p>
+                  </div>
+                  <Switch 
+                    id="maintenanceMode"
+                    checked={settings.maintenanceMode}
+                    onCheckedChange={(checked) => setSettings({ ...settings, maintenanceMode: checked })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="sessionTimeout">Session Timeout (minutes)</Label>
+                  <Input
+                    id="sessionTimeout"
+                    type="number"
+                    placeholder="30"
+                    min="5"
+                    max="1440"
+                    defaultValue="30"
+                  />
+                  <p className="text-sm text-sage-600">User session timeout duration</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="maxLoginAttempts">Max Login Attempts</Label>
+                  <Input
+                    id="maxLoginAttempts"
+                    type="number"
+                    placeholder="5"
+                    min="1"
+                    max="10"
+                    defaultValue="5"
+                  />
+                  <p className="text-sm text-sage-600">Maximum failed login attempts before lockout</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="dataRetention">Data Retention (days)</Label>
+                  <Input
+                    id="dataRetention"
+                    type="number"
+                    placeholder="365"
+                    min="30"
+                    max="3650"
+                    defaultValue="365"
+                  />
+                  <p className="text-sm text-sage-600">How long to retain user data</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Integrations Settings */}
+          {activeSection === "integrations" && (
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('admin.settings.sections.integrations')}</CardTitle>
+                <CardDescription>Manage third-party integrations</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="stripeKey">Stripe Integration</Label>
+                  <Input
+                    id="stripeKey"
+                    type="password"
+                    placeholder="sk_test_..."
+                    value="••••••••••••••••"
+                    disabled
+                  />
+                  <p className="text-sm text-sage-600">Stripe secret key for payment processing</p>
+                  <Badge className="bg-green-100 text-green-800">Connected</Badge>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="sendgridKey">SendGrid Integration</Label>
+                  <Input
+                    id="sendgridKey"
+                    type="password"
+                    placeholder="SG...."
+                    value="••••••••••••••••"
+                    disabled
+                  />
+                  <p className="text-sm text-sage-600">SendGrid API key for email services</p>
+                  <Badge className="bg-green-100 text-green-800">Connected</Badge>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="googleAnalytics">Google Analytics</Label>
+                  <Input
+                    id="googleAnalytics"
+                    placeholder="GA-XXXXXXXXX"
+                    defaultValue="GA-XXXXXXXXX"
+                  />
+                  <p className="text-sm text-sage-600">Google Analytics tracking ID</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="fitbitIntegration">Fitbit Integration</Label>
+                  <Button variant="outline" className="w-full">
+                    <Activity className="w-4 h-4 mr-2" />
+                    Configure Fitbit Connection
+                  </Button>
+                  <p className="text-sm text-sage-600">Connect with Fitbit for wellness tracking</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Advanced Configuration */}
+          {activeSection === "advanced" && (
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('admin.settings.sections.advanced')}</CardTitle>
+                <CardDescription>Advanced system configuration</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="cacheTimeout">Cache Timeout (seconds)</Label>
+                  <Input
+                    id="cacheTimeout"
+                    type="number"
+                    placeholder="300"
+                    min="60"
+                    max="3600"
+                    defaultValue="300"
+                  />
+                  <p className="text-sm text-sage-600">Cache expiration time for API responses</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="maxFileSize">Max File Upload Size (MB)</Label>
+                  <Input
+                    id="maxFileSize"
+                    type="number"
+                    placeholder="10"
+                    min="1"
+                    max="100"
+                    defaultValue="10"
+                  />
+                  <p className="text-sm text-sage-600">Maximum file size for uploads</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="debugMode">Debug Mode</Label>
+                  <Select defaultValue="false">
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="false">Disabled</SelectItem>
+                      <SelectItem value="true">Enabled</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-sm text-sage-600">Enable debug logging for troubleshooting</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="backupFrequency">Backup Frequency</Label>
+                  <Select defaultValue="daily">
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="hourly">Hourly</SelectItem>
+                      <SelectItem value="daily">Daily</SelectItem>
+                      <SelectItem value="weekly">Weekly</SelectItem>
+                      <SelectItem value="monthly">Monthly</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-sm text-sage-600">Automated backup schedule</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="apiRateLimit">API Rate Limit (requests/minute)</Label>
+                  <Input
+                    id="apiRateLimit"
+                    type="number"
+                    placeholder="100"
+                    min="10"
+                    max="1000"
+                    defaultValue="100"
+                  />
+                  <p className="text-sm text-sage-600">Rate limit for API endpoints</p>
                 </div>
               </CardContent>
             </Card>
