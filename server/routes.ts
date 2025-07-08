@@ -264,9 +264,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const content = await generateWellnessBlogPost(prompt, category || "wellness");
       
       res.json(content);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error generating content:", error);
-      res.status(500).json({ message: "Failed to generate content" });
+      
+      if (error.status === 429 || error.message?.includes('quota')) {
+        res.status(429).json({ 
+          message: "OpenAI quota exceeded. Please check your billing and add credits.",
+          type: "quota_exceeded"
+        });
+      } else {
+        res.status(500).json({ message: "Failed to generate content" });
+      }
     }
   });
 
@@ -282,9 +290,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const optimizedContent = await optimizeContentForSEO(title, content, category || "wellness");
       
       res.json(optimizedContent);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error optimizing content:", error);
-      res.status(500).json({ message: "Failed to optimize content" });
+      
+      if (error.status === 429 || error.message?.includes('quota')) {
+        res.status(429).json({ 
+          message: "OpenAI quota exceeded. Please add credits to continue.",
+          type: "quota_exceeded"
+        });
+      } else {
+        res.status(500).json({ message: "Failed to optimize content" });
+      }
     }
   });
 
@@ -300,9 +316,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const description = await generateProductDescription(productName, category, features);
       
       res.json({ description });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error generating product description:", error);
-      res.status(500).json({ message: "Failed to generate product description" });
+      
+      if (error.status === 429 || error.message?.includes('quota')) {
+        res.status(429).json({ 
+          message: "OpenAI quota exceeded. Please add credits to continue.",
+          type: "quota_exceeded"
+        });
+      } else {
+        res.status(500).json({ message: "Failed to generate product description" });
+      }
     }
   });
 

@@ -581,10 +581,14 @@ function BlogPostForm({
         description: "AI content generated successfully!",
       });
       setAiPrompt("");
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage = error.message?.includes('quota') 
+        ? "OpenAI quota exceeded. Please check your billing and add credits to continue using AI features."
+        : "Failed to generate content. Please try again.";
+      
       toast({
-        title: "Error",
-        description: "Failed to generate content. Please try again.",
+        title: "AI Generation Error",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -621,10 +625,14 @@ function BlogPostForm({
         title: "Success",
         description: "Content optimized for SEO!",
       });
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage = error.message?.includes('quota') 
+        ? "OpenAI quota exceeded. Please add credits to continue using SEO optimization."
+        : "Failed to optimize content. Please try again.";
+      
       toast({
-        title: "Error",
-        description: "Failed to optimize content. Please try again.",
+        title: "SEO Optimization Error", 
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -662,6 +670,36 @@ function BlogPostForm({
           >
             {isGenerating && <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />}
             Generate
+          </Button>
+          <Button 
+            type="button" 
+            variant="outline"
+            onClick={() => {
+              const samples = [
+                {
+                  title: "Ancient Wisdom Meets Modern Wellness: The Art of Mindful Living",
+                  content: "# The Timeless Path to Inner Balance\n\nIn our fast-paced modern world, the ancient art of mindful living offers a sanctuary of peace and purpose. Drawing from millennia-old traditions of Ayurveda, Traditional Chinese Medicine, and Greek philosophy, we can discover profound wisdom that speaks directly to our contemporary challenges.\n\n## The Science Behind Ancient Practices\n\nModern neuroscience validates what ancient sages knew intuitively: mindfulness practices literally rewire our brains for greater resilience, emotional regulation, and overall well-being. Studies show that just 8 weeks of mindfulness meditation can increase gray matter density in areas associated with learning, memory, and emotional regulation.\n\n## Integrating Timeless Wisdom Into Daily Life\n\n### Morning Rituals\n- **Ayurvedic Awakening**: Begin with warm lemon water and gentle stretching\n- **Mindful Breathing**: Practice pranayama for 5-10 minutes\n- **Intention Setting**: Connect with your deeper purpose\n\n### Throughout the Day\n- **Mindful Transitions**: Use doorways as reminders to breathe consciously\n- **Nature Connection**: Spend time outdoors, even if briefly\n- **Gratitude Practice**: Notice three things you appreciate\n\n### Evening Reflection\n- **Digital Sunset**: Disconnect from screens 1 hour before bed\n- **Gentle Movement**: Light yoga or stretching\n- **Journaling**: Reflect on the day's lessons and growth\n\n## The Creation of Life Philosophy\n\nAt the heart of mindful living lies the understanding that we are active participants in creating our life experience. Every breath, every choice, every moment of awareness contributes to the masterpiece of our existence.\n\nThis integration of ancient wisdom with modern understanding creates a pathway to authentic wellness—not just the absence of illness, but the presence of vitality, purpose, and joy.",
+                  excerpt: "Discover how ancient wisdom traditions offer powerful tools for modern wellness, combining time-tested practices with scientific validation.",
+                  tags: "mindfulness, ancient wisdom, wellness, meditation, ayurveda",
+                  readTime: 8
+                },
+                {
+                  title: "The Healing Power of Plant-Based Nutrition: A Holistic Approach",
+                  content: "# Nourishing the Body Temple\n\nFood is medicine—this principle, recognized by ancient healing traditions worldwide, is now supported by extensive scientific research. A thoughtfully planned plant-based diet provides not just nutrition, but a pathway to optimal health and vitality.\n\n## Ancient Nutritional Wisdom\n\n### Ayurvedic Principles\n- **Six Tastes**: Sweet, sour, salty, bitter, pungent, and astringent in every meal\n- **Seasonal Eating**: Aligning diet with natural cycles\n- **Mindful Consumption**: Eating with awareness and gratitude\n\n### Traditional Chinese Medicine\n- **Food as Medicine**: Using ingredients for their energetic properties\n- **Balance of Elements**: Incorporating warming and cooling foods\n- **Digestive Fire**: Supporting healthy metabolism\n\n## Modern Scientific Validation\n\nResearch consistently shows that plant-based diets can:\n- Reduce inflammation throughout the body\n- Lower risk of heart disease by up to 40%\n- Support healthy weight management\n- Enhance cognitive function and mood\n- Promote longevity and vitality\n\n## Practical Implementation\n\n### Weekly Meal Planning\n1. **Monday**: Mediterranean-inspired quinoa bowls\n2. **Tuesday**: Asian stir-fry with seasonal vegetables\n3. **Wednesday**: Indian dal with turmeric and healing spices\n4. **Thursday**: Mexican bean and vegetable fiesta\n5. **Friday**: Fresh Mediterranean salads\n6. **Weekend**: Creative cooking and meal prep\n\n### Essential Nutrients\n- **Protein**: Legumes, nuts, seeds, whole grains\n- **Omega-3s**: Flax, chia, hemp, walnuts\n- **B12**: Fortified foods or supplements\n- **Iron**: Dark leafy greens, legumes, pumpkin seeds\n- **Calcium**: Tahini, almonds, dark greens\n\n## The Conscious Kitchen\n\nTransform your kitchen into a sanctuary of health by:\n- Choosing organic, locally-sourced ingredients when possible\n- Cooking with intention and gratitude\n- Creating beautiful, nourishing meals that feed both body and soul\n- Sharing meals with loved ones to strengthen community bonds",
+                  excerpt: "Explore how plant-based nutrition, rooted in ancient wisdom and validated by modern science, can transform your health and vitality.",
+                  tags: "nutrition, plant-based, ayurveda, traditional chinese medicine, healthy eating",
+                  readTime: 10
+                }
+              ];
+              const sample = samples[Math.floor(Math.random() * samples.length)];
+              setFormData(prev => ({...prev, ...sample}));
+              toast({
+                title: "Sample Content Loaded",
+                description: "You can edit this content or use AI when credits are available",
+              });
+            }}
+          >
+            Load Sample
           </Button>
         </div>
       </div>
