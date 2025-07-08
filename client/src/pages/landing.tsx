@@ -22,6 +22,7 @@ import fitness2Img from "@assets/fitness2_1751936986686.jpeg";
 import healthyRecipesImg from "@assets/Healthy Recipies_1751936986687.jpeg";
 import homepageImg from "@assets/Homepage_1751936986687.jpeg";
 import logoFinal from "@assets/Logo Final _1751936986687.jpeg";
+import heroImage from "@assets/Homepage_1751937698807.jpeg";
 import mindfulnessImg from "@assets/Mindfulness & Meditation_1751936986688.jpeg";
 import naturalRemediesImg from "@assets/Natural Remidies_1751936986688.jpeg";
 import nutritionImg from "@assets/Nutrition_1751936986688.jpeg";
@@ -61,7 +62,7 @@ export default function Landing() {
       </nav>
 
       {/* Hero Section */}
-      <section id="home" className="pt-24 pb-16 wellness-gradient hero-pattern">
+      <section id="home" className="pt-24 pb-16 tulsi-gradient hero-pattern">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <motion.div 
@@ -70,19 +71,19 @@ export default function Landing() {
               transition={{ duration: 0.6 }}
               className="text-center lg:text-left"
             >
-              <Badge className="bg-sage-100 text-sage-700 border-sage-200 mb-6">
+              <Badge className="bg-tulsi-100 text-tulsi-700 border-tulsi-200 mb-6">
                 <Sparkles className="w-3 h-3 mr-1" />
                 60-Day Free Trial • No Credit Card Required
               </Badge>
               
-              <h1 className="text-4xl md:text-6xl font-bold text-sage-800 mb-6 leading-tight">
+              <h1 className="text-4xl md:text-6xl font-bold text-tulsi-800 mb-6 leading-tight">
                 Your AI-Powered
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-sage-600 to-emerald-600 block">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-tulsi-600 to-tulsi-500 block">
                   Wellness Journey
                 </span>
               </h1>
               
-              <p className="text-xl text-sage-600 mb-8 leading-relaxed">
+              <p className="text-xl text-tulsi-600 mb-8 leading-relaxed font-light">
                 Transform your wellness routine with personalized AI coaching, curated content, 
                 and a supportive community. Start with our rich free content, then unlock your 
                 full potential with premium features.
@@ -91,7 +92,7 @@ export default function Landing() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Button 
                   size="lg" 
-                  className="bg-sage-600 hover:bg-sage-700 text-white px-8 py-4 text-lg"
+                  className="bg-tulsi-600 hover:bg-tulsi-700 text-white px-8 py-4 text-lg"
                   onClick={() => window.location.href = "/api/login"}
                 >
                   <Crown className="w-5 h-5 mr-2" />
@@ -102,7 +103,7 @@ export default function Landing() {
                 <Button 
                   size="lg" 
                   variant="outline" 
-                  className="border-sage-300 text-sage-700 hover:bg-sage-50 px-8 py-4 text-lg"
+                  className="border-tulsi-300 text-tulsi-700 hover:bg-tulsi-50 px-8 py-4 text-lg"
                   onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
                 >
                   <Play className="w-5 h-5 mr-2" />
@@ -110,7 +111,7 @@ export default function Landing() {
                 </Button>
               </div>
               
-              <div className="mt-8 flex items-center justify-center lg:justify-start space-x-6 text-sm text-sage-600">
+              <div className="mt-8 flex items-center justify-center lg:justify-start space-x-6 text-sm text-tulsi-600">
                 <div className="flex items-center">
                   <Check className="w-4 h-4 text-green-600 mr-2" />
                   Free wellness content
@@ -132,16 +133,24 @@ export default function Landing() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="relative"
             >
-              <div className="bg-white rounded-2xl shadow-2xl p-8 border border-sage-100">
-                <div className="text-center mb-6">
-                  <div className="w-16 h-16 bg-gradient-to-br from-sage-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Brain className="w-8 h-8 text-white" />
+              <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-tulsi-100">
+                <div className="relative">
+                  <img 
+                    src={heroImage} 
+                    alt="Pure Living Pro - Your Wellness Journey Begins" 
+                    className="w-full h-64 object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-tulsi-900/60 to-transparent"></div>
+                  <div className="absolute bottom-6 left-6 text-white">
+                    <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-3">
+                      <Brain className="w-7 h-7 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold mb-1">AI Wellness Coach</h3>
+                    <p className="text-white/90 text-sm">Personalized guidance for your unique journey</p>
                   </div>
-                  <h3 className="text-2xl font-bold text-sage-800 mb-2">AI Wellness Coach</h3>
-                  <p className="text-sage-600">Personalized guidance for your unique journey</p>
                 </div>
-                
-                <div className="space-y-4">
+                <div className="p-8">
+                  <div className="space-y-4">
                   <div className="bg-sage-50 rounded-lg p-4">
                     <div className="flex items-center mb-2">
                       <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
@@ -171,12 +180,13 @@ export default function Landing() {
                       "You've completed 7 days of mindful morning routine!"
                     </p>
                   </div>
+                  </div>
                 </div>
               </div>
               
               {/* Floating elements */}
-              <div className="absolute -top-4 -right-4 w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full opacity-20"></div>
-              <div className="absolute -bottom-6 -left-6 w-16 h-16 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full opacity-20"></div>
+              <div className="absolute -top-4 -right-4 w-20 h-20 bg-gradient-to-br from-tulsi-400 to-tulsi-500 rounded-full opacity-20"></div>
+              <div className="absolute -bottom-6 -left-6 w-16 h-16 bg-gradient-to-br from-tulsi-300 to-tulsi-400 rounded-full opacity-20"></div>
             </motion.div>
           </div>
         </div>
