@@ -115,6 +115,23 @@ export default function Admin() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("overview");
+  
+  // Automation state
+  const [systemStatus, setSystemStatus] = useState({
+    apiStatus: "operational",
+    databaseStatus: "operational", 
+    automationStatus: "active",
+    lastBackup: "2 hours ago",
+    uptime: "99.9%"
+  });
+  
+  const [automationSettings, setAutomationSettings] = useState({
+    autoBackups: true,
+    contentScheduling: true,
+    emailCampaigns: true,
+    userSegmentation: true,
+    aiOptimization: true
+  });
 
   // Redirect to login if not authenticated
   useEffect(() => {
