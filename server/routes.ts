@@ -11,9 +11,17 @@ import {
   getFitbitAuthUrl,
   type FitbitActivityData 
 } from "./fitbit";
-import { generateWellnessPlan, generatePersonalizedContent, analyzeMoodAndSuggestActivities } from "./openai";
+import { generateWellnessPlan, generatePersonalizedContent, analyzeMoodAndSuggestActivities, generateAIMealPlan } from "./openai";
 import { insertBlogPostSchema, insertProductSchema, insertChallengeSchema, insertUserChallengeSchema, insertDailyLogSchema } from "@shared/schema";
 import { z } from "zod";
+import Stripe from "stripe";
+
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
+}
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: "2023-10-16",
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -1962,6 +1970,179 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error creating affiliate product:", error);
       res.status(500).json({ message: "Failed to create product" });
+    }
+  });
+
+  // Stripe Subscription Routes
+  app.post('/api/create-subscription', isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      const userId = user.claims.sub;
+
+      // Check if user already has a subscription
+      const existingUser = await storage.getUser(userId);
+      if (existingUser?.stripeSubscriptionId) {
+        const subscription = await stripe.subscriptions.retrieve(existingUser.stripeSubscriptionId);
+        if (subscription.status === 'active') {
+          res.json({
+            subscriptionId: subscription.id,
+            clientSecret: subscription.latest_invoice?.payment_intent?.client_secret,
+            status: subscription.status
+          });
+          return;
+        }
+      }
+
+      const email = user.claims.email;
+      if (!email) {
+        throw new Error('No user email on file');
+      }
+
+      // Create or retrieve Stripe customer
+      let customer;
+      if (existingUser?.stripeCustomerId) {
+        customer = await stripe.customers.retrieve(existingUser.stripeCustomerId);
+      } else {
+        customer = await stripe.customers.create({
+          email: email,
+          metadata: {
+            userId: userId
+          }
+        });
+        await storage.updateUserStripeInfo(userId, customer.id, "");
+      }
+
+      // Create subscription with 60-day trial
+      const subscription = await stripe.subscriptions.create({
+        customer: customer.id,
+        items: [{
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: 'Pure Living Pro Premium',
+              description: 'Access to all premium wellness features including AI coaching, meal planning, and advanced analytics'
+            },
+            unit_amount: 1999, // $19.99 in cents
+            recurring: {
+              interval: 'month'
+            }
+          }
+        }],
+        trial_period_days: 60, // 60-day free trial
+        payment_behavior: 'default_incomplete',
+        expand: ['latest_invoice.payment_intent'],
+      });
+
+      // Update user with subscription info
+      await storage.updateUserStripeInfo(userId, customer.id, subscription.id);
+
+      res.json({
+        subscriptionId: subscription.id,
+        clientSecret: subscription.latest_invoice?.payment_intent?.client_secret,
+        status: subscription.status
+      });
+    } catch (error: any) {
+      console.error('Subscription creation error:', error);
+      return res.status(400).json({ error: { message: error.message } });
+    }
+  });
+
+  // Check subscription status
+  app.get('/api/subscription-status', isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.user as any).claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.stripeSubscriptionId) {
+        return res.json({ isPremium: false, status: 'none' });
+      }
+
+      const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+      
+      const isPremium = subscription.status === 'active' || subscription.status === 'trialing';
+      
+      res.json({
+        isPremium,
+        status: subscription.status,
+        currentPeriodEnd: subscription.current_period_end,
+        trialEnd: subscription.trial_end
+      });
+    } catch (error) {
+      console.error('Error checking subscription status:', error);
+      res.status(500).json({ error: 'Failed to check subscription status' });
+    }
+  });
+
+  // Cancel subscription
+  app.post('/api/cancel-subscription', isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.user as any).claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.stripeSubscriptionId) {
+        return res.status(400).json({ error: 'No active subscription found' });
+      }
+
+      const subscription = await stripe.subscriptions.update(user.stripeSubscriptionId, {
+        cancel_at_period_end: true
+      });
+
+      res.json({ 
+        message: 'Subscription cancelled successfully',
+        cancelAtPeriodEnd: subscription.cancel_at_period_end,
+        currentPeriodEnd: subscription.current_period_end
+      });
+    } catch (error) {
+      console.error('Error cancelling subscription:', error);
+      res.status(500).json({ error: 'Failed to cancel subscription' });
+    }
+  });
+
+  // AI Meal Planner (Premium Feature)
+  app.post('/api/meal-planner/generate', isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.user as any).claims.sub;
+      const user = await storage.getUser(userId);
+      
+      // Check if user has premium subscription
+      if (!user?.stripeSubscriptionId) {
+        return res.status(403).json({ error: 'Premium subscription required' });
+      }
+
+      const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+      const isPremium = subscription.status === 'active' || subscription.status === 'trialing';
+      
+      if (!isPremium) {
+        return res.status(403).json({ error: 'Premium subscription required' });
+      }
+
+      const {
+        dietaryPreferences,
+        healthGoals,
+        allergies,
+        calorieTarget,
+        mealsPerDay,
+        cookingTime,
+        servingSize,
+        additionalNotes
+      } = req.body;
+
+      // Generate AI meal plan
+      const mealPlan = await generateAIMealPlan({
+        dietaryPreferences,
+        healthGoals,
+        allergies,
+        calorieTarget,
+        mealsPerDay,
+        cookingTime,
+        servingSize,
+        additionalNotes
+      });
+
+      res.json({ mealPlan });
+    } catch (error) {
+      console.error('Error generating meal plan:', error);
+      res.status(500).json({ error: 'Failed to generate meal plan' });
     }
   });
 

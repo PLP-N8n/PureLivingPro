@@ -277,3 +277,84 @@ export async function generateProductDescription(
     throw new Error("Failed to generate product description");
   }
 }
+
+export async function generateAIMealPlan(params: {
+  dietaryPreferences: string[];
+  healthGoals: string[];
+  allergies: string[];
+  calorieTarget: number;
+  mealsPerDay: number;
+  cookingTime: string;
+  servingSize: number;
+  additionalNotes: string;
+}): Promise<any> {
+  try {
+    const prompt = `Create a comprehensive 7-day meal plan with the following requirements:
+
+Dietary Preferences: ${params.dietaryPreferences.join(", ") || "None"}
+Health Goals: ${params.healthGoals.join(", ") || "General wellness"}
+Allergies: ${params.allergies.join(", ") || "None"}
+Daily Calorie Target: ${params.calorieTarget}
+Meals Per Day: ${params.mealsPerDay}
+Cooking Time: ${params.cookingTime} minutes
+Serving Size: ${params.servingSize} people
+Additional Notes: ${params.additionalNotes || "None"}
+
+Please provide a detailed meal plan in JSON format with the following structure:
+{
+  "id": "unique-id",
+  "title": "Personalized 7-Day Meal Plan",
+  "description": "Brief description of the meal plan",
+  "meals": {
+    "breakfast": [
+      {
+        "name": "Meal name",
+        "description": "Brief description",
+        "calories": 350,
+        "prepTime": 15,
+        "ingredients": ["ingredient1", "ingredient2"],
+        "instructions": ["step1", "step2"],
+        "nutritionInfo": {
+          "protein": 20,
+          "carbs": 45,
+          "fat": 12,
+          "fiber": 8
+        }
+      }
+    ],
+    "lunch": [...],
+    "dinner": [...],
+    "snacks": [...]
+  },
+  "nutritionSummary": {
+    "totalCalories": ${params.calorieTarget},
+    "protein": 150,
+    "carbs": 200,
+    "fat": 80,
+    "fiber": 35
+  },
+  "shoppingList": ["ingredient1", "ingredient2", "ingredient3"],
+  "preparationTips": ["tip1", "tip2", "tip3"]
+}
+
+Ensure all meals align with the dietary preferences and health goals. Make the meals diverse, nutritious, and achievable within the specified cooking time.`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.7,
+      response_format: { type: "json_object" },
+    });
+
+    const mealPlanData = JSON.parse(response.choices[0].message.content || "{}");
+    
+    // Add a unique ID and timestamp
+    mealPlanData.id = `meal-plan-${Date.now()}`;
+    mealPlanData.createdAt = new Date();
+    
+    return mealPlanData;
+  } catch (error) {
+    console.error("Error generating AI meal plan:", error);
+    throw new Error("Failed to generate meal plan");
+  }
+}
