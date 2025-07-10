@@ -678,6 +678,9 @@ export const insertAffiliateLinkSchema = createInsertSchema(affiliateLinks).omit
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  description: z.string().max(500).optional(), // Allow up to 500 chars
+  commission: z.union([z.string(), z.number()]).transform(val => typeof val === 'string' ? parseFloat(val) || 0 : val), // Accept string or number
 });
 
 export const insertContentPipelineSchema = createInsertSchema(contentPipeline).omit({
