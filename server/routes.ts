@@ -2275,6 +2275,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     sendSuccess(res, link);
   }));
 
+  // URL scraping endpoint for automatic product info extraction
+  app.post('/api/affiliate-links/scrape', isAuthenticated, asyncHandler(async (req, res) => {
+    const { url, aiProvider = 'deepseek' } = req.body;
+    
+    if (!url) {
+      return res.status(400).json({ success: false, error: 'URL is required' });
+    }
+
+    const { urlScraper } = await import('./automation/urlScraper');
+    
+    if (!urlScraper.isValidURL(url)) {
+      return res.status(400).json({ success: false, error: 'Invalid URL format' });
+    }
+
+    console.log(`🔍 Scraping product info from: ${url}`);
+    const scrapedInfo = await urlScraper.scrapeProductFromURL(url, aiProvider);
+    
+    sendSuccess(res, {
+      ...scrapedInfo,
+      url // Include the original URL
+    });
+  }));
+
   // Content pipeline management
   app.get('/api/content-pipeline', isAuthenticated, asyncHandler(async (req, res) => {
     try {

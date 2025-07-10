@@ -66,8 +66,12 @@ export function AutomationDashboard() {
     merchant: '',
     productName: '',
     category: '',
-    commission: ''
+    commission: '',
+    description: '',
+    imageUrl: ''
   });
+
+  const [isScrapingUrl, setIsScrapingUrl] = useState(false);
 
   const [newContent, setNewContent] = useState({
     title: '',
@@ -170,7 +174,54 @@ export function AutomationDashboard() {
       commission: parseFloat(newLink.commission) || 0,
       status: 'pending'
     });
-    setNewLink({ url: '', merchant: '', productName: '', category: '', commission: '' });
+    setNewLink({ 
+      url: '', 
+      merchant: '', 
+      productName: '', 
+      category: '', 
+      commission: '', 
+      description: '', 
+      imageUrl: '' 
+    });
+  };
+
+  const handleScrapeUrl = async () => {
+    if (!newLink.url) {
+      toast({ title: 'Error', description: 'Please enter a URL first', variant: 'destructive' });
+      return;
+    }
+
+    setIsScrapingUrl(true);
+    try {
+      const response = await apiRequest('POST', '/api/affiliate-links/scrape', {
+        url: newLink.url,
+        aiProvider: 'deepseek'
+      });
+
+      const scrapedData = response.data;
+      setNewLink({
+        ...newLink,
+        merchant: scrapedData.merchant || '',
+        productName: scrapedData.productName || '',
+        category: scrapedData.category || '',
+        commission: scrapedData.commission?.toString() || '',
+        description: scrapedData.description || '',
+        imageUrl: scrapedData.imageUrl || ''
+      });
+
+      toast({ 
+        title: 'Success', 
+        description: `Automatically extracted: ${scrapedData.productName}` 
+      });
+    } catch (error: any) {
+      toast({ 
+        title: 'Scraping Failed', 
+        description: error.message || 'Failed to extract product information', 
+        variant: 'destructive' 
+      });
+    } finally {
+      setIsScrapingUrl(false);
+    }
   };
 
   const handleCreateContent = () => {
@@ -311,58 +362,103 @@ export function AutomationDashboard() {
           <CardDescription>Register a new affiliate link for automation</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="url">Affiliate URL</Label>
-              <Input
-                id="url"
-                value={newLink.url}
-                onChange={(e) => setNewLink({ ...newLink, url: e.target.value })}
-                placeholder="https://amazon.com/dp/B12345"
-              />
+          <div className="space-y-4">
+            {/* URL Input with Auto-Scrape */}
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <Label htmlFor="url">Affiliate URL</Label>
+                <Input
+                  id="url"
+                  value={newLink.url}
+                  onChange={(e) => setNewLink({ ...newLink, url: e.target.value })}
+                  placeholder="https://amazon.com/dp/B12345 (paste any product URL)"
+                />
+              </div>
+              <div className="flex items-end">
+                <Button 
+                  onClick={handleScrapeUrl} 
+                  disabled={isScrapingUrl || !newLink.url}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  {isScrapingUrl ? (
+                    <RefreshCw className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Bot className="h-4 w-4" />
+                  )}
+                  {isScrapingUrl ? 'Scraping...' : 'Auto-Fill'}
+                </Button>
+              </div>
             </div>
-            <div>
-              <Label htmlFor="merchant">Merchant</Label>
-              <Input
-                id="merchant"
-                value={newLink.merchant}
-                onChange={(e) => setNewLink({ ...newLink, merchant: e.target.value })}
-                placeholder="Amazon"
-              />
+
+            {/* Auto-filled Product Details */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="merchant">Merchant</Label>
+                <Input
+                  id="merchant"
+                  value={newLink.merchant}
+                  onChange={(e) => setNewLink({ ...newLink, merchant: e.target.value })}
+                  placeholder="Amazon (auto-filled)"
+                />
+              </div>
+              <div>
+                <Label htmlFor="category">Category</Label>
+                <Input
+                  id="category"
+                  value={newLink.category}
+                  onChange={(e) => setNewLink({ ...newLink, category: e.target.value })}
+                  placeholder="supplements (auto-filled)"
+                />
+              </div>
+              <div className="col-span-2">
+                <Label htmlFor="productName">Product Name</Label>
+                <Input
+                  id="productName"
+                  value={newLink.productName}
+                  onChange={(e) => setNewLink({ ...newLink, productName: e.target.value })}
+                  placeholder="Premium Omega-3 Fish Oil (auto-filled)"
+                />
+              </div>
+              <div className="col-span-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  value={newLink.description}
+                  onChange={(e) => setNewLink({ ...newLink, description: e.target.value })}
+                  placeholder="Product description (auto-filled)"
+                  rows={2}
+                />
+              </div>
+              <div>
+                <Label htmlFor="commission">Commission (%)</Label>
+                <Input
+                  id="commission"
+                  type="number"
+                  value={newLink.commission}
+                  onChange={(e) => setNewLink({ ...newLink, commission: e.target.value })}
+                  placeholder="5.0 (auto-filled)"
+                />
+              </div>
+              <div>
+                <Label htmlFor="imageUrl">Image URL</Label>
+                <Input
+                  id="imageUrl"
+                  value={newLink.imageUrl}
+                  onChange={(e) => setNewLink({ ...newLink, imageUrl: e.target.value })}
+                  placeholder="https://... (auto-filled)"
+                />
+              </div>
             </div>
-            <div>
-              <Label htmlFor="productName">Product Name</Label>
-              <Input
-                id="productName"
-                value={newLink.productName}
-                onChange={(e) => setNewLink({ ...newLink, productName: e.target.value })}
-                placeholder="Premium Omega-3 Fish Oil"
-              />
+
+            <div className="flex gap-4 pt-4">
+              <Button onClick={handleCreateLink} disabled={createAffiliateLink.isPending}>
+                Add Affiliate Link
+              </Button>
+              <div className="text-sm text-muted-foreground flex items-center">
+                💡 Just paste any product URL and click "Auto-Fill" to extract all details automatically
+              </div>
             </div>
-            <div>
-              <Label htmlFor="category">Category</Label>
-              <Input
-                id="category"
-                value={newLink.category}
-                onChange={(e) => setNewLink({ ...newLink, category: e.target.value })}
-                placeholder="supplements"
-              />
-            </div>
-          </div>
-          <div className="flex gap-4 items-end">
-            <div className="w-32">
-              <Label htmlFor="commission">Commission (%)</Label>
-              <Input
-                id="commission"
-                type="number"
-                value={newLink.commission}
-                onChange={(e) => setNewLink({ ...newLink, commission: e.target.value })}
-                placeholder="5.0"
-              />
-            </div>
-            <Button onClick={handleCreateLink} disabled={createAffiliateLink.isPending}>
-              Add Affiliate Link
-            </Button>
           </div>
         </CardContent>
       </Card>
