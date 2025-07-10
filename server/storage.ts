@@ -41,9 +41,24 @@ import {
   affiliateProducts,
   type AffiliateProduct,
   type InsertAffiliateProduct,
+  affiliateLinks,
+  type AffiliateLink,
+  type InsertAffiliateLink,
+  contentPipeline,
+  type ContentPipeline,
+  type InsertContentPipeline,
+  socialAccounts,
+  type SocialAccount,
+  type InsertSocialAccount,
+  automationRules,
+  type AutomationRule,
+  type InsertAutomationRule,
+  revenueTracking,
+  type RevenueTracking,
+  type InsertRevenueTracking
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, gte, lte, ilike, or } from "drizzle-orm";
+import { eq, desc, and, gte, lte, ilike, or, sum, avg } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (required for Replit Auth)
@@ -145,6 +160,45 @@ export interface IStorage {
   }): Promise<AffiliateProduct[]>;
   createAffiliateProduct(product: InsertAffiliateProduct): Promise<AffiliateProduct>;
   updateAffiliateProduct(id: number, updates: Partial<InsertAffiliateProduct>): Promise<AffiliateProduct>;
+  
+  // Automation system operations
+  getAffiliateLinks(filters: {
+    category?: string;
+    status?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<AffiliateLink[]>;
+  createAffiliateLink(link: InsertAffiliateLink): Promise<AffiliateLink>;
+  updateAffiliateLink(id: number, updates: Partial<InsertAffiliateLink>): Promise<AffiliateLink>;
+  
+  getContentPipeline(filters: {
+    status?: string;
+    contentType?: string;
+    targetPlatform?: string;
+    dueBefore?: Date;
+    limit?: number;
+  }): Promise<ContentPipeline[]>;
+  createContentPipeline(pipeline: InsertContentPipeline): Promise<ContentPipeline>;
+  updateContentPipeline(id: number, updates: Partial<InsertContentPipeline>): Promise<ContentPipeline>;
+  
+  getSocialAccounts(filters: {
+    platform?: string;
+    isActive?: boolean;
+  }): Promise<SocialAccount[]>;
+  createSocialAccount(account: InsertSocialAccount): Promise<SocialAccount>;
+  updateSocialAccount(id: number, updates: Partial<InsertSocialAccount>): Promise<SocialAccount>;
+  
+  getAutomationRules(filters: {
+    type?: string;
+    isActive?: boolean;
+    limit?: number;
+  }): Promise<AutomationRule[]>;
+  createAutomationRule(rule: InsertAutomationRule): Promise<AutomationRule>;
+  updateAutomationRule(id: number, updates: Partial<InsertAutomationRule>): Promise<AutomationRule>;
+  
+  createRevenueTracking(revenue: InsertRevenueTracking): Promise<RevenueTracking>;
+  getRevenueStats(): Promise<any>;
+  getContentEngagementStats(): Promise<any>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -764,6 +818,223 @@ export class DatabaseStorage implements IStorage {
       .where(eq(affiliateProducts.id, id))
       .returning();
     return product;
+  }
+
+  // Automation system implementations
+  async getAffiliateLinks(filters: {
+    category?: string;
+    status?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<AffiliateLink[]> {
+    let query = db.select().from(affiliateLinks);
+
+    if (filters.category) {
+      query = query.where(eq(affiliateLinks.category, filters.category));
+    }
+    if (filters.status) {
+      query = query.where(eq(affiliateLinks.status, filters.status));
+    }
+
+    query = query
+      .orderBy(desc(affiliateLinks.createdAt))
+      .limit(filters.limit || 10);
+
+    if (filters.offset) {
+      query = query.offset(filters.offset);
+    }
+
+    return await query;
+  }
+
+  async createAffiliateLink(link: InsertAffiliateLink): Promise<AffiliateLink> {
+    const [savedLink] = await db
+      .insert(affiliateLinks)
+      .values(link)
+      .returning();
+    return savedLink;
+  }
+
+  async updateAffiliateLink(id: number, updates: Partial<InsertAffiliateLink>): Promise<AffiliateLink> {
+    const [link] = await db
+      .update(affiliateLinks)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(affiliateLinks.id, id))
+      .returning();
+    return link;
+  }
+
+  async getContentPipeline(filters: {
+    status?: string;
+    contentType?: string;
+    targetPlatform?: string;
+    dueBefore?: Date;
+    limit?: number;
+  }): Promise<ContentPipeline[]> {
+    let query = db.select().from(contentPipeline);
+    const conditions = [];
+
+    if (filters.status) {
+      conditions.push(eq(contentPipeline.status, filters.status));
+    }
+    if (filters.contentType) {
+      conditions.push(eq(contentPipeline.contentType, filters.contentType));
+    }
+    if (filters.targetPlatform) {
+      conditions.push(eq(contentPipeline.targetPlatform, filters.targetPlatform));
+    }
+    if (filters.dueBefore) {
+      conditions.push(lte(contentPipeline.scheduledFor, filters.dueBefore));
+    }
+
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+
+    return await query
+      .orderBy(desc(contentPipeline.createdAt))
+      .limit(filters.limit || 10);
+  }
+
+  async createContentPipeline(pipeline: InsertContentPipeline): Promise<ContentPipeline> {
+    const [savedPipeline] = await db
+      .insert(contentPipeline)
+      .values(pipeline)
+      .returning();
+    return savedPipeline;
+  }
+
+  async updateContentPipeline(id: number, updates: Partial<InsertContentPipeline>): Promise<ContentPipeline> {
+    const [pipeline] = await db
+      .update(contentPipeline)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(contentPipeline.id, id))
+      .returning();
+    return pipeline;
+  }
+
+  async getSocialAccounts(filters: {
+    platform?: string;
+    isActive?: boolean;
+  }): Promise<SocialAccount[]> {
+    let query = db.select().from(socialAccounts);
+    const conditions = [];
+
+    if (filters.platform) {
+      conditions.push(eq(socialAccounts.platform, filters.platform));
+    }
+    if (filters.isActive !== undefined) {
+      conditions.push(eq(socialAccounts.isActive, filters.isActive));
+    }
+
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+
+    return await query.orderBy(desc(socialAccounts.createdAt));
+  }
+
+  async createSocialAccount(account: InsertSocialAccount): Promise<SocialAccount> {
+    const [savedAccount] = await db
+      .insert(socialAccounts)
+      .values(account)
+      .returning();
+    return savedAccount;
+  }
+
+  async updateSocialAccount(id: number, updates: Partial<InsertSocialAccount>): Promise<SocialAccount> {
+    const [account] = await db
+      .update(socialAccounts)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(socialAccounts.id, id))
+      .returning();
+    return account;
+  }
+
+  async getAutomationRules(filters: {
+    type?: string;
+    isActive?: boolean;
+    limit?: number;
+  }): Promise<AutomationRule[]> {
+    let query = db.select().from(automationRules);
+    const conditions = [];
+
+    if (filters.type) {
+      conditions.push(eq(automationRules.type, filters.type));
+    }
+    if (filters.isActive !== undefined) {
+      conditions.push(eq(automationRules.isActive, filters.isActive));
+    }
+
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+
+    return await query
+      .orderBy(desc(automationRules.createdAt))
+      .limit(filters.limit || 10);
+  }
+
+  async createAutomationRule(rule: InsertAutomationRule): Promise<AutomationRule> {
+    const [savedRule] = await db
+      .insert(automationRules)
+      .values(rule)
+      .returning();
+    return savedRule;
+  }
+
+  async updateAutomationRule(id: number, updates: Partial<InsertAutomationRule>): Promise<AutomationRule> {
+    const [rule] = await db
+      .update(automationRules)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(automationRules.id, id))
+      .returning();
+    return rule;
+  }
+
+  async createRevenueTracking(revenue: InsertRevenueTracking): Promise<RevenueTracking> {
+    const [savedRevenue] = await db
+      .insert(revenueTracking)
+      .values(revenue)
+      .returning();
+    return savedRevenue;
+  }
+
+  async getRevenueStats(): Promise<any> {
+    // Get revenue statistics for optimization
+    const stats = await db
+      .select({
+        totalRevenue: sum(revenueTracking.amount),
+        totalClicks: sum(revenueTracking.clickCount),
+        avgConversion: avg(revenueTracking.conversionRate)
+      })
+      .from(revenueTracking)
+      .where(eq(revenueTracking.status, 'confirmed'));
+
+    return stats[0] || { totalRevenue: 0, totalClicks: 0, avgConversion: 0 };
+  }
+
+  async getContentEngagementStats(): Promise<any> {
+    // Get content engagement statistics
+    const recentContent = await db
+      .select()
+      .from(contentPipeline)
+      .where(eq(contentPipeline.status, 'published'))
+      .orderBy(desc(contentPipeline.publishedAt))
+      .limit(50);
+
+    const totalEngagement = recentContent.reduce((sum, content) => {
+      const engagement = content.engagement || {};
+      return sum + (engagement.likes || 0) + (engagement.shares || 0) + (engagement.comments || 0);
+    }, 0);
+
+    return {
+      avgEngagement: totalEngagement / Math.max(recentContent.length, 1),
+      totalPosts: recentContent.length,
+      totalRevenue: recentContent.reduce((sum, content) => 
+        sum + ((content.engagement?.revenue || 0) as number), 0
+      )
+    };
   }
 }
 

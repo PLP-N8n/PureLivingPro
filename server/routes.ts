@@ -14,7 +14,17 @@ import {
   type FitbitActivityData 
 } from "./fitbit";
 import { generateWellnessPlan, generatePersonalizedContent, analyzeMoodAndSuggestActivities, generateAIMealPlan } from "./openai";
-import { insertBlogPostSchema, insertProductSchema, insertChallengeSchema, insertUserChallengeSchema, insertDailyLogSchema } from "@shared/schema";
+import { 
+  insertBlogPostSchema, 
+  insertProductSchema, 
+  insertChallengeSchema, 
+  insertUserChallengeSchema, 
+  insertDailyLogSchema,
+  insertAffiliateLinkSchema,
+  insertContentPipelineSchema,
+  insertSocialAccountSchema,
+  insertAutomationRuleSchema
+} from "@shared/schema";
 import { z } from "zod";
 import Stripe from "stripe";
 
@@ -531,7 +541,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/admin/system-status', isAuthenticated, async (req, res) => {
     try {
       // Check actual system health
-      const dbHealthCheck = await db.select().from(users).limit(1);
+      const dbHealthCheck = await storage.getBlogPosts(1);
       const systemHealth = {
         server: "online",
         database: dbHealthCheck ? "online" : "offline",
@@ -2142,6 +2152,120 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: 'Failed to generate meal plan' });
     }
   });
+
+  // Automation API endpoints
+  app.get('/api/automation/status', isAuthenticated, requireAdmin, asyncHandler(async (req, res) => {
+    // Import automation controller dynamically to avoid circular dependency
+    const { automationController } = await import('./automation/automationController');
+    const status = automationController.getStatus();
+    sendSuccess(res, status);
+  }));
+
+  app.post('/api/automation/start', isAuthenticated, requireAdmin, asyncHandler(async (req, res) => {
+    const { automationController } = await import('./automation/automationController');
+    await automationController.startAutomation();
+    sendSuccess(res, { message: 'Automation started successfully' });
+  }));
+
+  app.post('/api/automation/stop', isAuthenticated, requireAdmin, asyncHandler(async (req, res) => {
+    const { automationController } = await import('./automation/automationController');
+    await automationController.stopAutomation();
+    sendSuccess(res, { message: 'Automation stopped successfully' });
+  }));
+
+  app.post('/api/automation/trigger/:type', isAuthenticated, requireAdmin, asyncHandler(async (req, res) => {
+    const { type } = req.params;
+    const { automationController } = await import('./automation/automationController');
+    await automationController.triggerImmediateExecution(type);
+    sendSuccess(res, { message: `${type} triggered successfully` });
+  }));
+
+  // Affiliate links management
+  app.get('/api/affiliate-links', isAuthenticated, requireEditor, asyncHandler(async (req, res) => {
+    const { category, status, limit, offset } = req.query;
+    const links = await storage.getAffiliateLinks({
+      category: category as string,
+      status: status as string,
+      limit: limit ? parseInt(limit as string) : undefined,
+      offset: offset ? parseInt(offset as string) : undefined
+    });
+    sendSuccess(res, links);
+  }));
+
+  app.post('/api/affiliate-links', isAuthenticated, requireEditor, asyncHandler(async (req, res) => {
+    const linkData = insertAffiliateLinkSchema.parse(req.body);
+    const link = await storage.createAffiliateLink(linkData);
+    sendSuccess(res, link);
+  }));
+
+  app.patch('/api/affiliate-links/:id', isAuthenticated, requireEditor, asyncHandler(async (req, res) => {
+    const id = parseInt(req.params.id);
+    const updates = req.body;
+    const link = await storage.updateAffiliateLink(id, updates);
+    sendSuccess(res, link);
+  }));
+
+  // Content pipeline management
+  app.get('/api/content-pipeline', isAuthenticated, requireEditor, asyncHandler(async (req, res) => {
+    const { status, contentType, targetPlatform, limit } = req.query;
+    const content = await storage.getContentPipeline({
+      status: status as string,
+      contentType: contentType as string,
+      targetPlatform: targetPlatform as string,
+      limit: limit ? parseInt(limit as string) : undefined
+    });
+    sendSuccess(res, content);
+  }));
+
+  app.post('/api/content-pipeline', isAuthenticated, requireEditor, asyncHandler(async (req, res) => {
+    const pipelineData = insertContentPipelineSchema.parse(req.body);
+    const pipeline = await storage.createContentPipeline(pipelineData);
+    
+    // Trigger content creation
+    const { contentCreator } = await import('./automation/contentCreator');
+    await contentCreator.createContentFromPipeline(pipeline.id);
+    
+    sendSuccess(res, pipeline);
+  }));
+
+  // Social accounts management
+  app.get('/api/social-accounts', isAuthenticated, requireAdmin, asyncHandler(async (req, res) => {
+    const { platform, isActive } = req.query;
+    const accounts = await storage.getSocialAccounts({
+      platform: platform as string,
+      isActive: isActive === 'true'
+    });
+    sendSuccess(res, accounts);
+  }));
+
+  app.post('/api/social-accounts', isAuthenticated, requireAdmin, asyncHandler(async (req, res) => {
+    const accountData = insertSocialAccountSchema.parse(req.body);
+    const account = await storage.createSocialAccount(accountData);
+    sendSuccess(res, account);
+  }));
+
+  // Revenue tracking
+  app.get('/api/revenue/stats', isAuthenticated, requireAdmin, asyncHandler(async (req, res) => {
+    const stats = await storage.getRevenueStats();
+    const engagement = await storage.getContentEngagementStats();
+    sendSuccess(res, { revenue: stats, engagement });
+  }));
+
+  // Automation rules management
+  app.get('/api/automation-rules', isAuthenticated, requireAdmin, asyncHandler(async (req, res) => {
+    const { type, isActive } = req.query;
+    const rules = await storage.getAutomationRules({
+      type: type as string,
+      isActive: isActive === 'true'
+    });
+    sendSuccess(res, rules);
+  }));
+
+  app.post('/api/automation-rules', isAuthenticated, requireAdmin, asyncHandler(async (req, res) => {
+    const ruleData = insertAutomationRuleSchema.parse(req.body);
+    const rule = await storage.createAutomationRule(ruleData);
+    sendSuccess(res, rule);
+  }));
 
   const httpServer = createServer(app);
   return httpServer;

@@ -490,8 +490,177 @@ export type WellnessQuizResponse = typeof wellnessQuizResponses.$inferSelect;
 export type InsertWellnessQuizResponse = typeof wellnessQuizResponses.$inferInsert;
 export type AiCoachingSession = typeof aiCoachingSessions.$inferSelect;
 export type InsertAiCoachingSession = typeof aiCoachingSessions.$inferInsert;
+// Automation & Revenue System Tables
+
+// Enhanced Affiliate Links Management
+export const affiliateLinks = pgTable("affiliate_links", {
+  id: serial("id").primaryKey(),
+  url: varchar("url", { length: 500 }).notNull(),
+  merchant: varchar("merchant", { length: 100 }),
+  productName: varchar("product_name", { length: 255 }),
+  category: varchar("category", { length: 100 }),
+  commission: decimal("commission", { precision: 5, scale: 2 }),
+  isActive: boolean("is_active").default(true),
+  lastChecked: timestamp("last_checked"),
+  status: varchar("status", { length: 50 }).default("pending"), // pending, approved, rejected, expired
+  scrapedData: jsonb("scraped_data").$type<{
+    price?: number;
+    rating?: number;
+    availability?: boolean;
+    description?: string;
+    images?: string[];
+  }>(),
+  tags: text("tags").array(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Content Automation Pipeline
+export const contentPipeline = pgTable("content_pipeline", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  contentType: varchar("content_type", { length: 50 }).notNull(), // blog, social, video, audio
+  targetPlatform: varchar("target_platform", { length: 50 }), // x, instagram, tiktok, blog
+  status: varchar("status", { length: 50 }).default("scheduled"), // scheduled, generating, completed, failed, published
+  aiProvider: varchar("ai_provider", { length: 50 }), // openai, openrouter, elevenlabs, veo3
+  prompt: text("prompt"),
+  generatedContent: jsonb("generated_content").$type<{
+    text?: string;
+    mediaUrl?: string;
+    hashtags?: string[];
+    affiliateLinks?: number[]; // Reference to affiliate_links.id
+  }>(),
+  scheduledFor: timestamp("scheduled_for"),
+  publishedAt: timestamp("published_at"),
+  engagement: jsonb("engagement").$type<{
+    likes?: number;
+    shares?: number;
+    comments?: number;
+    clicks?: number;
+    revenue?: number;
+  }>(),
+  affiliateLinksUsed: integer("affiliate_links_used").array(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Social Media Accounts
+export const socialAccounts = pgTable("social_accounts", {
+  id: serial("id").primaryKey(),
+  platform: varchar("platform", { length: 50 }).notNull(), // x, instagram, tiktok
+  username: varchar("username", { length: 100 }),
+  accessToken: varchar("access_token", { length: 500 }),
+  refreshToken: varchar("refresh_token", { length: 500 }),
+  isActive: boolean("is_active").default(true),
+  lastPosted: timestamp("last_posted"),
+  dailyPostLimit: integer("daily_post_limit").default(5),
+  postsToday: integer("posts_today").default(0),
+  accountMetrics: jsonb("account_metrics").$type<{
+    followers?: number;
+    following?: number;
+    totalPosts?: number;
+    engagementRate?: number;
+  }>(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Automation Rules Engine
+export const automationRules = pgTable("automation_rules", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  type: varchar("type", { length: 50 }).notNull(), // content_creation, affiliate_insertion, social_posting
+  isActive: boolean("is_active").default(true),
+  triggers: jsonb("triggers").$type<{
+    schedule?: string; // cron expression
+    keywords?: string[];
+    categories?: string[];
+    events?: string[];
+  }>(),
+  actions: jsonb("actions").$type<{
+    createContent?: boolean;
+    insertAffiliateLinks?: boolean;
+    postToSocial?: boolean;
+    platforms?: string[];
+    aiProvider?: string;
+  }>(),
+  conditions: jsonb("conditions").$type<{
+    minEngagement?: number;
+    maxDailyPosts?: number;
+    categoryFilters?: string[];
+  }>(),
+  lastExecuted: timestamp("last_executed"),
+  executionCount: integer("execution_count").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Revenue Tracking
+export const revenueTracking = pgTable("revenue_tracking", {
+  id: serial("id").primaryKey(),
+  source: varchar("source", { length: 100 }).notNull(), // affiliate, subscription, ads
+  affiliateLinkId: integer("affiliate_link_id").references(() => affiliateLinks.id),
+  contentId: integer("content_id"), // Reference to blog post or social content
+  platform: varchar("platform", { length: 50 }),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  currency: varchar("currency", { length: 3 }).default("USD"),
+  status: varchar("status", { length: 50 }).default("pending"), // pending, confirmed, disputed
+  commission: decimal("commission", { precision: 10, scale: 2 }),
+  clickCount: integer("click_count").default(0),
+  conversionRate: decimal("conversion_rate", { precision: 5, scale: 4 }),
+  metadata: jsonb("metadata").$type<{
+    orderId?: string;
+    customerEmail?: string;
+    productDetails?: any;
+  }>(),
+  recordedAt: timestamp("recorded_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Insert schemas for automation tables
+export const insertAffiliateLinkSchema = createInsertSchema(affiliateLinks).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertContentPipelineSchema = createInsertSchema(contentPipeline).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertSocialAccountSchema = createInsertSchema(socialAccounts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertAutomationRuleSchema = createInsertSchema(automationRules).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertRevenueTrackingSchema = createInsertSchema(revenueTracking).omit({
+  id: true,
+  recordedAt: true,
+  createdAt: true,
+});
+
+// All Types Export
 export type AffiliateProduct = typeof affiliateProducts.$inferSelect;
 export type InsertAffiliateProduct = typeof affiliateProducts.$inferInsert;
+export type AffiliateLink = typeof affiliateLinks.$inferSelect;
+export type InsertAffiliateLink = typeof affiliateLinks.$inferInsert;
+export type ContentPipeline = typeof contentPipeline.$inferSelect;
+export type InsertContentPipeline = typeof contentPipeline.$inferInsert;
+export type SocialAccount = typeof socialAccounts.$inferSelect;
+export type InsertSocialAccount = typeof socialAccounts.$inferInsert;
+export type AutomationRule = typeof automationRules.$inferSelect;
+export type InsertAutomationRule = typeof automationRules.$inferInsert;
+export type RevenueTracking = typeof revenueTracking.$inferSelect;
+export type InsertRevenueTracking = typeof revenueTracking.$inferInsert;
 export type BlogPost = typeof blogPosts.$inferSelect;
 export type Product = typeof products.$inferSelect;
 export type Challenge = typeof challenges.$inferSelect;

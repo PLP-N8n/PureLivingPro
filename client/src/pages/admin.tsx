@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { AutomationDashboard } from "@/components/AutomationDashboard";
 import { 
   Plus, 
   Edit, 
@@ -282,12 +283,7 @@ export default function Admin() {
           </TabsContent>
 
           <TabsContent value="automation">
-            <AutomationDashboard 
-              systemStatus={systemStatus} 
-              setSystemStatus={setSystemStatus}
-              automationSettings={automationSettings}
-              setAutomationSettings={setAutomationSettings}
-            />
+            <AutomationDashboard />
           </TabsContent>
 
           <TabsContent value="users">
@@ -2497,7 +2493,7 @@ function SettingsManagement() {
 }
 
 // Comprehensive Automation Dashboard Component with Real-Time Functionality
-function AutomationDashboard({ systemStatus, setSystemStatus, automationSettings, setAutomationSettings }: any) {
+function AutomationDashboard_OLD({ systemStatus, setSystemStatus, automationSettings, setAutomationSettings }: any) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeSchedule, setActiveSchedule] = useState("content");
