@@ -208,11 +208,15 @@ export function AutomationDashboard() {
       return;
     }
 
-    createAffiliateLink.mutate({
+    // Prepare data with proper validation
+    const linkData = {
       ...newLink,
       commission: parseFloat(newLink.commission) || 0,
+      description: newLink.description ? newLink.description.substring(0, 500) : '', // Truncate description to 500 chars
       status: 'pending'
-    });
+    };
+
+    createAffiliateLink.mutate(linkData);
   };
 
   const handleScrapeUrl = async () => {
@@ -250,7 +254,7 @@ export function AutomationDashboard() {
         productName: scrapedData.productName || 'Product Name Not Found',
         category: scrapedData.category || 'general',
         commission: scrapedData.commission ? scrapedData.commission.toString() : '5',
-        description: scrapedData.description || 'Product description not available',
+        description: (scrapedData.description || 'Product description not available').substring(0, 500), // Truncate to 500 chars
         imageUrl: scrapedData.imageUrl || ''
       };
 
