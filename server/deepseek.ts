@@ -142,13 +142,24 @@ Focus on wellness/health keywords with good search volume.`;
 export async function generateProductDescriptionDeepSeek(
   productName: string,
   category: string,
-  features?: string[]
+  features?: string[] | string
 ): Promise<string> {
+  // Handle custom prompt (for URL scraping)
+  if (typeof features === 'string' && features.includes('JSON') && features.includes('webpage')) {
+    const messages: DeepSeekMessage[] = [
+      { role: 'user', content: features }
+    ];
+    return await callDeepSeek(messages, 0.3);
+  }
+
+  // Handle regular product description generation
+  const featuresText = Array.isArray(features) ? features.join(", ") : (features || "");
+  
   const prompt = `Create a compelling product description for this wellness product:
 
 Product: ${productName}
 Category: ${category}
-${features ? `Features: ${features.join(", ")}` : ""}
+${featuresText ? `Features: ${featuresText}` : ""}
 
 Write a persuasive, benefits-focused description that:
 - Highlights key wellness benefits

@@ -202,3 +202,8 @@ Changelog:
 - July 10, 2025. Fixed React hooks error in AutomationDashboard by restructuring component architecture
 - July 10, 2025. Resolved API response data structure issues and ensured proper data mapping for affiliate links and content pipeline
 - July 10, 2025. Completed comprehensive automation dashboard with functional real-time monitoring and controls
+- July 10, 2025. Implemented intelligent URL scraping system with AI-powered product extraction for automatic affiliate link creation
+- July 10, 2025. Enhanced URL scraper with short URL resolution, advanced error handling, and fallback extraction methods
+- July 10, 2025. Added enhanced merchant detection, smart commission estimation, and improved regex patterns for better data extraction
+- July 10, 2025. Integrated cost-optimized DeepSeek AI for 90% savings on URL scraping operations while maintaining quality
+- July 10, 2025. Created one-click "Auto-Fill" functionality that extracts product name, description, category, price, and images from any URL

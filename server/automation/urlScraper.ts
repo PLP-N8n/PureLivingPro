@@ -36,40 +36,104 @@ export class URLScraper {
   }
 
   /**
-   * Fetch and clean webpage content
+   * Resolve short URLs and get final destination
+   */
+  private async resolveUrl(url: string): Promise<string> {
+    try {
+      // Handle common short URL services
+      if (url.includes('amzn.to') || url.includes('bit.ly') || url.includes('tinyurl.com')) {
+        const response = await axios.head(url, {
+          maxRedirects: 10,
+          timeout: 5000
+        });
+        return response.request.res.responseUrl || url;
+      }
+      return url;
+    } catch (error) {
+      console.log('URL resolution failed, using original URL:', error.message);
+      return url;
+    }
+  }
+
+  /**
+   * Fetch and clean webpage content with enhanced error handling
    */
   private async fetchPageContent(url: string): Promise<string> {
+    // First, try to resolve any short URLs
+    const resolvedUrl = await this.resolveUrl(url);
+    console.log(`Resolved URL: ${resolvedUrl}`);
+
+    const userAgents = [
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/121.0'
+    ];
+
+    const randomUserAgent = userAgents[Math.floor(Math.random() * userAgents.length)];
+
     try {
-      const response = await axios.get(url, {
+      const response = await axios.get(resolvedUrl, {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-          'Accept-Language': 'en-US,en;q=0.5',
-          'Accept-Encoding': 'gzip, deflate',
+          'User-Agent': randomUserAgent,
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Accept-Encoding': 'gzip, deflate, br',
+          'DNT': '1',
           'Connection': 'keep-alive',
           'Upgrade-Insecure-Requests': '1',
+          'Sec-Fetch-Dest': 'document',
+          'Sec-Fetch-Mode': 'navigate',
+          'Sec-Fetch-Site': 'none',
+          'Cache-Control': 'max-age=0'
         },
-        timeout: 10000,
-        maxRedirects: 5
+        timeout: 15000,
+        maxRedirects: 10,
+        validateStatus: (status) => status < 500 // Accept redirects and client errors
       });
+
+      // Check if we got a valid response
+      if (!response.data || response.data.length < 100) {
+        throw new Error('Empty or insufficient content received from website');
+      }
 
       // Clean HTML content for AI processing
       const cleanedContent = this.cleanHTMLContent(response.data);
       
       // Limit content length to avoid token limits
-      return cleanedContent.substring(0, 8000);
+      return cleanedContent.substring(0, 10000);
       
     } catch (error) {
-      if (error.response?.status === 403 || error.response?.status === 401) {
-        throw new Error('Access denied to the website. The site may block automated requests.');
+      console.error('Primary fetch failed, trying fallback method:', error.message);
+      
+      // Fallback: Try with minimal headers
+      try {
+        const fallbackResponse = await axios.get(resolvedUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (compatible; ProductBot/1.0)',
+          },
+          timeout: 10000,
+          maxRedirects: 5
+        });
+        
+        return this.cleanHTMLContent(fallbackResponse.data).substring(0, 10000);
+        
+      } catch (fallbackError) {
+        // Enhanced error messages
+        if (error.response?.status === 403 || error.response?.status === 401) {
+          throw new Error('Website blocks automated access. Try using the full Amazon product URL instead of short links.');
+        }
+        if (error.response?.status === 503 || error.response?.status === 500) {
+          throw new Error('Website is temporarily unavailable. Please try again later.');
+        }
+        if (error.code === 'ENOTFOUND') {
+          throw new Error('Website not found. Please check the URL is correct.');
+        }
+        if (error.code === 'ETIMEDOUT') {
+          throw new Error('Request timed out. The website may be slow or blocking requests.');
+        }
+        
+        throw new Error(`Unable to access website. Error: ${error.response?.status || error.code || error.message}`);
       }
-      if (error.code === 'ENOTFOUND') {
-        throw new Error('Website not found. Please check the URL.');
-      }
-      if (error.code === 'ETIMEDOUT') {
-        throw new Error('Request timed out. The website may be slow or unavailable.');
-      }
-      throw new Error(`Failed to fetch webpage: ${error.message}`);
     }
   }
 
@@ -156,20 +220,26 @@ Return only valid JSON, no explanations.`;
   }
 
   /**
-   * Extract merchant name from URL
+   * Extract merchant name from URL with enhanced detection
    */
   private extractMerchantFromURL(url: string): string {
     try {
       const domain = new URL(url).hostname.toLowerCase();
       
-      // Common affiliate platforms
-      if (domain.includes('amazon')) return 'Amazon';
+      // Common affiliate platforms and short URLs
+      if (domain.includes('amazon') || url.includes('amzn.to')) return 'Amazon';
       if (domain.includes('clickbank')) return 'ClickBank';
       if (domain.includes('shareasale')) return 'ShareASale';
       if (domain.includes('walmart')) return 'Walmart';
       if (domain.includes('target')) return 'Target';
       if (domain.includes('ebay')) return 'eBay';
       if (domain.includes('shopify')) return 'Shopify Store';
+      if (domain.includes('etsy')) return 'Etsy';
+      if (domain.includes('alibaba')) return 'Alibaba';
+      if (domain.includes('aliexpress')) return 'AliExpress';
+      if (domain.includes('bestbuy')) return 'Best Buy';
+      if (domain.includes('homedepot')) return 'Home Depot';
+      if (domain.includes('lowes')) return 'Lowe\'s';
       
       // Extract main domain name
       const domainParts = domain.replace('www.', '').split('.');
@@ -210,19 +280,79 @@ Return only valid JSON, no explanations.`;
   }
 
   /**
-   * Fallback extraction when AI fails
+   * Enhanced fallback extraction when AI fails
    */
   private fallbackExtraction(content: string, url: string, merchant: string): ScrapedProductInfo {
-    // Simple regex-based extraction for common patterns
-    const titleMatch = content.match(/title[^>]*>([^<]+)/i);
-    const priceMatch = content.match(/\$(\d+(?:\.\d{2})?)/);
+    console.log('Using fallback extraction method');
+    
+    // Enhanced regex patterns for better extraction
+    const titlePatterns = [
+      /<title[^>]*>([^<]+)/i,
+      /<h1[^>]*>([^<]+)/i,
+      /product[_\s-]?title[^>]*>([^<]+)/i,
+      /name["']?\s*:\s*["']([^"']+)/i
+    ];
+    
+    const pricePatterns = [
+      /\$(\d+(?:,\d{3})*(?:\.\d{2})?)/g,
+      /price["']?\s*:\s*["']?\$?(\d+(?:\.\d{2})?)/i,
+      /(\d+\.\d{2})\s*(?:USD|dollars?)/i
+    ];
+    
+    const imagePatterns = [
+      /<img[^>]+src=["']([^"']*product[^"']*)/i,
+      /<img[^>]+src=["']([^"']*\.(?:jpg|jpeg|png|webp)[^"']*)/i
+    ];
+    
+    let productName = 'Product from ' + merchant;
+    let price: string | undefined;
+    let imageUrl: string | undefined;
+    
+    // Try to extract title
+    for (const pattern of titlePatterns) {
+      const match = content.match(pattern);
+      if (match?.[1]) {
+        productName = match[1].trim().replace(/\s+/g, ' ').substring(0, 100);
+        break;
+      }
+    }
+    
+    // Try to extract price
+    for (const pattern of pricePatterns) {
+      const match = content.match(pattern);
+      if (match?.[1]) {
+        const cleanPrice = match[1].replace(/,/g, '');
+        if (!isNaN(parseFloat(cleanPrice))) {
+          price = `$${cleanPrice}`;
+          break;
+        }
+      }
+    }
+    
+    // Try to extract image
+    for (const pattern of imagePatterns) {
+      const match = content.match(pattern);
+      if (match?.[1] && match[1].startsWith('http')) {
+        imageUrl = match[1];
+        break;
+      }
+    }
+    
+    // Determine category based on URL and content
+    let category = 'general';
+    const contentLower = content.toLowerCase();
+    if (contentLower.includes('supplement') || contentLower.includes('vitamin')) category = 'supplements';
+    else if (contentLower.includes('fitness') || contentLower.includes('workout')) category = 'fitness';
+    else if (contentLower.includes('beauty') || contentLower.includes('skincare')) category = 'beauty';
+    else if (contentLower.includes('wellness') || contentLower.includes('health')) category = 'wellness';
     
     return {
-      productName: titleMatch?.[1]?.trim() || 'Product from ' + merchant,
+      productName,
       merchant,
-      category: 'general',
-      description: 'Product information extracted from ' + new URL(url).hostname,
-      price: priceMatch ? `$${priceMatch[1]}` : undefined,
+      category,
+      description: `Product information extracted from ${new URL(url).hostname}. Please verify details manually.`,
+      price,
+      imageUrl,
       commission: this.getDefaultCommission(merchant)
     };
   }

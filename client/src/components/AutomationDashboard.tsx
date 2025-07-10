@@ -455,8 +455,13 @@ export function AutomationDashboard() {
               <Button onClick={handleCreateLink} disabled={createAffiliateLink.isPending}>
                 Add Affiliate Link
               </Button>
-              <div className="text-sm text-muted-foreground flex items-center">
-                💡 Just paste any product URL and click "Auto-Fill" to extract all details automatically
+              <div className="text-sm text-muted-foreground space-y-1">
+                <div className="flex items-center">
+                  💡 Just paste any product URL and click "Auto-Fill" to extract all details automatically
+                </div>
+                <div className="text-xs opacity-75">
+                  💡 <strong>Pro tip:</strong> Use full Amazon URLs (amazon.com/dp/...) instead of short links (amzn.to) for better results
+                </div>
               </div>
             </div>
           </div>
