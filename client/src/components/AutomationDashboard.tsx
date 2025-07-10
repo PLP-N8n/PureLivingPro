@@ -1,27 +1,26 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { 
+  Bot, 
+  BarChart3, 
   Play, 
   Pause, 
-  Settings, 
-  DollarSign, 
-  TrendingUp, 
-  Users, 
-  BarChart3,
-  Bot,
-  Link,
-  MessageSquare,
-  Target,
-  Zap
+  Zap, 
+  Link, 
+  MessageSquare, 
+  Target, 
+  TrendingUp,
+  DollarSign,
+  RefreshCw
 } from 'lucide-react';
 
 interface AutomationStatus {
@@ -57,42 +56,56 @@ interface ContentPipeline {
 }
 
 export function AutomationDashboard() {
+  const [selectedTab, setSelectedTab] = useState('overview');
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [selectedTab, setSelectedTab] = useState('overview');
 
-  // Fetch automation status
-  const { data: status, isLoading: statusLoading } = useQuery({
-    queryKey: ['/api/automation/status'],
-    refetchInterval: 30000, // Refresh every 30 seconds
+  // All state hooks at component level
+  const [newLink, setNewLink] = useState({
+    url: '',
+    merchant: '',
+    productName: '',
+    category: '',
+    commission: ''
   });
 
-  // Fetch affiliate links
+  const [newContent, setNewContent] = useState({
+    title: '',
+    contentType: 'blog',
+    targetPlatform: 'blog',
+    aiProvider: 'deepseek',
+    prompt: ''
+  });
+
+  // All queries at component level
+  const { data: status, refetch: refetchStatus } = useQuery({
+    queryKey: ['/api/automation/status'],
+    refetchInterval: 30000
+  });
+
   const { data: affiliateLinks = [] } = useQuery({
     queryKey: ['/api/affiliate-links'],
-    enabled: selectedTab === 'affiliate',
+    enabled: selectedTab === 'affiliate'
   });
 
-  // Fetch content pipeline
   const { data: contentPipeline = [] } = useQuery({
     queryKey: ['/api/content-pipeline'],
-    enabled: selectedTab === 'content',
+    enabled: selectedTab === 'content'
   });
 
-  // Fetch revenue stats
   const { data: revenueStats } = useQuery({
     queryKey: ['/api/revenue/stats'],
-    enabled: selectedTab === 'revenue',
+    enabled: selectedTab === 'revenue'
   });
 
-  // Automation control mutations
+  // All mutations at component level
   const startAutomation = useMutation({
     mutationFn: () => apiRequest('POST', '/api/automation/start'),
     onSuccess: () => {
-      toast({ title: 'Success', description: 'Automation system started successfully' });
-      queryClient.invalidateQueries({ queryKey: ['/api/automation/status'] });
+      toast({ title: 'Success', description: 'Automation started successfully' });
+      refetchStatus();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     }
   });
@@ -100,50 +113,72 @@ export function AutomationDashboard() {
   const stopAutomation = useMutation({
     mutationFn: () => apiRequest('POST', '/api/automation/stop'),
     onSuccess: () => {
-      toast({ title: 'Success', description: 'Automation system stopped successfully' });
-      queryClient.invalidateQueries({ queryKey: ['/api/automation/status'] });
+      toast({ title: 'Success', description: 'Automation stopped successfully' });
+      refetchStatus();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     }
   });
 
   const triggerAction = useMutation({
     mutationFn: (type: string) => apiRequest('POST', `/api/automation/trigger/${type}`),
-    onSuccess: (_, type) => {
-      toast({ title: 'Success', description: `${type} triggered successfully` });
-      queryClient.invalidateQueries({ queryKey: ['/api/automation/status'] });
+    onSuccess: () => {
+      toast({ title: 'Success', description: 'Action triggered successfully' });
+      refetchStatus();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     }
   });
 
-  // Create affiliate link mutation
   const createAffiliateLink = useMutation({
-    mutationFn: (data: any) => apiRequest('POST', '/api/affiliate-links', data),
+    mutationFn: (linkData: any) => apiRequest('POST', '/api/affiliate-links', linkData),
     onSuccess: () => {
       toast({ title: 'Success', description: 'Affiliate link created successfully' });
       queryClient.invalidateQueries({ queryKey: ['/api/affiliate-links'] });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     }
   });
 
-  // Create content pipeline mutation
   const createContent = useMutation({
-    mutationFn: (data: any) => apiRequest('POST', '/api/content-pipeline', data),
+    mutationFn: (contentData: any) => apiRequest('POST', '/api/content-pipeline', contentData),
     onSuccess: () => {
-      toast({ title: 'Success', description: 'Content creation started successfully' });
+      toast({ title: 'Success', description: 'Content creation initiated successfully' });
       queryClient.invalidateQueries({ queryKey: ['/api/content-pipeline'] });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     }
   });
 
-  const OverviewTab = () => (
+  const handleCreateLink = () => {
+    createAffiliateLink.mutate({
+      ...newLink,
+      commission: parseFloat(newLink.commission) || 0,
+      status: 'pending'
+    });
+    setNewLink({ url: '', merchant: '', productName: '', category: '', commission: '' });
+  };
+
+  const handleCreateContent = () => {
+    createContent.mutate({
+      ...newContent,
+      scheduledFor: new Date().toISOString()
+    });
+    setNewContent({ 
+      title: '', 
+      contentType: 'blog', 
+      targetPlatform: 'blog', 
+      aiProvider: 'deepseek', 
+      prompt: '' 
+    });
+  };
+
+  // Render functions
+  const renderOverviewTab = () => (
     <div className="space-y-6">
       {/* System Status */}
       <Card>
@@ -257,77 +292,54 @@ export function AutomationDashboard() {
     </div>
   );
 
-  const AffiliateTab = () => {
-    const [newLink, setNewLink] = useState({
-      url: '',
-      merchant: '',
-      productName: '',
-      category: '',
-      commission: ''
-    });
-
-    const handleCreateLink = () => {
-      createAffiliateLink.mutate({
-        ...newLink,
-        commission: parseFloat(newLink.commission) || 0,
-        status: 'pending'
-      });
-      setNewLink({ url: '', merchant: '', productName: '', category: '', commission: '' });
-    };
-
-    return (
-      <div className="space-y-6">
-        {/* Create New Affiliate Link */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Add New Affiliate Link</CardTitle>
-            <CardDescription>Manually add affiliate links to the automation system</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="url">Affiliate URL</Label>
-                <Input
-                  id="url"
-                  value={newLink.url}
-                  onChange={(e) => setNewLink({ ...newLink, url: e.target.value })}
-                  placeholder="https://amazon.com/dp/..."
-                />
-              </div>
-              <div>
-                <Label htmlFor="merchant">Merchant</Label>
-                <Input
-                  id="merchant"
-                  value={newLink.merchant}
-                  onChange={(e) => setNewLink({ ...newLink, merchant: e.target.value })}
-                  placeholder="Amazon, ClickBank, etc."
-                />
-              </div>
-              <div>
-                <Label htmlFor="productName">Product Name</Label>
-                <Input
-                  id="productName"
-                  value={newLink.productName}
-                  onChange={(e) => setNewLink({ ...newLink, productName: e.target.value })}
-                  placeholder="Premium Omega-3 Supplement"
-                />
-              </div>
-              <div>
-                <Label htmlFor="category">Category</Label>
-                <Select value={newLink.category} onValueChange={(value) => setNewLink({ ...newLink, category: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="supplements">Supplements</SelectItem>
-                    <SelectItem value="fitness">Fitness</SelectItem>
-                    <SelectItem value="meditation">Meditation</SelectItem>
-                    <SelectItem value="skincare">Skincare</SelectItem>
-                    <SelectItem value="nutrition">Nutrition</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+  const renderAffiliateTab = () => (
+    <div className="space-y-6">
+      {/* Create New Affiliate Link */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Add New Affiliate Link</CardTitle>
+          <CardDescription>Register a new affiliate link for automation</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="url">Affiliate URL</Label>
+              <Input
+                id="url"
+                value={newLink.url}
+                onChange={(e) => setNewLink({ ...newLink, url: e.target.value })}
+                placeholder="https://amazon.com/dp/B12345"
+              />
             </div>
+            <div>
+              <Label htmlFor="merchant">Merchant</Label>
+              <Input
+                id="merchant"
+                value={newLink.merchant}
+                onChange={(e) => setNewLink({ ...newLink, merchant: e.target.value })}
+                placeholder="Amazon"
+              />
+            </div>
+            <div>
+              <Label htmlFor="productName">Product Name</Label>
+              <Input
+                id="productName"
+                value={newLink.productName}
+                onChange={(e) => setNewLink({ ...newLink, productName: e.target.value })}
+                placeholder="Premium Omega-3 Fish Oil"
+              />
+            </div>
+            <div>
+              <Label htmlFor="category">Category</Label>
+              <Input
+                id="category"
+                value={newLink.category}
+                onChange={(e) => setNewLink({ ...newLink, category: e.target.value })}
+                placeholder="supplements"
+              />
+            </div>
+          </div>
+          <div className="flex gap-4 items-end">
             <div className="w-32">
               <Label htmlFor="commission">Commission (%)</Label>
               <Input
@@ -341,181 +353,166 @@ export function AutomationDashboard() {
             <Button onClick={handleCreateLink} disabled={createAffiliateLink.isPending}>
               Add Affiliate Link
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </CardContent>
+      </Card>
 
-        {/* Existing Affiliate Links */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Affiliate Links ({affiliateLinks.length})</CardTitle>
-            <CardDescription>Manage your affiliate link database</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {affiliateLinks.map((link: AffiliateLink) => (
-                <div key={link.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex-1">
-                    <div className="font-medium">{link.productName}</div>
-                    <div className="text-sm text-muted-foreground">{link.merchant} • {link.category}</div>
-                    <div className="text-xs text-muted-foreground">{link.url}</div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <div className="font-medium">{link.commission}%</div>
-                      <Badge variant={link.status === 'approved' ? 'default' : 'secondary'}>
-                        {link.status}
-                      </Badge>
-                    </div>
+      {/* Existing Affiliate Links */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Affiliate Links ({affiliateLinks.length})</CardTitle>
+          <CardDescription>Manage your affiliate link database</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {affiliateLinks.map((link: AffiliateLink) => (
+              <div key={link.id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex-1">
+                  <div className="font-medium">{link.productName}</div>
+                  <div className="text-sm text-muted-foreground">{link.merchant} • {link.category}</div>
+                  <div className="text-xs text-muted-foreground">{link.url}</div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <div className="font-medium">{link.commission}%</div>
+                    <Badge variant={link.status === 'approved' ? 'default' : 'secondary'}>
+                      {link.status}
+                    </Badge>
                   </div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  };
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
 
-  const ContentTab = () => {
-    const [newContent, setNewContent] = useState({
-      title: '',
-      contentType: 'blog',
-      targetPlatform: 'blog',
-      aiProvider: 'deepseek',
-      prompt: ''
-    });
-
-    const handleCreateContent = () => {
-      createContent.mutate({
-        ...newContent,
-        scheduledFor: new Date().toISOString()
-      });
-      setNewContent({ title: '', contentType: 'blog', targetPlatform: 'blog', aiProvider: 'deepseek', prompt: '' });
-    };
-
-    return (
-      <div className="space-y-6">
-        {/* Create New Content */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Create AI Content</CardTitle>
-            <CardDescription>Generate wellness content using AI automation</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="title">Content Title</Label>
-                <Input
-                  id="title"
-                  value={newContent.title}
-                  onChange={(e) => setNewContent({ ...newContent, title: e.target.value })}
-                  placeholder="5 Morning Rituals for Better Energy"
-                />
-              </div>
-              <div>
-                <Label htmlFor="contentType">Content Type</Label>
-                <Select value={newContent.contentType} onValueChange={(value) => setNewContent({ ...newContent, contentType: value })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="blog">Blog Post</SelectItem>
-                    <SelectItem value="social">Social Media</SelectItem>
-                    <SelectItem value="video">Video Script</SelectItem>
-                    <SelectItem value="audio">Audio Script</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="targetPlatform">Target Platform</Label>
-                <Select value={newContent.targetPlatform} onValueChange={(value) => setNewContent({ ...newContent, targetPlatform: value })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="blog">Blog</SelectItem>
-                    <SelectItem value="instagram">Instagram</SelectItem>
-                    <SelectItem value="x">X (Twitter)</SelectItem>
-                    <SelectItem value="tiktok">TikTok</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="aiProvider">AI Provider</Label>
-                <Select value={newContent.aiProvider} onValueChange={(value) => setNewContent({ ...newContent, aiProvider: value })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="deepseek">DeepSeek (Cost-Effective)</SelectItem>
-                    <SelectItem value="openai">OpenAI (Premium)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+  const renderContentTab = () => (
+    <div className="space-y-6">
+      {/* Create New Content */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Create AI Content</CardTitle>
+          <CardDescription>Generate wellness content using AI automation</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="prompt">Custom Prompt (Optional)</Label>
-              <Textarea
-                id="prompt"
-                value={newContent.prompt}
-                onChange={(e) => setNewContent({ ...newContent, prompt: e.target.value })}
-                placeholder="Add specific instructions for the AI..."
-                rows={3}
+              <Label htmlFor="title">Content Title</Label>
+              <Input
+                id="title"
+                value={newContent.title}
+                onChange={(e) => setNewContent({ ...newContent, title: e.target.value })}
+                placeholder="5 Morning Rituals for Better Energy"
               />
             </div>
-            <Button onClick={handleCreateContent} disabled={createContent.isPending}>
-              Generate Content
-            </Button>
-          </CardContent>
-        </Card>
+            <div>
+              <Label htmlFor="contentType">Content Type</Label>
+              <Select value={newContent.contentType} onValueChange={(value) => setNewContent({ ...newContent, contentType: value })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="blog">Blog Post</SelectItem>
+                  <SelectItem value="social">Social Media</SelectItem>
+                  <SelectItem value="video">Video Script</SelectItem>
+                  <SelectItem value="audio">Audio Script</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="targetPlatform">Target Platform</Label>
+              <Select value={newContent.targetPlatform} onValueChange={(value) => setNewContent({ ...newContent, targetPlatform: value })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="blog">Blog</SelectItem>
+                  <SelectItem value="instagram">Instagram</SelectItem>
+                  <SelectItem value="x">X (Twitter)</SelectItem>
+                  <SelectItem value="tiktok">TikTok</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="aiProvider">AI Provider</Label>
+              <Select value={newContent.aiProvider} onValueChange={(value) => setNewContent({ ...newContent, aiProvider: value })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="deepseek">DeepSeek (Cost-Effective)</SelectItem>
+                  <SelectItem value="openai">OpenAI (Premium)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="prompt">Custom Prompt (Optional)</Label>
+            <Textarea
+              id="prompt"
+              value={newContent.prompt}
+              onChange={(e) => setNewContent({ ...newContent, prompt: e.target.value })}
+              placeholder="Add specific instructions for the AI..."
+              rows={3}
+            />
+          </div>
+          <Button onClick={handleCreateContent} disabled={createContent.isPending}>
+            Generate Content
+          </Button>
+        </CardContent>
+      </Card>
 
-        {/* Content Pipeline */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Content Pipeline ({contentPipeline.length})</CardTitle>
-            <CardDescription>Track your automated content generation</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {contentPipeline.map((content: ContentPipeline) => (
-                <div key={content.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex-1">
-                    <div className="font-medium">{content.title}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {content.contentType} • {content.targetPlatform} • {content.aiProvider}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      Created: {new Date(content.createdAt).toLocaleDateString()}
-                    </div>
+      {/* Content Pipeline */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Content Pipeline ({contentPipeline.length})</CardTitle>
+          <CardDescription>Track AI-generated content creation</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {contentPipeline.map((content: ContentPipeline) => (
+              <div key={content.id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex-1">
+                  <div className="font-medium">{content.title}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {content.contentType} • {content.targetPlatform} • {content.aiProvider}
                   </div>
+                  <div className="text-xs text-muted-foreground">
+                    Created: {new Date(content.createdAt).toLocaleString()}
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
                   <Badge variant={
-                    content.status === 'completed' ? 'default' :
-                    content.status === 'generating' ? 'secondary' :
-                    content.status === 'failed' ? 'destructive' : 'outline'
+                    content.status === 'completed' ? 'default' : 
+                    content.status === 'generating' ? 'secondary' : 
+                    'outline'
                   }>
                     {content.status}
                   </Badge>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  };
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
 
-  const RevenueTab = () => (
+  const renderRevenueTab = () => (
     <div className="space-y-6">
+      {/* Revenue Overview */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <DollarSign className="h-5 w-5" />
             Revenue Analytics
           </CardTitle>
-          <CardDescription>Track your automated revenue generation</CardDescription>
+          <CardDescription>Track affiliate marketing performance and revenue</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-3 gap-6 mb-6">
             <div className="text-center">
               <div className="text-3xl font-bold text-green-600">
                 ${revenueStats?.revenue?.totalRevenue || '0.00'}
@@ -532,19 +529,20 @@ export function AutomationDashboard() {
               <div className="text-3xl font-bold">
                 {((revenueStats?.revenue?.avgConversion || 0) * 100).toFixed(1)}%
               </div>
-              <div className="text-sm text-muted-foreground">Conversion Rate</div>
+              <div className="text-sm text-muted-foreground">Avg Conversion</div>
             </div>
           </div>
         </CardContent>
       </Card>
 
+      {/* Content Performance */}
       <Card>
         <CardHeader>
           <CardTitle>Content Performance</CardTitle>
-          <CardDescription>How your automated content is performing</CardDescription>
+          <CardDescription>AI-generated content engagement and revenue metrics</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-3 gap-6">
             <div className="text-center">
               <div className="text-3xl font-bold">
                 {revenueStats?.engagement?.avgEngagement || 0}
@@ -570,11 +568,26 @@ export function AutomationDashboard() {
   );
 
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: BarChart3, component: OverviewTab },
-    { id: 'affiliate', label: 'Affiliate Links', icon: Link, component: AffiliateTab },
-    { id: 'content', label: 'Content Pipeline', icon: MessageSquare, component: ContentTab },
-    { id: 'revenue', label: 'Revenue', icon: DollarSign, component: RevenueTab },
+    { id: 'overview', label: 'Overview', icon: BarChart3 },
+    { id: 'affiliate', label: 'Affiliate Links', icon: Link },
+    { id: 'content', label: 'Content Pipeline', icon: MessageSquare },
+    { id: 'revenue', label: 'Revenue', icon: DollarSign },
   ];
+
+  const renderTabContent = () => {
+    switch (selectedTab) {
+      case 'overview':
+        return renderOverviewTab();
+      case 'affiliate':
+        return renderAffiliateTab();
+      case 'content':
+        return renderContentTab();
+      case 'revenue':
+        return renderRevenueTab();
+      default:
+        return renderOverviewTab();
+    }
+  };
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -607,7 +620,7 @@ export function AutomationDashboard() {
       </div>
 
       {/* Tab Content */}
-      {tabs.find(tab => tab.id === selectedTab)?.component()}
+      {renderTabContent()}
     </div>
   );
 }
