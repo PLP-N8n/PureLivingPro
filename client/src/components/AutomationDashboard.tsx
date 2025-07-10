@@ -198,25 +198,47 @@ export function AutomationDashboard() {
         aiProvider: 'deepseek'
       });
 
+      // Validate response structure
+      if (!response || !response.data) {
+        throw new Error('Invalid response from server');
+      }
+
       const scrapedData = response.data;
+      
+      // Ensure all required fields exist with fallbacks
+      const extractedData = {
+        merchant: scrapedData.merchant || 'Unknown Merchant',
+        productName: scrapedData.productName || 'Product Name Not Found',
+        category: scrapedData.category || 'general',
+        commission: scrapedData.commission ? scrapedData.commission.toString() : '5',
+        description: scrapedData.description || 'Product description not available',
+        imageUrl: scrapedData.imageUrl || ''
+      };
+
       setNewLink({
         ...newLink,
-        merchant: scrapedData.merchant || '',
-        productName: scrapedData.productName || '',
-        category: scrapedData.category || '',
-        commission: scrapedData.commission?.toString() || '',
-        description: scrapedData.description || '',
-        imageUrl: scrapedData.imageUrl || ''
+        ...extractedData
       });
 
       toast({ 
         title: 'Success', 
-        description: `Automatically extracted: ${scrapedData.productName}` 
+        description: `Extracted: ${extractedData.productName}` 
       });
+      
     } catch (error: any) {
+      console.error('URL scraping error:', error);
+      
+      // Parse error message if it's a structured error
+      let errorMessage = 'Failed to extract product information';
+      if (error.message) {
+        errorMessage = error.message;
+      } else if (error.response && error.response.data && error.response.data.error) {
+        errorMessage = error.response.data.error;
+      }
+      
       toast({ 
         title: 'Scraping Failed', 
-        description: error.message || 'Failed to extract product information', 
+        description: errorMessage, 
         variant: 'destructive' 
       });
     } finally {

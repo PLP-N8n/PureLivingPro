@@ -2279,8 +2279,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/affiliate-links/scrape', isAuthenticated, asyncHandler(async (req, res) => {
     const { url, aiProvider = 'deepseek' } = req.body;
     
-    if (!url) {
-      return res.status(400).json({ success: false, error: 'URL is required' });
+    if (!url || typeof url !== 'string') {
+      return res.status(400).json({ success: false, error: 'Valid URL is required' });
     }
 
     const { urlScraper } = await import('./automation/urlScraper');
@@ -2289,13 +2289,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(400).json({ success: false, error: 'Invalid URL format' });
     }
 
-    console.log(`🔍 Scraping product info from: ${url}`);
-    const scrapedInfo = await urlScraper.scrapeProductFromURL(url, aiProvider);
-    
-    sendSuccess(res, {
-      ...scrapedInfo,
-      url // Include the original URL
-    });
+    try {
+      console.log(`🔍 Scraping product info from: ${url}`);
+      const scrapedInfo = await urlScraper.scrapeProductFromURL(url, aiProvider);
+      
+      // Validate the scraped info before sending
+      if (!scrapedInfo || typeof scrapedInfo !== 'object') {
+        throw new Error('Invalid scraped data format');
+      }
+
+      // Ensure all required fields are present
+      const validatedInfo = {
+        productName: scrapedInfo.productName || 'Unknown Product',
+        merchant: scrapedInfo.merchant || 'Unknown Merchant',
+        category: scrapedInfo.category || 'general',
+        description: scrapedInfo.description || 'Product description not available',
+        price: scrapedInfo.price || undefined,
+        imageUrl: scrapedInfo.imageUrl || undefined,
+        commission: scrapedInfo.commission || 5,
+        url // Include the original URL
+      };
+
+      console.log(`✅ Scraped and validated: ${validatedInfo.productName}`);
+      sendSuccess(res, validatedInfo);
+      
+    } catch (error) {
+      console.error('URL scraping error:', error);
+      sendError(res, error.message || 'Failed to scrape product information', 500);
+    }
   }));
 
   // Content pipeline management

@@ -202,19 +202,35 @@ Return only valid JSON, no explanations.`;
       const cleanedResult = result.replace(/```json\n?|\n?```/g, '').trim();
       const productInfo = JSON.parse(cleanedResult);
 
-      // Validate and set defaults
-      return {
-        productName: productInfo.productName || 'Unknown Product',
-        merchant: productInfo.merchant || merchant,
-        category: productInfo.category || 'general',
-        description: productInfo.description || 'Product description not available',
-        price: productInfo.price || undefined,
-        imageUrl: productInfo.imageUrl || undefined,
-        commission: this.parseCommission(productInfo.commission) || this.getDefaultCommission(merchant)
+      // Validate and set defaults with comprehensive error checking
+      const validatedInfo = {
+        productName: (productInfo?.productName && typeof productInfo.productName === 'string') 
+          ? productInfo.productName.trim() 
+          : 'Unknown Product',
+        merchant: (productInfo?.merchant && typeof productInfo.merchant === 'string') 
+          ? productInfo.merchant.trim() 
+          : merchant || 'Unknown Merchant',
+        category: (productInfo?.category && typeof productInfo.category === 'string') 
+          ? productInfo.category.trim() 
+          : 'general',
+        description: (productInfo?.description && typeof productInfo.description === 'string') 
+          ? productInfo.description.trim() 
+          : 'Product description not available',
+        price: (productInfo?.price && typeof productInfo.price === 'string') 
+          ? productInfo.price.trim() 
+          : undefined,
+        imageUrl: (productInfo?.imageUrl && typeof productInfo.imageUrl === 'string') 
+          ? productInfo.imageUrl.trim() 
+          : undefined,
+        commission: this.parseCommission(productInfo?.commission) || this.getDefaultCommission(merchant)
       };
+
+      console.log('Validated product info:', validatedInfo);
+      return validatedInfo;
 
     } catch (error) {
       console.error('AI extraction failed, using fallback method:', error);
+      console.error('AI response that caused error:', result);
       return this.fallbackExtraction(content, url, merchant);
     }
   }
