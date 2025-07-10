@@ -198,12 +198,21 @@ export function AutomationDashboard() {
         aiProvider: 'deepseek'
       });
 
+      // Parse JSON response
+      const jsonResponse = await response.json();
+      console.log('Parsed API response:', jsonResponse);
+
       // Validate response structure
-      if (!response || !response.data) {
-        throw new Error('Invalid response from server');
+      if (!jsonResponse || !jsonResponse.success) {
+        throw new Error(jsonResponse?.error || 'Failed to scrape URL');
       }
 
-      const scrapedData = response.data;
+      const scrapedData = jsonResponse.data;
+      if (!scrapedData) {
+        throw new Error('No data received from scraping service');
+      }
+
+      console.log('Extracted scraped data:', scrapedData);
       
       // Ensure all required fields exist with fallbacks
       const extractedData = {
@@ -228,12 +237,18 @@ export function AutomationDashboard() {
     } catch (error: any) {
       console.error('URL scraping error:', error);
       
-      // Parse error message if it's a structured error
+      // Extract meaningful error message
       let errorMessage = 'Failed to extract product information';
-      if (error.message) {
+      
+      if (typeof error === 'string') {
+        errorMessage = error;
+      } else if (error?.message) {
         errorMessage = error.message;
-      } else if (error.response && error.response.data && error.response.data.error) {
-        errorMessage = error.response.data.error;
+      }
+      
+      // Handle authentication errors specifically
+      if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
+        errorMessage = 'Please log in to use the URL scraping feature';
       }
       
       toast({ 
