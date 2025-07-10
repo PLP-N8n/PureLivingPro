@@ -24,6 +24,7 @@ import Subscribe from "@/pages/subscribe";
 import Admin from "@/pages/admin";
 import { AnalyticsDashboard } from "@/components/AnalyticsDashboard";
 import { AutonomousControl } from "@/components/AutonomousControl";
+import { AutomationDashboard } from "@/components/AutomationDashboard";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -55,6 +56,7 @@ function Router() {
           <Route path="/admin" component={Admin} />
           <Route path="/analytics" component={AnalyticsDashboard} />
           <Route path="/autonomous" component={AutonomousControl} />
+          <Route path="/automation" component={AutomationDashboard} />
         </>
       )}
       <Route component={NotFound} />
