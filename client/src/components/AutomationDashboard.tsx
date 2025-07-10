@@ -629,6 +629,14 @@ export function AutomationDashboard() {
                 <BarChart3 className="w-4 h-4" />
                 View Analytics
               </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => window.open('/autonomous', '_blank')}
+                className="flex items-center gap-2"
+              >
+                <Bot className="w-4 h-4" />
+                Autonomous Control
+              </Button>
               <div className="text-sm text-muted-foreground space-y-1">
                 <div className="flex items-center">
                   💡 Just paste any product URL and click "Auto-Fill" to extract all details automatically

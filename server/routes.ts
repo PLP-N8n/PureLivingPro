@@ -2602,6 +2602,180 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Autonomous System Control Routes
+  app.post('/api/automation/autonomous/start', async (req, res) => {
+    try {
+      const { autonomousController } = await import('./automation/autonomousController');
+      const result = await autonomousController.startAutonomousMode();
+      
+      res.json({
+        success: result.success,
+        message: result.message,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error: any) {
+      console.error("Failed to start autonomous mode:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
+
+  app.post('/api/automation/autonomous/stop', async (req, res) => {
+    try {
+      const { autonomousController } = await import('./automation/autonomousController');
+      const result = await autonomousController.stopAutonomousMode();
+      
+      res.json({
+        success: result.success,
+        message: result.message,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error: any) {
+      console.error("Failed to stop autonomous mode:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
+
+  app.get('/api/automation/autonomous/status', async (req, res) => {
+    try {
+      const { autonomousController } = await import('./automation/autonomousController');
+      const status = autonomousController.getStatus();
+      const health = await autonomousController.getSystemHealth();
+      
+      res.json({
+        success: true,
+        data: {
+          ...status,
+          systemHealth: health
+        }
+      });
+    } catch (error: any) {
+      console.error("Failed to get autonomous status:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
+
+  app.put('/api/automation/autonomous/config', async (req, res) => {
+    try {
+      const { autonomousController } = await import('./automation/autonomousController');
+      await autonomousController.updateConfig(req.body);
+      
+      res.json({
+        success: true,
+        message: 'Configuration updated successfully',
+        timestamp: new Date().toISOString()
+      });
+    } catch (error: any) {
+      console.error("Failed to update autonomous config:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
+
+  // Intelligent Scheduler Routes
+  app.post('/api/automation/scheduler/start', async (req, res) => {
+    try {
+      const { intelligentScheduler } = await import('./automation/intelligentScheduler');
+      await intelligentScheduler.startScheduler();
+      
+      res.json({
+        success: true,
+        message: 'Intelligent scheduler started',
+        timestamp: new Date().toISOString()
+      });
+    } catch (error: any) {
+      console.error("Failed to start scheduler:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
+
+  app.post('/api/automation/scheduler/stop', async (req, res) => {
+    try {
+      const { intelligentScheduler } = await import('./automation/intelligentScheduler');
+      await intelligentScheduler.stopScheduler();
+      
+      res.json({
+        success: true,
+        message: 'Intelligent scheduler stopped',
+        timestamp: new Date().toISOString()
+      });
+    } catch (error: any) {
+      console.error("Failed to stop scheduler:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
+
+  app.get('/api/automation/scheduler/status', async (req, res) => {
+    try {
+      const { intelligentScheduler } = await import('./automation/intelligentScheduler');
+      const status = intelligentScheduler.getSchedulerStatus();
+      
+      res.json({
+        success: true,
+        data: status
+      });
+    } catch (error: any) {
+      console.error("Failed to get scheduler status:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
+
+  app.post('/api/automation/scheduler/schedule-task', async (req, res) => {
+    try {
+      const { intelligentScheduler } = await import('./automation/intelligentScheduler');
+      const taskId = await intelligentScheduler.scheduleTask(req.body);
+      
+      res.json({
+        success: true,
+        data: { taskId },
+        message: 'Task scheduled successfully'
+      });
+    } catch (error: any) {
+      console.error("Failed to schedule task:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
+
+  app.get('/api/automation/scheduler/tasks', async (req, res) => {
+    try {
+      const { intelligentScheduler } = await import('./automation/intelligentScheduler');
+      const tasks = await intelligentScheduler.getScheduledTasks();
+      
+      res.json({
+        success: true,
+        data: tasks
+      });
+    } catch (error: any) {
+      console.error("Failed to get scheduled tasks:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

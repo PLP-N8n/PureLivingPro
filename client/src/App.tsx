@@ -23,6 +23,7 @@ import AffiliateProducts from "@/pages/AffiliateProducts";
 import Subscribe from "@/pages/subscribe";
 import Admin from "@/pages/admin";
 import { AnalyticsDashboard } from "@/components/AnalyticsDashboard";
+import { AutonomousControl } from "@/components/AutonomousControl";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -53,6 +54,7 @@ function Router() {
           <Route path="/subscribe" component={Subscribe} />
           <Route path="/admin" component={Admin} />
           <Route path="/analytics" component={AnalyticsDashboard} />
+          <Route path="/autonomous" component={AutonomousControl} />
         </>
       )}
       <Route component={NotFound} />

@@ -622,6 +622,57 @@ export const revenueTracking = pgTable("revenue_tracking", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Automation Schedule table for intelligent task scheduling
+export const automationSchedule = pgTable("automation_schedule", {
+  id: serial("id").primaryKey(),
+  type: varchar("type", { length: 100 }).notNull(),
+  priority: varchar("priority", { length: 20 }).notNull().default("MEDIUM"),
+  scheduledFor: timestamp("scheduled_for").notNull(),
+  status: varchar("status", { length: 20 }).notNull().default("PENDING"),
+  parameters: text("parameters"),
+  retryCount: integer("retry_count").default(0),
+  maxRetries: integer("max_retries").default(3),
+  estimatedDuration: integer("estimated_duration").default(15),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Autonomous System Configuration table
+export const autonomousConfig = pgTable("autonomous_config", {
+  id: serial("id").primaryKey(),
+  key: varchar("key", { length: 100 }).notNull().unique(),
+  value: text("value").notNull(),
+  dataType: varchar("data_type", { length: 20 }).notNull().default("string"),
+  description: text("description"),
+  category: varchar("category", { length: 50 }).notNull().default("general"),
+  isActive: boolean("is_active").notNull().default(true),
+  lastModified: timestamp("last_modified").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Performance Metrics table for system optimization
+export const performanceMetrics = pgTable("performance_metrics", {
+  id: serial("id").primaryKey(),
+  metricType: varchar("metric_type", { length: 100 }).notNull(),
+  value: decimal("value", { precision: 10, scale: 2 }).notNull(),
+  unit: varchar("unit", { length: 20 }),
+  timestamp: timestamp("timestamp").defaultNow(),
+  metadata: jsonb("metadata"),
+  category: varchar("category", { length: 50 }).notNull().default("system"),
+});
+
+// System Learning table for AI improvements
+export const systemLearning = pgTable("system_learning", {
+  id: serial("id").primaryKey(),
+  actionType: varchar("action_type", { length: 100 }).notNull(),
+  context: jsonb("context").notNull(),
+  outcome: varchar("outcome", { length: 50 }).notNull(),
+  successRate: decimal("success_rate", { precision: 5, scale: 2 }),
+  learningData: jsonb("learning_data"),
+  confidenceScore: decimal("confidence_score", { precision: 5, scale: 2 }),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Insert schemas for automation tables
 export const insertAffiliateLinkSchema = createInsertSchema(affiliateLinks).omit({
   id: true,
