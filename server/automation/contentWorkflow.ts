@@ -2,7 +2,7 @@ import { storage } from '../storage';
 import { generateWellnessBlogPostDeepSeek, generateProductDescriptionDeepSeek } from '../deepseek';
 import { db } from '../db';
 import { products, blogPosts, affiliateLinks } from '@shared/schema';
-import { eq } from 'drizzle-orm';
+import { eq, isNull } from 'drizzle-orm';
 
 export interface AutomationWorkflowResult {
   productsCreated: number;
@@ -93,14 +93,32 @@ export class ContentWorkflowAutomation {
    * Get affiliate links that haven't been converted to products yet
    */
   private async getUnprocessedAffiliateLinks(limit: number = 10) {
+    console.log('🔍 Searching for unprocessed affiliate links...');
+    
     const links = await db
-      .select()
+      .select({
+        id: affiliateLinks.id,
+        url: affiliateLinks.url,
+        merchant: affiliateLinks.merchant,
+        productName: affiliateLinks.productName,
+        category: affiliateLinks.category,
+        commission: affiliateLinks.commission,
+        description: affiliateLinks.description,
+        imageUrl: affiliateLinks.imageUrl,
+        status: affiliateLinks.status,
+        isActive: affiliateLinks.isActive,
+        createdAt: affiliateLinks.createdAt,
+        updatedAt: affiliateLinks.updatedAt
+      })
       .from(affiliateLinks)
       .leftJoin(products, eq(affiliateLinks.id, products.affiliateLinkId))
-      .where(eq(products.affiliateLinkId, null))
+      .where(isNull(products.affiliateLinkId))
       .limit(limit);
 
-    return links.map(row => row.affiliate_links).filter(Boolean);
+    console.log(`🔍 Found ${links.length} unprocessed links`);
+    links.forEach(link => console.log(`   - ${link.id}: ${link.productName}`));
+    
+    return links;
   }
 
   /**
