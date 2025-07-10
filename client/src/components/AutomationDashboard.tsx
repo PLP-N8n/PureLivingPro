@@ -20,7 +20,10 @@ import {
   Target, 
   TrendingUp,
   DollarSign,
-  RefreshCw
+  RefreshCw,
+  ExternalLink,
+  Package,
+  FileText
 } from 'lucide-react';
 
 interface AutomationStatus {
@@ -72,6 +75,7 @@ export function AutomationDashboard() {
   });
 
   const [isScrapingUrl, setIsScrapingUrl] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const [newContent, setNewContent] = useState({
     title: '',
@@ -307,6 +311,91 @@ export function AutomationDashboard() {
     });
   };
 
+  // Automation workflow functions
+  const handleBulkConversion = async () => {
+    setIsProcessing(true);
+    try {
+      const response = await apiRequest('POST', '/api/automation/convert-links-to-products', {
+        maxLinks: 5
+      });
+      const result = await response.json();
+      
+      if (result.success) {
+        toast({
+          title: 'Success',
+          description: `Created ${result.data.productsCreated} products from affiliate links`
+        });
+        refetchAffiliateLinks();
+      } else {
+        throw new Error(result.error || 'Failed to convert links');
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to convert affiliate links to products',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleGenerateBlogs = async () => {
+    setIsProcessing(true);
+    try {
+      const response = await apiRequest('POST', '/api/automation/generate-category-blogs');
+      const result = await response.json();
+      
+      if (result.success) {
+        toast({
+          title: 'Success',
+          description: `Generated ${result.data.blogsCreated} blog posts from product categories`
+        });
+      } else {
+        throw new Error(result.error || 'Failed to generate blogs');
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to generate blog content',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleFullWorkflow = async () => {
+    setIsProcessing(true);
+    try {
+      const response = await apiRequest('POST', '/api/automation/content-workflow', {
+        processUnprocessedLinks: true,
+        createProducts: true,
+        createBlogs: true,
+        maxLinksToProcess: 3
+      });
+      const result = await response.json();
+      
+      if (result.success) {
+        toast({
+          title: 'Full Automation Complete',
+          description: `Created ${result.data.productsCreated} products and ${result.data.blogsCreated} blogs`
+        });
+        refetchAffiliateLinks();
+      } else {
+        throw new Error(result.error || 'Full automation failed');
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Full automation workflow failed',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   // Render functions
   const renderOverviewTab = () => (
     <div className="space-y-6">
@@ -524,6 +613,14 @@ export function AutomationDashboard() {
               <Button onClick={handleCreateLink} disabled={createAffiliateLink.isPending}>
                 Add Affiliate Link
               </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => window.open('/admin', '_blank')}
+                className="flex items-center gap-2"
+              >
+                <ExternalLink className="w-4 h-4" />
+                Manage Products & Blogs
+              </Button>
               <div className="text-sm text-muted-foreground space-y-1">
                 <div className="flex items-center">
                   💡 Just paste any product URL and click "Auto-Fill" to extract all details automatically
@@ -559,6 +656,37 @@ export function AutomationDashboard() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
+            {/* Automation Actions */}
+            <div className="flex gap-4 p-4 bg-muted/50 rounded-lg">
+              <Button 
+                onClick={() => handleBulkConversion()}
+                disabled={isProcessing}
+                className="flex items-center gap-2"
+              >
+                <Package className="w-4 h-4" />
+                {isProcessing ? 'Converting...' : 'Convert to Products'}
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => handleGenerateBlogs()}
+                disabled={isProcessing}
+                className="flex items-center gap-2"
+              >
+                <FileText className="w-4 h-4" />
+                Generate Blog Content
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => handleFullWorkflow()}
+                disabled={isProcessing}
+                className="flex items-center gap-2"
+              >
+                <Zap className="w-4 h-4" />
+                Full Automation
+              </Button>
+            </div>
+
+            {/* Affiliate Links List */}
             {affiliateLinks.map((link: AffiliateLink) => (
               <div key={link.id} className="flex items-center justify-between p-4 border rounded-lg">
                 <div className="flex-1">

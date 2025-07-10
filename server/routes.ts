@@ -2450,6 +2450,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
     sendSuccess(res, rule);
   }));
 
+  // Content Workflow Automation Routes
+  app.post('/api/automation/content-workflow', async (req, res) => {
+    try {
+      const { contentWorkflow } = await import('./automation/contentWorkflow');
+      const options = req.body || {};
+      
+      console.log('🚀 Starting content workflow automation...');
+      const result = await contentWorkflow.runCompleteWorkflow(options);
+      
+      res.json({
+        success: result.success,
+        data: result
+      });
+    } catch (error: any) {
+      console.error("Content workflow automation error:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
+
+  // Batch convert affiliate links to products
+  app.post('/api/automation/convert-links-to-products', async (req, res) => {
+    try {
+      const { contentWorkflow } = await import('./automation/contentWorkflow');
+      
+      const result = await contentWorkflow.runCompleteWorkflow({
+        processUnprocessedLinks: true,
+        createProducts: true,
+        createBlogs: false,
+        maxLinksToProcess: req.body.maxLinks || 5
+      });
+      
+      res.json({
+        success: result.success,
+        data: {
+          productsCreated: result.productsCreated,
+          errors: result.errors
+        }
+      });
+    } catch (error: any) {
+      console.error("Convert links to products error:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
+
+  // Generate blogs from product categories
+  app.post('/api/automation/generate-category-blogs', async (req, res) => {
+    try {
+      const { contentWorkflow } = await import('./automation/contentWorkflow');
+      
+      const result = await contentWorkflow.runCompleteWorkflow({
+        processUnprocessedLinks: false,
+        createProducts: false,
+        createBlogs: true
+      });
+      
+      res.json({
+        success: result.success,
+        data: {
+          blogsCreated: result.blogsCreated,
+          errors: result.errors
+        }
+      });
+    } catch (error: any) {
+      console.error("Generate category blogs error:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
