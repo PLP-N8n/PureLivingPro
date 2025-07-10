@@ -211,7 +211,7 @@ export function AutomationDashboard() {
     // Prepare data with proper validation
     const linkData = {
       ...newLink,
-      commission: parseFloat(newLink.commission) || 0,
+      commission: newLink.commission || '0', // Keep as string
       description: newLink.description ? newLink.description.substring(0, 500) : '', // Truncate description to 500 chars
       status: 'pending'
     };

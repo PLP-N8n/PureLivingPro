@@ -2221,7 +2221,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/affiliate-links', isAuthenticated, asyncHandler(async (req, res) => {
     try {
-      const linkData = insertAffiliateLinkSchema.parse(req.body);
+      // Pre-process data to handle validation issues
+      const processedData = {
+        ...req.body,
+        description: req.body.description ? req.body.description.substring(0, 500) : '', // Truncate description
+        commission: parseFloat(req.body.commission) || 0 // Convert commission to number
+      };
+      
+      const linkData = insertAffiliateLinkSchema.parse(processedData);
       const link = await storage.createAffiliateLink(linkData);
       sendSuccess(res, link);
     } catch (error) {

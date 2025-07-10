@@ -501,10 +501,10 @@ export const affiliateLinks = pgTable("affiliate_links", {
   merchant: varchar("merchant", { length: 100 }),
   productName: varchar("product_name", { length: 255 }),
   category: varchar("category", { length: 100 }),
-  description: text("description"),
+  description: varchar("description", { length: 500 }), // Changed from text to varchar with length limit
   imageUrl: varchar("image_url", { length: 1000 }),
   price: varchar("price", { length: 50 }),
-  commission: decimal("commission", { precision: 5, scale: 2 }),
+  commission: varchar("commission", { length: 10 }), // Changed from decimal to varchar to match input
   isActive: boolean("is_active").default(true),
   lastChecked: timestamp("last_checked"),
   status: varchar("status", { length: 50 }).default("pending"), // pending, approved, rejected, expired
