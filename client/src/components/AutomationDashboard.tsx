@@ -238,7 +238,7 @@ export function AutomationDashboard() {
 
       // Validate response structure
       if (!jsonResponse || !jsonResponse.success) {
-        throw new Error(jsonResponse?.error || 'Failed to scrape URL');
+        throw new Error(jsonResponse?.error?.message || jsonResponse?.error || 'Failed to scrape URL');
       }
 
       const scrapedData = jsonResponse.data;
@@ -619,6 +619,25 @@ export function AutomationDashboard() {
               </Button>
               <Button 
                 variant="outline" 
+                onClick={() => {
+                  setNewLink({
+                    url: 'https://www.amazon.com/dp/B08H8YZPXT',
+                    merchant: 'Amazon',
+                    productName: 'Ashwagandha 1300mg - Premium Root Powder with Black Pepper',
+                    category: 'Herbal Supplements',
+                    commission: '4',
+                    description: 'Organic Ashwagandha root powder supplement with black pepper for enhanced absorption. Supports stress management and overall wellness.',
+                    imageUrl: 'https://m.media-amazon.com/images/I/61mj0BqL+5L._AC_SL1500_.jpg'
+                  });
+                  toast({ title: 'Demo Data Loaded', description: 'Sample affiliate link loaded for testing' });
+                }}
+                className="flex items-center gap-2"
+              >
+                <Zap className="w-4 h-4" />
+                Load Demo Data
+              </Button>
+              <Button 
+                variant="outline" 
                 onClick={handleBulkConversion}
                 disabled={isProcessing}
                 className="flex items-center gap-2"
@@ -681,6 +700,12 @@ export function AutomationDashboard() {
                 </div>
                 <div className="text-xs opacity-75">
                   💡 <strong>Pro tip:</strong> Use full Amazon URLs (amazon.com/dp/...) instead of short links (amzn.to) for better results
+                </div>
+                <div className="text-xs opacity-75 text-blue-600">
+                  🚀 <strong>Quick Start:</strong> Click "Load Demo Data" to test the automation workflow when scraping fails
+                </div>
+                <div className="text-xs opacity-75 text-amber-600 mt-2 p-2 bg-amber-50 rounded">
+                  ⚠️ <strong>When scraping fails:</strong> Many websites block automated requests. Use "Load Demo Data" for testing, or manually fill in product details.
                 </div>
               </div>
             </div>
