@@ -22,6 +22,7 @@ import AIChatCoach from "@/pages/AIChatCoach";
 import AffiliateProducts from "@/pages/AffiliateProducts";
 import Subscribe from "@/pages/subscribe";
 import Admin from "@/pages/admin";
+import { AnalyticsDashboard } from "@/components/AnalyticsDashboard";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -51,6 +52,7 @@ function Router() {
           <Route path="/affiliate-products" component={AffiliateProducts} />
           <Route path="/subscribe" component={Subscribe} />
           <Route path="/admin" component={Admin} />
+          <Route path="/analytics" component={AnalyticsDashboard} />
         </>
       )}
       <Route component={NotFound} />

@@ -621,6 +621,14 @@ export function AutomationDashboard() {
                 <ExternalLink className="w-4 h-4" />
                 Manage Products & Blogs
               </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => window.open('/analytics', '_blank')}
+                className="flex items-center gap-2"
+              >
+                <BarChart3 className="w-4 h-4" />
+                View Analytics
+              </Button>
               <div className="text-sm text-muted-foreground space-y-1">
                 <div className="flex items-center">
                   💡 Just paste any product URL and click "Auto-Fill" to extract all details automatically
