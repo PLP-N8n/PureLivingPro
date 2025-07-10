@@ -90,9 +90,12 @@ export function AutomationDashboard() {
   // Extract data from response structure
   const status = statusResponse?.data;
 
-  const { data: affiliateLinksResponse } = useQuery({
+  const { data: affiliateLinksResponse, refetch: refetchAffiliateLinks } = useQuery({
     queryKey: ['/api/affiliate-links'],
-    enabled: selectedTab === 'affiliate'
+    enabled: selectedTab === 'affiliate',
+    refetchInterval: selectedTab === 'affiliate' ? 30000 : false, // Refresh every 30 seconds when tab is active
+    staleTime: 0, // Always consider data stale
+    cacheTime: 0 // Don't cache results
   });
 
   const { data: contentPipelineResponse } = useQuery({
@@ -147,13 +150,40 @@ export function AutomationDashboard() {
   });
 
   const createAffiliateLink = useMutation({
-    mutationFn: (linkData: any) => apiRequest('POST', '/api/affiliate-links', linkData),
-    onSuccess: () => {
-      toast({ title: 'Success', description: 'Affiliate link created successfully' });
+    mutationFn: async (linkData: any) => {
+      const response = await apiRequest('POST', '/api/affiliate-links', linkData);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      // Clear form
+      setNewLink({ 
+        url: '', 
+        merchant: '', 
+        productName: '', 
+        category: '', 
+        commission: '', 
+        description: '', 
+        imageUrl: '' 
+      });
+      
+      // Force refresh affiliate links list
       queryClient.invalidateQueries({ queryKey: ['/api/affiliate-links'] });
+      
+      // Also trigger immediate refetch
+      refetchAffiliateLinks();
+      
+      toast({ 
+        title: 'Success', 
+        description: `Affiliate link added: ${data?.data?.productName || 'Link added successfully'}` 
+      });
     },
     onError: (error: any) => {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      console.error('Create affiliate link error:', error);
+      toast({ 
+        title: 'Error', 
+        description: error.message || 'Failed to create affiliate link', 
+        variant: 'destructive' 
+      });
     }
   });
 
@@ -169,19 +199,15 @@ export function AutomationDashboard() {
   });
 
   const handleCreateLink = () => {
+    if (!newLink.url || !newLink.productName) {
+      toast({ title: 'Error', description: 'Please fill in URL and product name', variant: 'destructive' });
+      return;
+    }
+
     createAffiliateLink.mutate({
       ...newLink,
       commission: parseFloat(newLink.commission) || 0,
       status: 'pending'
-    });
-    setNewLink({ 
-      url: '', 
-      merchant: '', 
-      productName: '', 
-      category: '', 
-      commission: '', 
-      description: '', 
-      imageUrl: '' 
     });
   };
 
@@ -233,6 +259,12 @@ export function AutomationDashboard() {
         title: 'Success', 
         description: `Extracted: ${extractedData.productName}` 
       });
+
+      // Force refresh of affiliate links cache
+      queryClient.invalidateQueries({ queryKey: ['/api/affiliate-links'] });
+      
+      // Also trigger immediate refetch
+      refetchAffiliateLinks();
       
     } catch (error: any) {
       console.error('URL scraping error:', error);
@@ -508,7 +540,21 @@ export function AutomationDashboard() {
       {/* Existing Affiliate Links */}
       <Card>
         <CardHeader>
-          <CardTitle>Affiliate Links ({affiliateLinks.length})</CardTitle>
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Link className="w-5 h-5" />
+              Affiliate Links ({affiliateLinks.length})
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => refetchAffiliateLinks()}
+              className="flex items-center gap-1"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Refresh
+            </Button>
+          </CardTitle>
           <CardDescription>Manage your affiliate link database</CardDescription>
         </CardHeader>
         <CardContent>
