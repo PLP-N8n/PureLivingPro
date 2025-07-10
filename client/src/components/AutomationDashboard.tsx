@@ -78,25 +78,35 @@ export function AutomationDashboard() {
   });
 
   // All queries at component level
-  const { data: status, refetch: refetchStatus } = useQuery({
+  const { data: statusResponse, refetch: refetchStatus } = useQuery({
     queryKey: ['/api/automation/status'],
     refetchInterval: 30000
   });
 
-  const { data: affiliateLinks = [] } = useQuery({
+  // Extract data from response structure
+  const status = statusResponse?.data;
+
+  const { data: affiliateLinksResponse } = useQuery({
     queryKey: ['/api/affiliate-links'],
     enabled: selectedTab === 'affiliate'
   });
 
-  const { data: contentPipeline = [] } = useQuery({
+  const { data: contentPipelineResponse } = useQuery({
     queryKey: ['/api/content-pipeline'],
     enabled: selectedTab === 'content'
   });
 
-  const { data: revenueStats } = useQuery({
+  // Extract data from response structure
+  const affiliateLinks = affiliateLinksResponse?.data || [];
+  const contentPipeline = contentPipelineResponse?.data || [];
+
+  const { data: revenueStatsResponse } = useQuery({
     queryKey: ['/api/revenue/stats'],
     enabled: selectedTab === 'revenue'
   });
+
+  // Extract data from response structure
+  const revenueStats = revenueStatsResponse?.data;
 
   // All mutations at component level
   const startAutomation = useMutation({
