@@ -21,10 +21,19 @@ export class URLScraper {
       console.log(`🔍 Scraping URL: ${url}`);
 
       // Fetch the webpage content
-      const pageContent = await this.fetchPageContent(url);
+      const { content: pageContent, html } = await this.fetchPageContent(url);
+      
+      // Extract images from HTML
+      const imageUrls = this.extractImageUrls(html, url);
       
       // Extract product info using AI
       const productInfo = await this.extractProductInfoWithAI(pageContent, url, aiProvider);
+      
+      // Add the best image URL if found and AI didn't provide one
+      if (imageUrls.length > 0 && (!productInfo.imageUrl || productInfo.imageUrl === 'Not provided in content' || !productInfo.imageUrl.startsWith('http'))) {
+        productInfo.imageUrl = imageUrls[0]; // Use the first (likely best) image
+        console.log(`📸 Added image URL from extraction: ${imageUrls[0]}`);
+      }
       
       console.log(`✅ Successfully scraped product: ${productInfo.productName}`);
       return productInfo;
@@ -56,9 +65,69 @@ export class URLScraper {
   }
 
   /**
+   * Extract images from HTML content
+   */
+  private extractImageUrls(html: string, baseUrl: string): string[] {
+    const imageUrls: string[] = [];
+    
+    // Multiple regex patterns to find images
+    const patterns = [
+      // Standard img tags
+      /<img[^>]+src\s*=\s*["']([^"']+)["'][^>]*>/gi,
+      // Amazon specific image patterns
+      /data-old-hires\s*=\s*["']([^"']+)["']/gi,
+      /data-src\s*=\s*["']([^"']+)["']/gi,
+      // Product image patterns
+      /landingImage.*?["']([^"']+\.(?:jpg|jpeg|png|webp))["']/gi,
+      // JSON-LD structured data
+      /"image"\s*:\s*["']([^"']+)["']/gi
+    ];
+    
+    patterns.forEach(pattern => {
+      let match;
+      while ((match = pattern.exec(html)) !== null) {
+        let imageUrl = match[1];
+        
+        // Skip very small images, placeholders, and icons
+        if (imageUrl.includes('1x1') || 
+            imageUrl.includes('spacer') || 
+            imageUrl.includes('pixel') ||
+            imageUrl.includes('icon') ||
+            imageUrl.includes('loading') ||
+            imageUrl.includes('sprite')) {
+          continue;
+        }
+        
+        // Convert relative URLs to absolute
+        if (imageUrl.startsWith('//')) {
+          imageUrl = 'https:' + imageUrl;
+        } else if (imageUrl.startsWith('/')) {
+          const base = new URL(baseUrl);
+          imageUrl = base.origin + imageUrl;
+        } else if (!imageUrl.startsWith('http')) {
+          continue; // Skip invalid URLs
+        }
+        
+        // Amazon specific: get high-res version
+        if (imageUrl.includes('amazon') || imageUrl.includes('ssl-images-amazon')) {
+          // Replace small image indicators with large ones
+          imageUrl = imageUrl.replace(/\._[A-Z0-9,_]+_\./, '._AC_SL1500_.');
+          imageUrl = imageUrl.replace(/\._[A-Z0-9,_]+\./, '._AC_SL1500_.');
+        }
+        
+        imageUrls.push(imageUrl);
+      }
+    });
+    
+    // Remove duplicates and return the first few best candidates
+    const uniqueUrls = [...new Set(imageUrls)];
+    return uniqueUrls.slice(0, 5); // Return top 5 candidates
+  }
+
+  /**
    * Fetch and clean webpage content with enhanced error handling
    */
-  private async fetchPageContent(url: string): Promise<string> {
+  private async fetchPageContent(url: string): Promise<{content: string, html: string}> {
     // First, try to resolve any short URLs
     const resolvedUrl = await this.resolveUrl(url);
     console.log(`Resolved URL: ${resolvedUrl}`);
@@ -99,8 +168,11 @@ export class URLScraper {
       // Clean HTML content for AI processing
       const cleanedContent = this.cleanHTMLContent(response.data);
       
-      // Limit content length to avoid token limits
-      return cleanedContent.substring(0, 10000);
+      // Return both cleaned content and original HTML
+      return {
+        content: cleanedContent.substring(0, 10000),
+        html: response.data
+      };
       
     } catch (error) {
       console.error('Primary fetch failed, trying fallback method:', error.message);
@@ -115,7 +187,10 @@ export class URLScraper {
           maxRedirects: 5
         });
         
-        return this.cleanHTMLContent(fallbackResponse.data).substring(0, 10000);
+        return {
+          content: this.cleanHTMLContent(fallbackResponse.data).substring(0, 10000),
+          html: fallbackResponse.data
+        };
         
       } catch (fallbackError) {
         // Enhanced error messages
@@ -219,13 +294,13 @@ Return only valid JSON, no explanations.`;
         price: (productInfo?.price && typeof productInfo.price === 'string') 
           ? productInfo.price.trim() 
           : undefined,
-        imageUrl: (productInfo?.imageUrl && typeof productInfo.imageUrl === 'string') 
+        imageUrl: (productInfo?.imageUrl && typeof productInfo.imageUrl === 'string' && productInfo.imageUrl !== 'Not provided in content') 
           ? productInfo.imageUrl.trim() 
           : undefined,
         commission: this.parseCommission(productInfo?.commission) || this.getDefaultCommission(merchant)
       };
 
-      console.log('Validated product info:', validatedInfo);
+      console.log('✅ Scraped and validated:', validatedInfo.productName);
       return validatedInfo;
 
     } catch (error) {
