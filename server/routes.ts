@@ -2214,39 +2214,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       sendSuccess(res, links);
     } catch (error) {
-      // Demo data for affiliate links
-      sendSuccess(res, [
-        {
-          id: 1,
-          url: 'https://amazon.com/dp/B08XYZ123',
-          merchant: 'Amazon',
-          productName: 'Premium Omega-3 Fish Oil',
-          category: 'supplements',
-          commission: 8.5,
-          status: 'approved',
-          isActive: true
-        },
-        {
-          id: 2,
-          url: 'https://amazon.com/dp/B09ABC456',
-          merchant: 'Amazon',
-          productName: 'Organic Protein Powder',
-          category: 'supplements',
-          commission: 6.0,
-          status: 'approved',
-          isActive: true
-        },
-        {
-          id: 3,
-          url: 'https://clickbank.com/wellness-guide',
-          merchant: 'ClickBank',
-          productName: 'Complete Wellness Guide',
-          category: 'wellness',
-          commission: 50.0,
-          status: 'approved',
-          isActive: true
-        }
-      ]);
+      console.error("Error fetching affiliate links:", error);
+      sendError(res, "Failed to fetch affiliate links", 500);
     }
   }));
 
@@ -2256,15 +2225,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const link = await storage.createAffiliateLink(linkData);
       sendSuccess(res, link);
     } catch (error) {
-      // Demo response for affiliate link creation
-      const mockLink = {
-        id: Math.floor(Math.random() * 1000) + 100,
-        ...req.body,
-        status: 'pending',
-        isActive: true,
-        createdAt: new Date().toISOString()
-      };
-      sendSuccess(res, mockLink);
+      console.error("Error creating affiliate link:", error);
+      sendError(res, "Failed to create affiliate link", 500);
     }
   }));
 

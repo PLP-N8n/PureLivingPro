@@ -615,28 +615,62 @@ export function AutomationDashboard() {
               </Button>
               <Button 
                 variant="outline" 
-                onClick={() => window.open('/admin', '_blank')}
+                onClick={handleBulkConversion}
+                disabled={isProcessing}
                 className="flex items-center gap-2"
               >
-                <ExternalLink className="w-4 h-4" />
-                Manage Products & Blogs
+                <Package className="w-4 h-4" />
+                {isProcessing ? 'Converting...' : 'Convert to Products'}
               </Button>
               <Button 
                 variant="outline" 
-                onClick={() => window.open('/analytics', '_blank')}
+                onClick={handleGenerateBlogs}
+                disabled={isProcessing}
                 className="flex items-center gap-2"
               >
-                <BarChart3 className="w-4 h-4" />
-                View Analytics
+                <FileText className="w-4 h-4" />
+                {isProcessing ? 'Generating...' : 'Generate Blog Content'}
               </Button>
               <Button 
                 variant="outline" 
-                onClick={() => window.open('/autonomous', '_blank')}
+                onClick={handleFullWorkflow}
+                disabled={isProcessing}
                 className="flex items-center gap-2"
               >
-                <Bot className="w-4 h-4" />
-                Autonomous Control
+                <Zap className="w-4 h-4" />
+                {isProcessing ? 'Running...' : 'Full Automation'}
               </Button>
+              
+              {/* Quick access buttons */}
+              <div className="mt-4 flex gap-2 flex-wrap">
+                <Button 
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => window.open('/admin', '_blank')}
+                  className="flex items-center gap-2"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Manage Products & Blogs
+                </Button>
+                <Button 
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => window.open('/analytics', '_blank')}
+                  className="flex items-center gap-2"
+                >
+                  <BarChart3 className="w-4 h-4" />
+                  View Analytics
+                </Button>
+                <Button 
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => window.open('/automation', '_blank')}
+                  className="flex items-center gap-2"
+                >
+                  <Bot className="w-4 h-4" />
+                  Advanced Control
+                </Button>
+              </div>
               <div className="text-sm text-muted-foreground space-y-1">
                 <div className="flex items-center">
                   💡 Just paste any product URL and click "Auto-Fill" to extract all details automatically
