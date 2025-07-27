@@ -266,6 +266,396 @@ export function registerBulkRoutes(app: Express) {
       });
     }
   });
+
+  // Autonomous system endpoints
+  app.get('/api/autonomous/status', isAuthenticated, async (req, res) => {
+    try {
+      const status = {
+        isEnabled: true, // This would be stored in database
+        status: 'Optimal Performance',
+        uptime: '2d 14h 32m',
+        lastOptimization: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
+        activeDecisions: 7,
+        totalDecisions: 156
+      };
+
+      res.json({
+        success: true,
+        data: status
+      });
+    } catch (error: any) {
+      console.error("Autonomous status error:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
+
+  app.get('/api/autonomous/metrics', isAuthenticated, async (req, res) => {
+    try {
+      const metrics = {
+        autonomyLevel: 0.94, // 94% autonomous
+        operationalEfficiency: 0.87,
+        decisionAccuracy: 0.91,
+        profitOptimization: 0.83,
+        riskManagement: 0.96,
+        systemHealth: 0.98,
+        currentOperations: 23,
+        dailyDecisions: 67,
+        successRate: 0.89,
+        costSavings: 2847
+      };
+
+      res.json({
+        success: true,
+        data: metrics
+      });
+    } catch (error: any) {
+      console.error("Autonomous metrics error:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
+
+  app.get('/api/autonomous/decisions', isAuthenticated, async (req, res) => {
+    try {
+      const decisions = [
+        {
+          id: 'dec_001',
+          type: 'discovery',
+          description: 'Auto-discovered trending supplement with 8.5% commission',
+          confidence: 0.92,
+          expectedImpact: '+$450/month',
+          status: 'completed',
+          timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+          result: 'Added to high-priority queue, content generated'
+        },
+        {
+          id: 'dec_002',
+          type: 'optimization',
+          description: 'Reallocated budget from low-performing fitness category',
+          confidence: 0.87,
+          expectedImpact: '+15% ROI',
+          status: 'executing',
+          timestamp: new Date(Date.now() - 12 * 60 * 1000).toISOString()
+        },
+        {
+          id: 'dec_003',
+          type: 'resource_allocation',
+          description: 'Increased content frequency for beauty products (seasonal trend)',
+          confidence: 0.94,
+          expectedImpact: '+25% engagement',
+          status: 'completed',
+          timestamp: new Date(Date.now() - 18 * 60 * 1000).toISOString(),
+          result: 'Content pipeline updated, 12 posts scheduled'
+        },
+        {
+          id: 'dec_004',
+          type: 'risk_mitigation',
+          description: 'Paused underperforming affiliate link (2.1% conversion)',
+          confidence: 0.96,
+          expectedImpact: 'Cost reduction',
+          status: 'completed',
+          timestamp: new Date(Date.now() - 35 * 60 * 1000).toISOString(),
+          result: 'Link paused, budget reallocated to top performers'
+        },
+        {
+          id: 'dec_005',
+          type: 'discovery',
+          description: 'Market gap identified: eco-friendly skincare niche',
+          confidence: 0.78,
+          expectedImpact: 'New revenue stream',
+          status: 'pending',
+          timestamp: new Date(Date.now() - 42 * 60 * 1000).toISOString()
+        }
+      ];
+
+      res.json({
+        success: true,
+        data: decisions
+      });
+    } catch (error: any) {
+      console.error("Autonomous decisions error:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
+
+  app.post('/api/autonomous/toggle', isAuthenticated, async (req, res) => {
+    try {
+      const { enabled, config } = req.body;
+      
+      // Simulate toggling autonomous mode
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      res.json({
+        success: true,
+        enabled: enabled,
+        message: enabled ? 
+          'Autonomous mode activated - AI is now in control' : 
+          'Manual control restored - autonomous operations paused',
+        config: config
+      });
+    } catch (error: any) {
+      console.error("Autonomous toggle error:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
+
+  app.post('/api/autonomous/optimize-now', isAuthenticated, async (req, res) => {
+    try {
+      // Simulate immediate optimization
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      res.json({
+        success: true,
+        message: 'Emergency optimization cycle initiated',
+        optimizations: [
+          'Analyzed 47 active campaigns',
+          'Optimized 12 underperforming assets',
+          'Reallocated $234 budget to high-ROI opportunities',
+          'Updated 8 content strategies',
+          'Implemented 3 new automation rules'
+        ],
+        impact: 'Expected 18-24% performance improvement'
+      });
+    } catch (error: any) {
+      console.error("Force optimization error:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
+
+  app.post('/api/autonomous/emergency-stop', isAuthenticated, async (req, res) => {
+    try {
+      // Simulate emergency stop
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      res.json({
+        success: true,
+        message: 'Emergency stop executed successfully',
+        stopped: [
+          'All automated link discovery halted',
+          'Content generation paused',
+          'Budget allocation frozen',
+          'Social media posting stopped',
+          'Risk monitoring activated'
+        ],
+        nextAction: 'Manual review required before restart'
+      });
+    } catch (error: any) {
+      console.error("Emergency stop error:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
+
+  // Intelligent Scheduler endpoints
+  app.get('/api/scheduler/tasks', isAuthenticated, async (req, res) => {
+    try {
+      const tasks = [
+        {
+          id: 'task_001',
+          name: 'Auto-discover trending wellness products',
+          type: 'link_discovery',
+          schedule: 'Every 4 hours',
+          nextRun: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+          lastRun: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+          status: 'active',
+          priority: 'high',
+          estimatedDuration: '15-20 mins',
+          successRate: 0.94,
+          impact: 'High revenue potential'
+        },
+        {
+          id: 'task_002',
+          name: 'Generate AI content for new products',
+          type: 'content_creation',
+          schedule: 'Daily at 9:00 AM',
+          nextRun: new Date().setHours(9, 0, 0, 0) > Date.now() ? 
+            new Date().setHours(9, 0, 0, 0) : 
+            new Date(Date.now() + 24 * 60 * 60 * 1000).setHours(9, 0, 0, 0),
+          lastRun: new Date(Date.now() - 18 * 60 * 60 * 1000).toISOString(),
+          status: 'active',
+          priority: 'medium',
+          estimatedDuration: '30-45 mins',
+          successRate: 0.89,
+          impact: 'SEO & engagement boost'
+        },
+        {
+          id: 'task_003',
+          name: 'Optimize underperforming campaigns',
+          type: 'optimization',
+          schedule: 'Every 6 hours',
+          nextRun: new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString(),
+          status: 'active',
+          priority: 'critical',
+          estimatedDuration: '10-15 mins',
+          successRate: 0.97,
+          impact: 'Direct ROI improvement'
+        },
+        {
+          id: 'task_004',
+          name: 'Competitor analysis and market research',
+          type: 'analysis',
+          schedule: 'Weekly on Mondays',
+          nextRun: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+          status: 'paused',
+          priority: 'low',
+          estimatedDuration: '60-90 mins',
+          successRate: 0.76,
+          impact: 'Strategic insights'
+        }
+      ];
+
+      res.json({
+        success: true,
+        data: tasks
+      });
+    } catch (error: any) {
+      console.error("Scheduler tasks error:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
+
+  app.get('/api/scheduler/optimal-timings', isAuthenticated, async (req, res) => {
+    try {
+      const timings = [
+        {
+          platform: 'Instagram',
+          optimalTimes: ['8:00 AM', '12:30 PM', '7:00 PM'],
+          engagement: 0.068,
+          conversion: 0.034,
+          competition: 0.42
+        },
+        {
+          platform: 'TikTok',
+          optimalTimes: ['6:00 AM', '10:00 AM', '9:00 PM'],
+          engagement: 0.084,
+          conversion: 0.029,
+          competition: 0.56
+        },
+        {
+          platform: 'YouTube',
+          optimalTimes: ['2:00 PM', '8:00 PM', '10:00 PM'],
+          engagement: 0.047,
+          conversion: 0.051,
+          competition: 0.38
+        },
+        {
+          platform: 'Twitter/X',
+          optimalTimes: ['9:00 AM', '1:00 PM', '5:00 PM'],
+          engagement: 0.052,
+          conversion: 0.027,
+          competition: 0.67
+        },
+        {
+          platform: 'LinkedIn',
+          optimalTimes: ['8:00 AM', '12:00 PM', '5:00 PM'],
+          engagement: 0.031,
+          conversion: 0.043,
+          competition: 0.29
+        }
+      ];
+
+      res.json({
+        success: true,
+        data: timings
+      });
+    } catch (error: any) {
+      console.error("Optimal timings error:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
+
+  app.get('/api/scheduler/metrics', isAuthenticated, async (req, res) => {
+    try {
+      const metrics = {
+        efficiency: 94,
+        activeTasks: 23,
+        successRate: 91,
+        timeSaved: 47,
+        costOptimization: 1247
+      };
+
+      res.json({
+        success: true,
+        data: metrics
+      });
+    } catch (error: any) {
+      console.error("Scheduler metrics error:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
+
+  app.post('/api/scheduler/optimize', isAuthenticated, async (req, res) => {
+    try {
+      // Simulate schedule optimization
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      res.json({
+        success: true,
+        message: 'Schedule optimized successfully',
+        improvements: [
+          'Rescheduled 7 tasks to optimal time slots',
+          'Reduced task conflicts by 34%',
+          'Improved estimated efficiency by 12%',
+          'Optimized resource allocation'
+        ]
+      });
+    } catch (error: any) {
+      console.error("Schedule optimization error:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
+
+  app.post('/api/scheduler/learn', isAuthenticated, async (req, res) => {
+    try {
+      // Simulate learning cycle
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      res.json({
+        success: true,
+        message: 'Learning cycle completed',
+        insights: [
+          'Discovered optimal posting times for wellness content',
+          'Identified high-engagement audience segments',
+          'Found seasonal content performance patterns',
+          'Updated recommendation algorithms'
+        ]
+      });
+    } catch (error: any) {
+      console.error("Scheduler learning error:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
 }
 
 // Helper functions

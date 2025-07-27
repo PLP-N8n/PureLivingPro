@@ -32,6 +32,7 @@ import {
 import { BulkImportModal } from '@/components/admin/BulkImportModal';
 import { SmartFormEnhancements } from '@/components/admin/SmartFormEnhancements';
 import { AdvancedAutomationFeatures } from '@/components/admin/AdvancedAutomationFeatures';
+import { AutonomousController } from '@/components/admin/AutonomousController';
 
 interface AutomationStatus {
   isRunning: boolean;
@@ -1012,6 +1013,7 @@ export function AutomationDashboard() {
     { id: 'content', label: 'Content Pipeline', icon: MessageSquare },
     { id: 'revenue', label: 'Revenue', icon: DollarSign },
     { id: 'advanced', label: 'Advanced AI', icon: Sparkles },
+    { id: 'autonomous', label: 'Autonomous Controller', icon: Bot },
   ];
 
   const renderTabContent = () => {
@@ -1026,6 +1028,8 @@ export function AutomationDashboard() {
         return renderRevenueTab();
       case 'advanced':
         return <AdvancedAutomationFeatures />;
+      case 'autonomous':
+        return <AutonomousController />;
       default:
         return renderOverviewTab();
     }
