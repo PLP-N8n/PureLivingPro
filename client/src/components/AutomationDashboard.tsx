@@ -23,7 +23,8 @@ import {
   RefreshCw,
   ExternalLink,
   Package,
-  FileText
+  FileText,
+  Plus
 } from 'lucide-react';
 
 interface AutomationStatus {
@@ -613,10 +614,21 @@ export function AutomationDashboard() {
               </div>
             </div>
 
-            <div className="flex gap-4 pt-4">
-              <Button onClick={handleCreateLink} disabled={createAffiliateLink.isPending}>
+            {/* Action Buttons - Primary Row */}
+            <div className="flex gap-2 pt-4">
+              <Button 
+                onClick={handleCreateLink} 
+                disabled={createAffiliateLink.isPending}
+                className="bg-sage-600 hover:bg-sage-700"
+              >
+                {createAffiliateLink.isPending ? (
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Plus className="h-4 w-4 mr-2" />
+                )}
                 Add Affiliate Link
               </Button>
+              
               <Button 
                 variant="outline" 
                 onClick={() => {
@@ -636,6 +648,10 @@ export function AutomationDashboard() {
                 <Zap className="w-4 h-4" />
                 Load Demo Data
               </Button>
+            </div>
+
+            {/* Workflow Automation Buttons - Secondary Row */}
+            <div className="flex gap-2 pt-2">
               <Button 
                 variant="outline" 
                 onClick={handleBulkConversion}
@@ -663,50 +679,52 @@ export function AutomationDashboard() {
                 <Zap className="w-4 h-4" />
                 {isProcessing ? 'Running...' : 'Full Automation'}
               </Button>
-              
-              {/* Quick access buttons */}
-              <div className="mt-4 flex gap-2 flex-wrap">
-                <Button 
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => window.open('/admin', '_blank')}
-                  className="flex items-center gap-2"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                  Manage Products & Blogs
-                </Button>
-                <Button 
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => window.open('/analytics', '_blank')}
-                  className="flex items-center gap-2"
-                >
-                  <BarChart3 className="w-4 h-4" />
-                  View Analytics
-                </Button>
-                <Button 
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => window.open('/automation', '_blank')}
-                  className="flex items-center gap-2"
-                >
-                  <Bot className="w-4 h-4" />
-                  Advanced Control
-                </Button>
+            </div>
+
+            {/* Management Links - Tertiary Row */}
+            <div className="flex gap-2 pt-3 border-t mt-3">
+              <Button 
+                variant="ghost"
+                size="sm"
+                onClick={() => window.open('/admin', '_blank')}
+                className="flex items-center gap-2"
+              >
+                <ExternalLink className="w-4 h-4" />
+                Manage Products & Blogs
+              </Button>
+              <Button 
+                variant="ghost"
+                size="sm"
+                onClick={() => window.open('/analytics', '_blank')}
+                className="flex items-center gap-2"
+              >
+                <BarChart3 className="w-4 h-4" />
+                View Analytics
+              </Button>
+              <Button 
+                variant="ghost"
+                size="sm"
+                onClick={() => window.open('/automation', '_blank')}
+                className="flex items-center gap-2"
+              >
+                <Bot className="w-4 h-4" />
+                Advanced Control
+              </Button>
+            </div>
+
+            {/* Pro Tips Section */}
+            <div className="text-sm text-muted-foreground space-y-1 mt-4 p-3 bg-muted/30 rounded-lg">
+              <div className="flex items-center">
+                💡 Just paste any product URL and click "Auto-Fill" to extract all details automatically
               </div>
-              <div className="text-sm text-muted-foreground space-y-1">
-                <div className="flex items-center">
-                  💡 Just paste any product URL and click "Auto-Fill" to extract all details automatically
-                </div>
-                <div className="text-xs opacity-75">
-                  💡 <strong>Pro tip:</strong> Use full Amazon URLs (amazon.com/dp/...) instead of short links (amzn.to) for better results
-                </div>
-                <div className="text-xs opacity-75 text-blue-600">
-                  🚀 <strong>Quick Start:</strong> Click "Load Demo Data" to test the automation workflow when scraping fails
-                </div>
-                <div className="text-xs opacity-75 text-amber-600 mt-2 p-2 bg-amber-50 rounded">
-                  ⚠️ <strong>When scraping fails:</strong> Many websites block automated requests. Use "Load Demo Data" for testing, or manually fill in product details.
-                </div>
+              <div className="text-xs opacity-75">
+                💡 <strong>Pro tip:</strong> Use full Amazon URLs (amazon.com/dp/...) instead of short links (amzn.to) for better results
+              </div>
+              <div className="text-xs opacity-75 text-blue-600">
+                🚀 <strong>Quick Start:</strong> Click "Load Demo Data" to test the automation workflow when scraping fails
+              </div>
+              <div className="text-xs opacity-75 text-amber-600 mt-2 p-2 bg-amber-50 rounded">
+                ⚠️ <strong>When scraping fails:</strong> Many websites block automated requests. Use "Load Demo Data" for testing, or manually fill in product details.
               </div>
             </div>
           </div>
