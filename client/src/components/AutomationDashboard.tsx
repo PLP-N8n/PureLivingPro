@@ -27,12 +27,16 @@ import {
   Plus,
   Upload,
   Sparkles,
-  Settings
+  Settings,
+  Eye,
+  Handshake
 } from 'lucide-react';
 import { BulkImportModal } from '@/components/admin/BulkImportModal';
 import { SmartFormEnhancements } from '@/components/admin/SmartFormEnhancements';
 import { AdvancedAutomationFeatures } from '@/components/admin/AdvancedAutomationFeatures';
 import { AutonomousController } from '@/components/admin/AutonomousController';
+import { MarketOracle } from '@/components/admin/MarketOracle';
+import { AutonomousNegotiation } from '@/components/admin/AutonomousNegotiation';
 
 interface AutomationStatus {
   isRunning: boolean;
@@ -1014,6 +1018,8 @@ export function AutomationDashboard() {
     { id: 'revenue', label: 'Revenue', icon: DollarSign },
     { id: 'advanced', label: 'Advanced AI', icon: Sparkles },
     { id: 'autonomous', label: 'Autonomous Controller', icon: Bot },
+    { id: 'oracle', label: 'Market Oracle', icon: Eye },
+    { id: 'negotiation', label: 'Auto-Negotiation', icon: Handshake },
   ];
 
   const renderTabContent = () => {
@@ -1030,6 +1036,10 @@ export function AutomationDashboard() {
         return <AdvancedAutomationFeatures />;
       case 'autonomous':
         return <AutonomousController />;
+      case 'oracle':
+        return <MarketOracle />;
+      case 'negotiation':
+        return <AutonomousNegotiation />;
       default:
         return renderOverviewTab();
     }

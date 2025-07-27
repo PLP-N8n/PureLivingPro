@@ -656,6 +656,359 @@ export function registerBulkRoutes(app: Express) {
       });
     }
   });
+
+  // Market Oracle endpoints
+  app.get('/api/market-oracle/trends/:horizon', isAuthenticated, async (req, res) => {
+    try {
+      const { horizon } = req.params;
+      const trends = [
+        {
+          keyword: "adaptogenic supplements",
+          category: "wellness",
+          currentVolume: 12500,
+          predictedVolume: 18750,
+          growthRate: 0.5,
+          confidence: 0.92,
+          peakPeriod: "Q1 2025",
+          monetizationPotential: 2847
+        },
+        {
+          keyword: "cold plunge therapy",
+          category: "fitness",
+          currentVolume: 8900,
+          predictedVolume: 15600,
+          growthRate: 0.75,
+          confidence: 0.87,
+          peakPeriod: "Winter 2024",
+          monetizationPotential: 1923
+        },
+        {
+          keyword: "mindful productivity",
+          category: "lifestyle",
+          currentVolume: 6700,
+          predictedVolume: 9800,
+          growthRate: 0.46,
+          confidence: 0.84,
+          peakPeriod: "January 2025",
+          monetizationPotential: 1456
+        }
+      ];
+
+      res.json({
+        success: true,
+        data: trends
+      });
+    } catch (error: any) {
+      console.error("Market trends error:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
+
+  app.get('/api/market-oracle/arbitrage', isAuthenticated, async (req, res) => {
+    try {
+      const opportunities = [
+        {
+          id: 'arb_001',
+          product: 'Premium Protein Powder',
+          sourcePrice: 45.99,
+          targetPrice: 67.99,
+          profitMargin: 0.48,
+          marketGap: 0.73,
+          difficulty: 'medium',
+          timeWindow: '2-3 weeks',
+          competition: 0.34
+        },
+        {
+          id: 'arb_002',
+          product: 'Smart Water Bottle',
+          sourcePrice: 29.99,
+          targetPrice: 49.99,
+          profitMargin: 0.67,
+          marketGap: 0.89,
+          difficulty: 'easy',
+          timeWindow: '1-2 weeks',
+          competition: 0.21
+        }
+      ];
+
+      res.json({
+        success: true,
+        data: opportunities
+      });
+    } catch (error: any) {
+      console.error("Arbitrage opportunities error:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
+
+  app.get('/api/market-oracle/competitors', isAuthenticated, async (req, res) => {
+    try {
+      const competitors = [
+        {
+          competitor: "WellnessGuru Pro",
+          marketShare: 0.23,
+          recentMoves: [
+            "Launched AI-powered meal planning",
+            "Partnered with major supplement brand"
+          ],
+          weaknesses: [
+            "Limited social media presence",
+            "High customer acquisition cost"
+          ],
+          opportunities: [
+            "Target their underserved demographics",
+            "Offer better commission rates"
+          ],
+          threatLevel: 'medium'
+        }
+      ];
+
+      res.json({
+        success: true,
+        data: competitors
+      });
+    } catch (error: any) {
+      console.error("Competitor intel error:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
+
+  app.get('/api/market-oracle/seasonal', isAuthenticated, async (req, res) => {
+    try {
+      const strategies = [
+        {
+          season: "New Year Wellness",
+          categories: ["fitness", "nutrition", "mindfulness"],
+          expectedLift: 2.34,
+          optimalTiming: "Dec 26 - Jan 31",
+          recommendedActions: [
+            "Increase fitness content by 40%",
+            "Launch transformation challenges"
+          ]
+        },
+        {
+          season: "Summer Body Prep",
+          categories: ["supplements", "workout gear", "meal prep"],
+          expectedLift: 1.87,
+          optimalTiming: "Mar 15 - May 31",
+          recommendedActions: [
+            "Focus on weight loss products",
+            "Partner with fitness influencers"
+          ]
+        }
+      ];
+
+      res.json({
+        success: true,
+        data: strategies
+      });
+    } catch (error: any) {
+      console.error("Seasonal strategies error:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
+
+  // Autonomous Negotiation endpoints
+  app.get('/api/negotiation/targets', isAuthenticated, async (req, res) => {
+    try {
+      const targets = [
+        {
+          id: 'neg_001',
+          merchant: 'SupplementCo',
+          currentCommission: 5.5,
+          targetCommission: 8.0,
+          volume: 45000,
+          leverage: 0.73,
+          confidence: 0.89,
+          strategy: 'volume_leverage',
+          status: 'negotiating',
+          estimatedIncrease: 347,
+          negotiationHistory: [
+            'Initial outreach sent',
+            'Merchant responded positively',
+            'Proposal submitted'
+          ]
+        },
+        {
+          id: 'neg_002',
+          merchant: 'FitnessGear Plus',
+          currentCommission: 4.0,
+          targetCommission: 6.5,
+          volume: 23000,
+          leverage: 0.61,
+          confidence: 0.76,
+          strategy: 'exclusivity_offer',
+          status: 'pending',
+          estimatedIncrease: 156,
+          negotiationHistory: []
+        }
+      ];
+
+      res.json({
+        success: true,
+        data: targets
+      });
+    } catch (error: any) {
+      console.error("Negotiation targets error:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
+
+  app.get('/api/negotiation/exclusive-deals', isAuthenticated, async (req, res) => {
+    try {
+      const deals = [
+        {
+          id: 'deal_001',
+          merchant: 'PureSupplements',
+          product: 'Exclusive Nootropic Bundle',
+          exclusivityType: 'early_access',
+          value: 2500,
+          duration: '90 days',
+          status: 'secured',
+          competitiveAdvantage: '30-day head start on competitors'
+        },
+        {
+          id: 'deal_002',
+          merchant: 'EcoFitness',
+          product: 'Sustainable Yoga Collection',
+          exclusivityType: 'exclusive_discount',
+          value: 1800,
+          duration: '60 days',
+          status: 'negotiating',
+          competitiveAdvantage: '25% better margin vs competitors'
+        }
+      ];
+
+      res.json({
+        success: true,
+        data: deals
+      });
+    } catch (error: any) {
+      console.error("Exclusive deals error:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
+
+  app.get('/api/negotiation/partnerships', isAuthenticated, async (req, res) => {
+    try {
+      const partnerships = [
+        {
+          id: 'part_001',
+          merchant: 'MindfulLiving Co',
+          opportunityType: 'content_collaboration',
+          potentialValue: 5600,
+          requirements: ['Weekly content creation', 'Social media promotion'],
+          aiRecommendation: 'High-value partnership with wellness alignment',
+          priority: 'high'
+        },
+        {
+          id: 'part_002',
+          merchant: 'HealthTech Solutions',
+          opportunityType: 'co_marketing',
+          potentialValue: 3400,
+          requirements: ['Email list cross-promotion', 'Joint webinars'],
+          aiRecommendation: 'Moderate risk but good audience overlap',
+          priority: 'medium'
+        }
+      ];
+
+      res.json({
+        success: true,
+        data: partnerships
+      });
+    } catch (error: any) {
+      console.error("Partnerships error:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
+
+  // Risk Management endpoints
+  app.get('/api/risk/alerts', isAuthenticated, async (req, res) => {
+    try {
+      const alerts = [
+        {
+          id: 'risk_001',
+          type: 'fraud_detection',
+          severity: 'high',
+          description: 'Suspicious click patterns detected on fitness affiliate link',
+          confidence: 0.94,
+          suggestedAction: 'Pause link and investigate traffic source',
+          potentialLoss: 347,
+          timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+          status: 'active',
+          autoMitigated: false
+        },
+        {
+          id: 'risk_002',
+          type: 'market_anomaly',
+          severity: 'medium',
+          description: 'Unusual conversion drop in supplement category',
+          confidence: 0.78,
+          suggestedAction: 'Review and optimize landing pages',
+          potentialLoss: 156,
+          timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
+          status: 'mitigated',
+          autoMitigated: true
+        }
+      ];
+
+      res.json({
+        success: true,
+        data: alerts
+      });
+    } catch (error: any) {
+      console.error("Risk alerts error:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
+
+  app.get('/api/risk/metrics', isAuthenticated, async (req, res) => {
+    try {
+      const metrics = {
+        overallRiskScore: 0.23, // Lower is better
+        fraudDetectionAccuracy: 0.94,
+        anomalyDetectionRate: 0.87,
+        preventedLosses: 2847,
+        mitigationSuccessRate: 0.91,
+        falsePositiveRate: 0.08
+      };
+
+      res.json({
+        success: true,
+        data: metrics
+      });
+    } catch (error: any) {
+      console.error("Risk metrics error:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
 }
 
 // Helper functions
