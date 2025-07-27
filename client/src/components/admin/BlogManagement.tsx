@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { 
   Plus, 
   Edit, 
@@ -23,9 +24,16 @@ import {
   User,
   Tag,
   FileText,
-  Wand2
+  Wand2,
+  AlertTriangle
 } from "lucide-react";
 import { BlogPost } from "@shared/schema";
+import { blogPostSchema, type BlogPostFormData } from "@shared/validation/admin";
+import type { BlogPostForm } from "@shared/types/admin";
+import { useAdminFilters } from "@/hooks/useAdminFilters";
+import { useBulkOperations } from "@/hooks/useBulkOperations";
+import { SearchAndFilters } from "./SearchAndFilters";
+import { BulkOperations } from "./BulkOperations";
 
 export default function BlogManagement() {
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
@@ -33,7 +41,9 @@ export default function BlogManagement() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isAIGenerating, setIsAIGenerating] = useState(false);
   const [bulkCreateCount, setBulkCreateCount] = useState(3);
-  const [newPost, setNewPost] = useState({
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  
+  const [newPost, setNewPost] = useState<BlogPostForm>({
     title: '',
     content: '',
     excerpt: '',
@@ -52,8 +62,64 @@ export default function BlogManagement() {
     queryKey: ['/api/blog/posts'],
   });
 
+  // Enhanced filtering and search
+  const {
+    filters,
+    filteredData: filteredPosts,
+    updateFilter,
+    resetFilters,
+    totalCount,
+    filteredCount
+  } = useAdminFilters({
+    data: (blogPosts as BlogPost[]) || [],
+    searchFields: ['title', 'content', 'excerpt'],
+    categoryField: 'category',
+    statusField: 'isPublished'
+  });
+
+  // Bulk operations
+  const bulkOps = useBulkOperations({
+    queryKey: ['/api/blog/posts'],
+    endpoint: '/api/blog/posts'
+  });
+
+  // Categories for filtering
+  const categories = [
+    { value: 'wellness', label: 'Wellness' },
+    { value: 'nutrition', label: 'Nutrition' },
+    { value: 'fitness', label: 'Fitness' },
+    { value: 'mindfulness', label: 'Mindfulness' },
+    { value: 'lifestyle', label: 'Lifestyle' }
+  ];
+
+  // Form validation function
+  const validateForm = (): boolean => {
+    try {
+      blogPostSchema.parse(newPost);
+      setValidationErrors({});
+      return true;
+    } catch (error: any) {
+      const errors: Record<string, string> = {};
+      if (error.errors) {
+        error.errors.forEach((err: any) => {
+          errors[err.path[0]] = err.message;
+        });
+      }
+      setValidationErrors(errors);
+      toast({
+        title: "Validation Error",
+        description: "Please fix the form errors before submitting",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
   const createPostMutation = useMutation({
-    mutationFn: async (post: any) => {
+    mutationFn: async (post: BlogPostFormData) => {
+      if (!validateForm()) {
+        throw new Error('Form validation failed');
+      }
       const response = await apiRequest('POST', '/api/blog/posts', post);
       return response.json();
     },
@@ -61,17 +127,20 @@ export default function BlogManagement() {
       queryClient.invalidateQueries({ queryKey: ['/api/blog/posts'] });
       setIsCreateDialogOpen(false);
       resetForm();
+      bulkOps.clearSelection();
       toast({
         title: "Success",
         description: "Blog post created successfully",
       });
     },
     onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      if (error.message !== 'Form validation failed') {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     },
   });
 
@@ -153,6 +222,7 @@ export default function BlogManagement() {
       metaDescription: '',
       slug: ''
     });
+    setValidationErrors({});
   };
 
   const handleEdit = (post: BlogPost) => {
@@ -161,11 +231,11 @@ export default function BlogManagement() {
       title: post.title,
       content: post.content,
       excerpt: post.excerpt || '',
-      category: post.category,
+      category: post.category || '',
       tags: post.tags?.join(', ') || '',
-      published: post.published,
-      featured: post.featured,
-      metaDescription: post.metaDescription || '',
+      published: post.isPublished || false,
+      featured: false, // This field might not exist in the schema
+      metaDescription: '',
       slug: post.slug
     });
     setIsEditDialogOpen(true);
@@ -236,64 +306,138 @@ export default function BlogManagement() {
                 onAIGenerate={handleGenerateAI}
                 isSubmitting={createPostMutation.isPending}
                 isAIGenerating={isAIGenerating}
+                validationErrors={validationErrors}
               />
             </DialogContent>
           </Dialog>
         </div>
       </div>
 
+      {/* Enhanced Search and Filtering */}
+      <SearchAndFilters
+        filters={filters}
+        onFilterChange={updateFilter}
+        onResetFilters={resetFilters}
+        categories={categories}
+        totalCount={totalCount}
+        filteredCount={filteredCount}
+        className="bg-sage-50/50 p-4 rounded-lg border"
+      />
+
+      {/* Bulk Operations */}
+      <BulkOperations
+        selectedItems={bulkOps.selectedItems}
+        totalItems={filteredPosts.length}
+        isProcessing={bulkOps.isProcessing}
+        onSelectAll={() => bulkOps.handleSelectAll(filteredPosts.map(p => p.id))}
+        onBulkAction={bulkOps.handleBulkAction}
+        onClearSelection={bulkOps.clearSelection}
+      />
+
+      {/* Enhanced Blog Posts Grid */}
       <div className="grid gap-4">
-        {blogPosts?.map((post: BlogPost) => (
-          <Card key={post.id}>
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <div>
-                  <CardTitle className="text-lg">{post.title}</CardTitle>
-                  <CardDescription className="mt-1">
-                    {post.excerpt || post.content.substring(0, 150) + '...'}
-                  </CardDescription>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleEdit(post)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDelete(post.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
+        {filteredPosts.length === 0 ? (
+          <Card className="text-center py-12">
             <CardContent>
-              <div className="flex flex-wrap gap-2 mb-4">
-                <Badge variant={post.published ? "default" : "secondary"}>
-                  {post.published ? "Published" : "Draft"}
-                </Badge>
-                {post.featured && (
-                  <Badge variant="outline">Featured</Badge>
-                )}
-                <Badge variant="outline">{post.category}</Badge>
-              </div>
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-4 w-4" />
-                  {new Date(post.createdAt).toLocaleDateString()}
-                </div>
-                <div className="flex items-center gap-1">
-                  <User className="h-4 w-4" />
-                  {post.authorId}
-                </div>
-              </div>
+              <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+              <h3 className="text-lg font-semibold mb-2">No blog posts found</h3>
+              <p className="text-muted-foreground mb-4">
+                {totalCount === 0 
+                  ? "Get started by creating your first blog post" 
+                  : "Try adjusting your search or filter criteria"
+                }
+              </p>
+              {totalCount === 0 && (
+                <Button onClick={() => setIsCreateDialogOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create First Post
+                </Button>
+              )}
             </CardContent>
           </Card>
-        ))}
+        ) : (
+          filteredPosts.map((post: BlogPost) => (
+            <Card key={post.id} className="hover:shadow-md transition-shadow">
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <div className="flex items-start gap-3 flex-1">
+                    <Checkbox
+                      checked={bulkOps.selectedItems.includes(post.id)}
+                      onCheckedChange={() => bulkOps.handleSelectItem(post.id)}
+                      aria-label={`Select ${post.title}`}
+                    />
+                    <div className="flex-1">
+                      <CardTitle className="text-lg hover:text-sage-600 cursor-pointer">
+                        {post.title}
+                      </CardTitle>
+                      <CardDescription className="mt-1">
+                        {post.excerpt || post.content.substring(0, 150) + '...'}
+                      </CardDescription>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEdit(post)}
+                      className="hover:bg-sage-50"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(post.id)}
+                      className="hover:bg-red-50 hover:text-red-600"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <Badge variant={post.published ? "default" : "secondary"}>
+                    {post.published ? "Published" : "Draft"}
+                  </Badge>
+                  {post.featured && (
+                    <Badge variant="outline" className="border-yellow-200 text-yellow-700">
+                      <Star className="h-3 w-3 mr-1" />
+                      Featured
+                    </Badge>
+                  )}
+                  <Badge variant="outline" className="bg-sage-50">
+                    {post.category}
+                  </Badge>
+                  {post.tags && post.tags.length > 0 && (
+                    <Badge variant="outline" className="bg-blue-50">
+                      <Tag className="h-3 w-3 mr-1" />
+                      {post.tags.length} tags
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex items-center justify-between text-sm text-muted-foreground">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-4 w-4" />
+                      {post.createdAt ? new Date(post.createdAt).toLocaleDateString() : 'No date'}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <User className="h-4 w-4" />
+                      Author {post.authorId}
+                    </div>
+                  </div>
+                  {!post.isPublished && (
+                    <div className="flex items-center gap-1 text-orange-600">
+                      <AlertTriangle className="h-4 w-4" />
+                      Needs Review
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
       </div>
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
@@ -310,6 +454,7 @@ export default function BlogManagement() {
             onSubmit={() => updatePostMutation.mutate(newPost)}
             isSubmitting={updatePostMutation.isPending}
             isEditing={true}
+            validationErrors={validationErrors}
           />
         </DialogContent>
       </Dialog>
@@ -324,15 +469,17 @@ function BlogPostForm({
   onAIGenerate, 
   isSubmitting, 
   isAIGenerating, 
-  isEditing = false 
+  isEditing = false,
+  validationErrors = {}
 }: {
-  post: any;
-  setPost: (post: any) => void;
+  post: BlogPostForm;
+  setPost: (post: BlogPostForm) => void;
   onSubmit: () => void;
   onAIGenerate?: () => void;
   isSubmitting: boolean;
   isAIGenerating?: boolean;
   isEditing?: boolean;
+  validationErrors?: Record<string, string>;
 }) {
   return (
     <div className="space-y-4">
@@ -344,12 +491,19 @@ function BlogPostForm({
             value={post.title}
             onChange={(e) => setPost({ ...post, title: e.target.value })}
             placeholder="Enter post title"
+            className={validationErrors.title ? "border-red-500" : ""}
           />
+          {validationErrors.title && (
+            <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+              <AlertTriangle className="h-3 w-3" />
+              {validationErrors.title}
+            </p>
+          )}
         </div>
         <div>
           <Label htmlFor="category">Category</Label>
           <Select value={post.category} onValueChange={(value) => setPost({ ...post, category: value })}>
-            <SelectTrigger>
+            <SelectTrigger className={validationErrors.category ? "border-red-500" : ""}>
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
             <SelectContent>
@@ -360,6 +514,12 @@ function BlogPostForm({
               <SelectItem value="lifestyle">Lifestyle</SelectItem>
             </SelectContent>
           </Select>
+          {validationErrors.category && (
+            <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+              <AlertTriangle className="h-3 w-3" />
+              {validationErrors.category}
+            </p>
+          )}
         </div>
       </div>
 

@@ -92,14 +92,14 @@ export function AutomationDashboard() {
   });
 
   // Extract data from response structure
-  const status = statusResponse?.data;
+  const status = (statusResponse as any)?.data;
 
   const { data: affiliateLinksResponse, refetch: refetchAffiliateLinks } = useQuery({
     queryKey: ['/api/affiliate-links'],
     enabled: selectedTab === 'affiliate',
     refetchInterval: selectedTab === 'affiliate' ? 30000 : false, // Refresh every 30 seconds when tab is active
     staleTime: 0, // Always consider data stale
-    cacheTime: 0 // Don't cache results
+    gcTime: 0 // Don't cache results (formerly cacheTime in v4)
   });
 
   const { data: contentPipelineResponse } = useQuery({
@@ -108,8 +108,8 @@ export function AutomationDashboard() {
   });
 
   // Extract data from response structure
-  const affiliateLinks = affiliateLinksResponse?.data || [];
-  const contentPipeline = contentPipelineResponse?.data || [];
+  const affiliateLinks = (affiliateLinksResponse as any)?.data || [];
+  const contentPipeline = (contentPipelineResponse as any)?.data || [];
 
   const { data: revenueStatsResponse } = useQuery({
     queryKey: ['/api/revenue/stats'],
@@ -117,7 +117,7 @@ export function AutomationDashboard() {
   });
 
   // Extract data from response structure
-  const revenueStats = revenueStatsResponse?.data;
+  const revenueStats = (revenueStatsResponse as any)?.data;
 
   // All mutations at component level
   const startAutomation = useMutation({
