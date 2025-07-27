@@ -39,6 +39,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
 
+  // Import and register bulk routes
+  const { registerBulkRoutes } = await import('./routes-bulk');
+  registerBulkRoutes(app);
+
   // Admin stats endpoint
   app.get('/api/admin/stats', isAuthenticated, requireAdmin, asyncHandler(async (req, res) => {
     const userId = (req.user as any)?.claims?.sub;

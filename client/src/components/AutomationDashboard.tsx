@@ -24,8 +24,14 @@ import {
   ExternalLink,
   Package,
   FileText,
-  Plus
+  Plus,
+  Upload,
+  Sparkles,
+  Settings
 } from 'lucide-react';
+import { BulkImportModal } from '@/components/admin/BulkImportModal';
+import { SmartFormEnhancements } from '@/components/admin/SmartFormEnhancements';
+import { AdvancedAutomationFeatures } from '@/components/admin/AdvancedAutomationFeatures';
 
 interface AutomationStatus {
   isRunning: boolean;
@@ -63,6 +69,7 @@ export function AutomationDashboard() {
   const [selectedTab, setSelectedTab] = useState('overview');
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [showBulkImport, setShowBulkImport] = useState(false);
 
   // All state hooks at component level
   const [newLink, setNewLink] = useState({
@@ -526,32 +533,45 @@ export function AutomationDashboard() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-4">
-            {/* URL Input with Auto-Scrape */}
+            {/* Enhanced URL Input with Smart Features */}
+            <SmartFormEnhancements
+              url={newLink.url}
+              onUrlChange={(url) => setNewLink({ ...newLink, url })}
+              onSuggestionSelect={(suggestion) => {
+                if (suggestion.type === 'category') {
+                  setNewLink({ ...newLink, category: suggestion.value });
+                } else if (suggestion.type === 'commission') {
+                  setNewLink({ ...newLink, commission: suggestion.value.replace('%', '') });
+                }
+                // Handle other suggestion types as needed
+              }}
+              disabled={isScrapingUrl}
+            />
+
+            {/* Auto-Fill Button */}
             <div className="flex gap-2">
-              <div className="flex-1">
-                <Label htmlFor="url">Affiliate URL</Label>
-                <Input
-                  id="url"
-                  value={newLink.url}
-                  onChange={(e) => setNewLink({ ...newLink, url: e.target.value })}
-                  placeholder="https://amazon.com/dp/B12345 (paste any product URL)"
-                />
-              </div>
-              <div className="flex items-end">
-                <Button 
-                  onClick={handleScrapeUrl} 
-                  disabled={isScrapingUrl || !newLink.url}
-                  variant="outline"
-                  className="flex items-center gap-2"
-                >
-                  {isScrapingUrl ? (
-                    <RefreshCw className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Bot className="h-4 w-4" />
-                  )}
-                  {isScrapingUrl ? 'Scraping...' : 'Auto-Fill'}
-                </Button>
-              </div>
+              <Button 
+                onClick={handleScrapeUrl} 
+                disabled={isScrapingUrl || !newLink.url}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                {isScrapingUrl ? (
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Bot className="h-4 w-4" />
+                )}
+                {isScrapingUrl ? 'Scraping...' : 'Auto-Fill'}
+              </Button>
+              
+              <Button 
+                onClick={() => setShowBulkImport(true)}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <Upload className="h-4 w-4" />
+                Bulk Import
+              </Button>
             </div>
 
             {/* Auto-filled Product Details */}
@@ -991,6 +1011,7 @@ export function AutomationDashboard() {
     { id: 'affiliate', label: 'Affiliate Links', icon: Link },
     { id: 'content', label: 'Content Pipeline', icon: MessageSquare },
     { id: 'revenue', label: 'Revenue', icon: DollarSign },
+    { id: 'advanced', label: 'Advanced AI', icon: Sparkles },
   ];
 
   const renderTabContent = () => {
@@ -1003,6 +1024,8 @@ export function AutomationDashboard() {
         return renderContentTab();
       case 'revenue':
         return renderRevenueTab();
+      case 'advanced':
+        return <AdvancedAutomationFeatures />;
       default:
         return renderOverviewTab();
     }
@@ -1040,6 +1063,12 @@ export function AutomationDashboard() {
 
       {/* Tab Content */}
       {renderTabContent()}
+
+      {/* Bulk Import Modal */}
+      <BulkImportModal 
+        isOpen={showBulkImport} 
+        onClose={() => setShowBulkImport(false)} 
+      />
     </div>
   );
 }
