@@ -14,6 +14,7 @@ Preferred communication style: Simple, everyday language.
 - **State Management**: TanStack Query
 - **Routing**: Wouter
 - **Animations**: Framer Motion
+- **Performance**: Modular admin components with lazy loading, optimized for 1000+ record management
 
 ### Backend
 - **Runtime**: Node.js with Express.js
@@ -21,6 +22,7 @@ Preferred communication style: Simple, everyday language.
 - **Database**: PostgreSQL with Drizzle ORM (Neon Database)
 - **Authentication**: Replit Auth with OpenID Connect
 - **Monorepo Structure**: `client/` (React), `server/` (Express.js), `shared/` (TypeScript schemas), `migrations/` (Database migrations).
+- **Performance**: Cached admin stats (5-min TTL), pagination for all admin endpoints, optimized database queries
 
 ### Core Features & Design Decisions
 - **Authentication & User Management**: Replit Auth, session-based authentication, Stripe for premium subscriptions, user profiles with wellness preferences.
@@ -34,6 +36,7 @@ Preferred communication style: Simple, everyday language.
 - **Automated Affiliate Marketing & Content Creation**: Autonomous affiliate link scraping (Amazon, ClickBank, ShareASale), AI-powered content pipeline (DeepSeek, OpenAI), social media automation (X, Instagram, TikTok), and a central automation controller (MCP). Features intelligent URL scraping with AI product extraction and one-click "Auto-Fill" for product details.
 - **Autonomous Controller**: Implements AI autonomy with zero-touch operation, intelligent scheduling, and real-time AI decision-making for self-optimization.
 - **Advanced Analytics Dashboard**: Provides wellness-specific insights including user engagement, wellness metrics, content performance, revenue, challenge metrics, and predictive insights.
+- **Performance Optimizations**: Resolved critical admin dashboard bottleneck by splitting 3,412-line admin.tsx into modular components (OptimizedBlogManagement, OptimizedProductManagement, ModularAdminDashboard). Implemented pagination, caching, and lazy loading for enterprise-grade performance.
 
 ## External Dependencies
 

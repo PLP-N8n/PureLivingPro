@@ -202,6 +202,159 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  
+  // Optimized stats methods for admin dashboard
+  async getBlogPostStats() {
+    const [totalResult, publishedResult, premiumResult] = await Promise.all([
+      db.select({ count: sql<number>`count(*)` }).from(blogPosts),
+      db.select({ count: sql<number>`count(*)` }).from(blogPosts).where(eq(blogPosts.isPublished, true)),
+      db.select({ count: sql<number>`count(*)` }).from(blogPosts).where(eq(blogPosts.isPremium, true))
+    ]);
+    
+    const total = totalResult[0]?.count || 0;
+    const published = publishedResult[0]?.count || 0;
+    const premium = premiumResult[0]?.count || 0;
+    
+    return {
+      total,
+      published,
+      drafts: total - published,
+      premium
+    };
+  }
+
+  async getProductStats() {
+    const [totalResult, recommendedResult] = await Promise.all([
+      db.select({ count: sql<number>`count(*)` }).from(products),
+      db.select({ count: sql<number>`count(*)` }).from(products).where(eq(products.isRecommended, true))
+    ]);
+    
+    return {
+      total: totalResult[0]?.count || 0,
+      recommended: recommendedResult[0]?.count || 0
+    };
+  }
+
+  async getChallengeStats() {
+    const [totalResult, activeResult] = await Promise.all([
+      db.select({ count: sql<number>`count(*)` }).from(challenges),
+      db.select({ count: sql<number>`count(*)` }).from(challenges).where(eq(challenges.isActive, true))
+    ]);
+    
+    return {
+      total: totalResult[0]?.count || 0,
+      active: activeResult[0]?.count || 0
+    };
+  }
+
+  // Optimized paginated blog posts
+  async getBlogPostsPaginated(offset: number, limit: number, filters: any = {}) {
+    let query = db.select().from(blogPosts);
+    
+    if (filters.search) {
+      query = query.where(
+        or(
+          like(blogPosts.title, `%${filters.search}%`),
+          like(blogPosts.content, `%${filters.search}%`),
+          like(blogPosts.excerpt, `%${filters.search}%`)
+        )
+      );
+    }
+    
+    if (filters.category) {
+      query = query.where(eq(blogPosts.category, filters.category));
+    }
+    
+    if (typeof filters.isPublished === 'boolean') {
+      query = query.where(eq(blogPosts.isPublished, filters.isPublished));
+    }
+    
+    if (typeof filters.isPremium === 'boolean') {
+      query = query.where(eq(blogPosts.isPremium, filters.isPremium));
+    }
+    
+    const posts = await query
+      .orderBy(desc(blogPosts.createdAt))
+      .limit(limit)
+      .offset(offset);
+      
+    return posts;
+  }
+
+  async getBlogPostsCount(filters: any = {}) {
+    let query = db.select({ count: sql<number>`count(*)` }).from(blogPosts);
+    
+    if (filters.search) {
+      query = query.where(
+        or(
+          like(blogPosts.title, `%${filters.search}%`),
+          like(blogPosts.content, `%${filters.search}%`),
+          like(blogPosts.excerpt, `%${filters.search}%`)
+        )
+      );
+    }
+    
+    if (filters.category) {
+      query = query.where(eq(blogPosts.category, filters.category));
+    }
+    
+    if (typeof filters.isPublished === 'boolean') {
+      query = query.where(eq(blogPosts.isPublished, filters.isPublished));
+    }
+    
+    if (typeof filters.isPremium === 'boolean') {
+      query = query.where(eq(blogPosts.isPremium, filters.isPremium));
+    }
+    
+    const result = await query;
+    return result[0]?.count || 0;
+  }
+
+  // Optimized paginated products
+  async getProductsPaginated(offset: number, limit: number, filters: any = {}) {
+    let query = db.select().from(products);
+    
+    if (filters.search) {
+      query = query.where(
+        or(
+          like(products.name, `%${filters.search}%`),
+          like(products.description, `%${filters.search}%`)
+        )
+      );
+    }
+    
+    if (filters.category) {
+      query = query.where(eq(products.category, filters.category));
+    }
+    
+    const productList = await query
+      .orderBy(desc(products.createdAt))
+      .limit(limit)
+      .offset(offset);
+      
+    return productList;
+  }
+
+  async getProductsCount(filters: any = {}) {
+    let query = db.select({ count: sql<number>`count(*)` }).from(products);
+    
+    if (filters.search) {
+      query = query.where(
+        or(
+          like(products.name, `%${filters.search}%`),
+          like(products.description, `%${filters.search}%`)
+        )
+      );
+    }
+    
+    if (filters.category) {
+      query = query.where(eq(products.category, filters.category));
+    }
+    
+    const result = await query;
+    return result[0]?.count || 0;
+  }
+
   // User operations (required for Replit Auth)
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
