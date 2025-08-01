@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -9,27 +9,22 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { 
   Plus, 
   Edit, 
   Trash2, 
-  Eye, 
-  Sparkles, 
+  FileText, 
   Loader2,
-  Calendar,
-  User,
-  Tag,
-  FileText,
-  Wand2,
-  AlertTriangle,
+  Eye,
+  EyeOff,
+  Crown,
   ChevronLeft,
   ChevronRight,
   Search,
   Filter,
-  MoreHorizontal
+  AlertTriangle
 } from "lucide-react";
 
 interface BlogPost {
@@ -83,14 +78,8 @@ export function OptimizedBlogManagement() {
     isPremium: false
   });
 
-  // Debounced search term for better performance
-  const debouncedSearchTerm = useMemo(() => {
-    const timer = setTimeout(() => searchTerm, 300);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
-
-  // Fetch paginated blog posts with caching
-  const { data: blogData, isLoading, error } = useQuery({
+  // Fetch paginated posts with caching
+  const { data: postData, isLoading, error } = useQuery({
     queryKey: ['/api/admin/blog-posts', currentPage, pageSize, searchTerm, categoryFilter, statusFilter],
     queryFn: async () => {
       const params = new URLSearchParams({
@@ -108,9 +97,14 @@ export function OptimizedBlogManagement() {
     refetchOnWindowFocus: false
   });
 
-  // Create blog post mutation
+  // Create post mutation
   const createPost = useMutation({
-    mutationFn: (postData: any) => apiRequest('POST', '/api/admin/blog-posts', postData),
+    mutationFn: (postData: any) => apiRequest('POST', '/api/admin/blog-posts', {
+      ...postData,
+      slug: postData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+      tags: postData.tags ? postData.tags.split(',').map((t: string) => t.trim()) : [],
+      readTime: Math.ceil(postData.content.split(' ').length / 200) // Estimate reading time
+    }),
     onSuccess: () => {
       toast({ title: "Success", description: "Blog post created successfully" });
       setIsCreateDialogOpen(false);
@@ -134,7 +128,7 @@ export function OptimizedBlogManagement() {
     }
   });
 
-  // Update blog post mutation
+  // Update post mutation
   const updatePost = useMutation({
     mutationFn: ({ id, data }: { id: number; data: any }) =>
       apiRequest('PUT', `/api/admin/blog-posts/${id}`, data),
@@ -152,7 +146,7 @@ export function OptimizedBlogManagement() {
     }
   });
 
-  // Delete blog post mutation
+  // Delete post mutation
   const deletePost = useMutation({
     mutationFn: (id: number) => apiRequest('DELETE', `/api/admin/blog-posts/${id}`),
     onSuccess: () => {
@@ -198,15 +192,15 @@ export function OptimizedBlogManagement() {
   };
 
   const handleSelectAll = () => {
-    if (selectedPosts.length === blogData?.data?.length) {
+    if (selectedPosts.length === postData?.data?.length) {
       setSelectedPosts([]);
     } else {
-      setSelectedPosts(blogData?.data?.map(post => post.id) || []);
+      setSelectedPosts(postData?.data?.map(post => post.id) || []);
     }
   };
 
-  const posts = blogData?.data || [];
-  const pagination = blogData?.pagination;
+  const posts = postData?.data || [];
+  const pagination = postData?.pagination;
 
   if (error) {
     return (
@@ -245,37 +239,27 @@ export function OptimizedBlogManagement() {
               <DialogTrigger asChild>
                 <Button>
                   <Plus className="h-4 w-4 mr-2" />
-                  Create Post
+                  New Post
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+              <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Create New Blog Post</DialogTitle>
                   <DialogDescription>
-                    Create a new blog post for your wellness platform
+                    Write and publish a new blog post for your wellness platform
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="title">Title</Label>
-                    <Input
-                      id="title"
-                      value={newPost.title}
-                      onChange={(e) => setNewPost(prev => ({ ...prev, title: e.target.value }))}
-                      placeholder="Enter post title..."
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="excerpt">Excerpt</Label>
-                    <Textarea
-                      id="excerpt"
-                      value={newPost.excerpt}
-                      onChange={(e) => setNewPost(prev => ({ ...prev, excerpt: e.target.value }))}
-                      placeholder="Brief description..."
-                      rows={3}
-                    />
-                  </div>
                   <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="title">Title</Label>
+                      <Input
+                        id="title"
+                        value={newPost.title}
+                        onChange={(e) => setNewPost(prev => ({ ...prev, title: e.target.value }))}
+                        placeholder="Enter post title..."
+                      />
+                    </div>
                     <div>
                       <Label htmlFor="category">Category</Label>
                       <Select value={newPost.category} onValueChange={(value) => setNewPost(prev => ({ ...prev, category: value }))}>
@@ -284,22 +268,23 @@ export function OptimizedBlogManagement() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="wellness">Wellness</SelectItem>
-                          <SelectItem value="fitness">Fitness</SelectItem>
                           <SelectItem value="nutrition">Nutrition</SelectItem>
+                          <SelectItem value="fitness">Fitness</SelectItem>
                           <SelectItem value="mindfulness">Mindfulness</SelectItem>
                           <SelectItem value="lifestyle">Lifestyle</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
-                    <div>
-                      <Label htmlFor="tags">Tags (comma-separated)</Label>
-                      <Input
-                        id="tags"
-                        value={newPost.tags}
-                        onChange={(e) => setNewPost(prev => ({ ...prev, tags: e.target.value }))}
-                        placeholder="wellness, health, tips"
-                      />
-                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="excerpt">Excerpt</Label>
+                    <Textarea
+                      id="excerpt"
+                      value={newPost.excerpt}
+                      onChange={(e) => setNewPost(prev => ({ ...prev, excerpt: e.target.value }))}
+                      placeholder="Brief description of the post..."
+                      rows={3}
+                    />
                   </div>
                   <div>
                     <Label htmlFor="content">Content</Label>
@@ -311,7 +296,16 @@ export function OptimizedBlogManagement() {
                       rows={10}
                     />
                   </div>
-                  <div className="flex items-center gap-4">
+                  <div>
+                    <Label htmlFor="tags">Tags (comma-separated)</Label>
+                    <Input
+                      id="tags"
+                      value={newPost.tags}
+                      onChange={(e) => setNewPost(prev => ({ ...prev, tags: e.target.value }))}
+                      placeholder="wellness, health, mindfulness"
+                    />
+                  </div>
+                  <div className="flex items-center space-x-4">
                     <div className="flex items-center space-x-2">
                       <Checkbox
                         id="published"
@@ -362,34 +356,33 @@ export function OptimizedBlogManagement() {
             </div>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
               <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="All categories" />
+                <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="">All categories</SelectItem>
                 <SelectItem value="wellness">Wellness</SelectItem>
-                <SelectItem value="fitness">Fitness</SelectItem>
                 <SelectItem value="nutrition">Nutrition</SelectItem>
+                <SelectItem value="fitness">Fitness</SelectItem>
                 <SelectItem value="mindfulness">Mindfulness</SelectItem>
                 <SelectItem value="lifestyle">Lifestyle</SelectItem>
               </SelectContent>
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="All statuses" />
+                <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All statuses</SelectItem>
+                <SelectItem value="">All posts</SelectItem>
                 <SelectItem value="published">Published</SelectItem>
                 <SelectItem value="draft">Draft</SelectItem>
                 <SelectItem value="premium">Premium</SelectItem>
               </SelectContent>
             </Select>
             <Select value={pageSize.toString()} onValueChange={(value) => setPageSize(Number(value))}>
-              <SelectTrigger className="w-[100px]">
+              <SelectTrigger className="w-[120px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="5">5 per page</SelectItem>
                 <SelectItem value="10">10 per page</SelectItem>
                 <SelectItem value="25">25 per page</SelectItem>
                 <SelectItem value="50">50 per page</SelectItem>
@@ -409,6 +402,7 @@ export function OptimizedBlogManagement() {
                 onClick={() => bulkOperation.mutate({ action: 'publish', ids: selectedPosts })}
                 disabled={bulkOperation.isPending}
               >
+                <Eye className="h-4 w-4 mr-1" />
                 Publish
               </Button>
               <Button
@@ -417,6 +411,7 @@ export function OptimizedBlogManagement() {
                 onClick={() => bulkOperation.mutate({ action: 'unpublish', ids: selectedPosts })}
                 disabled={bulkOperation.isPending}
               >
+                <EyeOff className="h-4 w-4 mr-1" />
                 Unpublish
               </Button>
               <Button
@@ -430,82 +425,127 @@ export function OptimizedBlogManagement() {
             </div>
           )}
 
-          {/* Posts Table */}
-          <div className="border rounded-lg overflow-hidden">
-            <div className="bg-muted p-3">
-              <div className="flex items-center">
-                <Checkbox
-                  checked={selectedPosts.length === posts.length && posts.length > 0}
-                  onCheckedChange={handleSelectAll}
-                  className="mr-3"
-                />
-                <span className="text-sm font-medium">Select All</span>
-              </div>
+          {/* Posts List */}
+          {isLoading ? (
+            <div className="flex items-center justify-center py-10">
+              <Loader2 className="h-8 w-8 animate-spin" />
             </div>
-            
-            {isLoading ? (
-              <div className="flex items-center justify-center py-10">
-                <Loader2 className="h-8 w-8 animate-spin" />
+          ) : posts.length === 0 ? (
+            <div className="text-center py-10">
+              <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold">No blog posts found</h3>
+              <p className="text-muted-foreground">Create your first blog post to get started</p>
+            </div>
+          ) : (
+            <>
+              <div className="mb-4">
+                <div className="flex items-center">
+                  <Checkbox
+                    checked={selectedPosts.length === posts.length && posts.length > 0}
+                    onCheckedChange={handleSelectAll}
+                    className="mr-3"
+                  />
+                  <span className="text-sm font-medium">Select All</span>
+                </div>
               </div>
-            ) : posts.length === 0 ? (
-              <div className="text-center py-10">
-                <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold">No blog posts found</h3>
-                <p className="text-muted-foreground">Create your first blog post to get started</p>
-              </div>
-            ) : (
-              <div className="divide-y">
+              
+              <div className="space-y-4">
                 {posts.map((post) => (
-                  <div key={post.id} className="p-4 hover:bg-muted/50">
-                    <div className="flex items-center gap-3">
-                      <Checkbox
-                        checked={selectedPosts.includes(post.id)}
-                        onCheckedChange={() => handleSelectPost(post.id)}
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-medium">{post.title}</h4>
-                          {post.isPublished ? (
-                            <Badge variant="default">Published</Badge>
-                          ) : (
-                            <Badge variant="secondary">Draft</Badge>
+                  <Card key={post.id} className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="flex items-start gap-4">
+                        <Checkbox
+                          checked={selectedPosts.includes(post.id)}
+                          onCheckedChange={() => handleSelectPost(post.id)}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between mb-2">
+                            <div>
+                              <h3 className="font-medium text-lg line-clamp-2">{post.title}</h3>
+                              <p className="text-sm text-muted-foreground">
+                                {post.category && (
+                                  <Badge variant="outline" className="mr-2">
+                                    {post.category}
+                                  </Badge>
+                                )}
+                                {new Date(post.createdAt).toLocaleDateString()}
+                                {post.readTime && ` • ${post.readTime} min read`}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {post.isPublished ? (
+                                <Badge variant="default">
+                                  <Eye className="h-3 w-3 mr-1" />
+                                  Published
+                                </Badge>
+                              ) : (
+                                <Badge variant="secondary">
+                                  <EyeOff className="h-3 w-3 mr-1" />
+                                  Draft
+                                </Badge>
+                              )}
+                              {post.isPremium && (
+                                <Badge variant="outline" className="border-yellow-500">
+                                  <Crown className="h-3 w-3 mr-1" />
+                                  Premium
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {post.excerpt && (
+                            <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                              {post.excerpt}
+                            </p>
                           )}
-                          {post.isPremium && (
-                            <Badge variant="outline">Premium</Badge>
-                          )}
-                        </div>
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {post.excerpt}
-                        </p>
-                        <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                          <span>{post.category}</span>
-                          <span>{new Date(post.createdAt).toLocaleDateString()}</span>
-                          {post.readTime && <span>{post.readTime} min read</span>}
+                          
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setEditingPost(post)}
+                            >
+                              <Edit className="h-4 w-4 mr-1" />
+                              Edit
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => updatePost.mutate({ 
+                                id: post.id, 
+                                data: { isPublished: !post.isPublished } 
+                              })}
+                              disabled={updatePost.isPending}
+                            >
+                              {post.isPublished ? (
+                                <>
+                                  <EyeOff className="h-4 w-4 mr-1" />
+                                  Unpublish
+                                </>
+                              ) : (
+                                <>
+                                  <Eye className="h-4 w-4 mr-1" />
+                                  Publish
+                                </>
+                              )}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => deletePost.mutate(post.id)}
+                              disabled={deletePost.isPending}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setEditingPost(post)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => deletePost.mutate(post.id)}
-                          disabled={deletePost.isPending}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
+                    </CardContent>
+                  </Card>
                 ))}
               </div>
-            )}
-          </div>
+            </>
+          )}
 
           {/* Pagination */}
           {pagination && pagination.totalPages > 1 && (

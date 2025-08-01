@@ -340,8 +340,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin API - Protected routes
-  app.get('/api/admin/stats-old', isAuthenticated, async (req, res) => {
+  // Optimized Admin Stats with Caching
+  app.get('/api/admin/stats', isAuthenticated, async (req, res) => {
     try {
       // Get basic statistics
       const [posts, products, challenges] = await Promise.all([
