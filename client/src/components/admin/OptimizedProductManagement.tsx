@@ -60,7 +60,7 @@ export function OptimizedProductManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(12);
   const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
   
   // Form state
@@ -86,11 +86,11 @@ export function OptimizedProductManagement() {
         page: currentPage.toString(),
         pageSize: pageSize.toString(),
         ...(searchTerm && { search: searchTerm }),
-        ...(categoryFilter && { category: categoryFilter })
+        ...(categoryFilter && categoryFilter !== 'all' && { category: categoryFilter })
       });
       
       const response = await apiRequest('GET', `/api/admin/products?${params}`);
-      return response as PaginatedResponse;
+      return response as unknown as PaginatedResponse;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes cache
     refetchOnWindowFocus: false
@@ -385,7 +385,7 @@ export function OptimizedProductManagement() {
                 <SelectValue placeholder="All categories" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All categories</SelectItem>
+                <SelectItem value="all">All categories</SelectItem>
                 <SelectItem value="supplements">Supplements</SelectItem>
                 <SelectItem value="fitness">Fitness Equipment</SelectItem>
                 <SelectItem value="nutrition">Nutrition</SelectItem>
@@ -536,7 +536,7 @@ export function OptimizedProductManagement() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => window.open(product.affiliateLink, '_blank')}
+                                onClick={() => window.open(product.affiliateLink!, '_blank')}
                               >
                                 <ExternalLink className="h-3 w-3" />
                               </Button>

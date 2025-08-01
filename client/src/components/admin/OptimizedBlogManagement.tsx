@@ -61,8 +61,8 @@ export function OptimizedBlogManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [selectedPosts, setSelectedPosts] = useState<number[]>([]);
   
   // Form state
@@ -91,7 +91,7 @@ export function OptimizedBlogManagement() {
       });
       
       const response = await apiRequest('GET', `/api/admin/blog-posts?${params}`);
-      return response as PaginatedResponse;
+      return response as unknown as PaginatedResponse;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes cache
     refetchOnWindowFocus: false
@@ -359,7 +359,7 @@ export function OptimizedBlogManagement() {
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All categories</SelectItem>
+                <SelectItem value="all">All categories</SelectItem>
                 <SelectItem value="wellness">Wellness</SelectItem>
                 <SelectItem value="nutrition">Nutrition</SelectItem>
                 <SelectItem value="fitness">Fitness</SelectItem>
@@ -372,7 +372,7 @@ export function OptimizedBlogManagement() {
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All posts</SelectItem>
+                <SelectItem value="all">All posts</SelectItem>
                 <SelectItem value="published">Published</SelectItem>
                 <SelectItem value="draft">Draft</SelectItem>
                 <SelectItem value="premium">Premium</SelectItem>
