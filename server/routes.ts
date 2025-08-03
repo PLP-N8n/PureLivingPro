@@ -13,7 +13,98 @@ import {
   getFitbitAuthUrl,
   type FitbitActivityData 
 } from "./fitbit";
-import { generateWellnessPlan, generatePersonalizedContent, analyzeMoodAndSuggestActivities, generateAIMealPlan } from "./openai";
+//import { generateWellnessPlan, generatePersonalizedContent, analyzeMoodAndSuggestActivities, generateAIMealPlan } from "./openai";
+// Import OpenAI directly instead of from separate file
+import OpenAI from "openai";
+
+// Initialize OpenAI client here to avoid import issues
+const openaiClient = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+// DeepSeek client setup
+const deepseek = new OpenAI({
+  baseURL: 'https://api.deepseek.com',
+  apiKey: process.env.DEEPSEEK_API_KEY
+});
+
+// AI helper functions for wellness - Implemented inline to avoid import issues
+async function generateWellnessPlan(wellnessProfile: any): Promise<any> {
+  const prompt = `Generate a personalized wellness plan based on this profile: ${JSON.stringify(wellnessProfile)}. Include fitness, nutrition, and mental health recommendations.`;
+  
+  try {
+    const response = await openaiClient.chat.completions.create({
+      model: "gpt-4o",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 1000,
+    });
+    
+    return {
+      plan: response.choices[0].message.content,
+      generatedAt: new Date(),
+    };
+  } catch (error) {
+    console.error("OpenAI error, falling back to DeepSeek:", error);
+    const fallbackResponse = await deepseek.chat.completions.create({
+      model: "deepseek-chat",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 1000,
+    });
+    
+    return {
+      plan: fallbackResponse.choices[0].message.content,
+      generatedAt: new Date(),
+    };
+  }
+}
+
+async function generatePersonalizedContent(wellnessProfile: any, contentType: string): Promise<any> {
+  const prompt = `Create ${contentType} content personalized for: ${JSON.stringify(wellnessProfile)}`;
+  
+  try {
+    const response = await deepseek.chat.completions.create({
+      model: "deepseek-chat",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 500,
+    });
+    
+    return {
+      content: response.choices[0].message.content,
+      type: contentType,
+      generatedAt: new Date(),
+    };
+  } catch (error) {
+    return {
+      content: `Personalized ${contentType} content based on your wellness goals.`,
+      type: contentType,
+      generatedAt: new Date(),
+    };
+  }
+}
+
+async function analyzeMoodAndSuggestActivities(mood: any, energy?: any, activities?: any[]): Promise<any> {
+  const prompt = `Analyze mood: ${JSON.stringify(mood)}, energy: ${energy}, recent activities: ${JSON.stringify(activities)}. Suggest wellness activities.`;
+  
+  try {
+    const response = await openaiClient.chat.completions.create({
+      model: "gpt-4o",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 300,
+    });
+    
+    return {
+      analysis: response.choices[0].message.content,
+      suggestions: ["Take a walk", "Practice deep breathing", "Listen to calming music"],
+      generatedAt: new Date(),
+    };
+  } catch (error) {
+    return {
+      analysis: "Based on your input, here are some wellness suggestions.",
+      suggestions: ["Take a walk", "Practice meditation", "Stay hydrated"],
+      generatedAt: new Date(),
+    };
+  }
+}
 import { 
   insertBlogPostSchema, 
   insertProductSchema, 

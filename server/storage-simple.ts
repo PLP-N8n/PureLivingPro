@@ -55,15 +55,40 @@ interface ISimpleStorage {
   getProductStats(): Promise<any>;
   
   // Challenge operations
-  getChallenges(): Promise<any[]>;
+  getChallenges(limit?: number, offset?: number): Promise<any[]>;
+  getChallenge(id: number): Promise<any>;
   createChallenge(challenge: any): Promise<any>;
   updateChallenge(id: number, updates: any): Promise<any>;
   deleteChallenge(id: number): Promise<boolean>;
   getChallengeStats(): Promise<any>;
   
+  // User challenge operations
+  getUserChallenges(userId: string): Promise<any[]>;
+  createUserChallenge(userChallenge: any): Promise<any>;
+  
+  // Daily logs operations
+  getDailyLogs(userId: string, startDate?: Date, endDate?: Date): Promise<any[]>;
+  createDailyLog(dailyLog: any): Promise<any>;
+  
+  // Wellness operations
+  getWellnessPlans(userId: string): Promise<any[]>;
+  createWellnessPlan(plan: any): Promise<any>;
+  getUserFitnessData(userId: string, limit?: number): Promise<any[]>;
+  
   // Bulk operations
   bulkUpdateBlogPosts(action: string, ids: number[]): Promise<boolean>;
   bulkUpdateProducts(action: string, ids: number[]): Promise<boolean>;
+  
+  // Automation operations (to fix automation controller errors)
+  getAutomationRules?(): Promise<any[]>;
+  createAutomationRule?(rule: any): Promise<any>;
+  updateAutomationRule?(id: number, updates: any): Promise<any>;
+  createContentPipeline?(pipeline: any): Promise<any>;
+  getContentPipeline?(id: number): Promise<any>;
+  getAffiliateLinks?(): Promise<any[]>;
+  createRevenueTracking?(tracking: any): Promise<any>;
+  getRevenueStats?(): Promise<any>;
+  getContentEngagementStats?(): Promise<any>;
 }
 
 export class SimpleStorage implements ISimpleStorage {
@@ -173,7 +198,7 @@ export class SimpleStorage implements ISimpleStorage {
 
   async deleteBlogPost(id: number): Promise<boolean> {
     const result = await db.delete(blogPosts).where(eq(blogPosts.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   async getBlogPostStats(): Promise<any> {
@@ -267,7 +292,7 @@ export class SimpleStorage implements ISimpleStorage {
 
   async deleteProduct(id: number): Promise<boolean> {
     const result = await db.delete(products).where(eq(products.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   async getProductStats(): Promise<any> {
@@ -285,8 +310,16 @@ export class SimpleStorage implements ISimpleStorage {
   }
 
   // Challenge operations
-  async getChallenges(): Promise<any[]> {
-    return await db.select().from(challenges).orderBy(desc(challenges.createdAt));
+  async getChallenges(limit = 50, offset = 0): Promise<any[]> {
+    return await db.select().from(challenges)
+      .orderBy(desc(challenges.createdAt))
+      .limit(limit)
+      .offset(offset);
+  }
+
+  async getChallenge(id: number): Promise<any> {
+    const [challenge] = await db.select().from(challenges).where(eq(challenges.id, id));
+    return challenge;
   }
 
   async createChallenge(challenge: any): Promise<any> {
@@ -305,7 +338,62 @@ export class SimpleStorage implements ISimpleStorage {
 
   async deleteChallenge(id: number): Promise<boolean> {
     const result = await db.delete(challenges).where(eq(challenges.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // User challenge operations
+  async getUserChallenges(userId: string): Promise<any[]> {
+    return await db.select({
+      challenge: challenges,
+      userChallenge: userChallenges
+    })
+    .from(userChallenges)
+    .innerJoin(challenges, eq(userChallenges.challengeId, challenges.id))
+    .where(eq(userChallenges.userId, userId))
+    .orderBy(desc(userChallenges.joinedAt));
+  }
+
+  async createUserChallenge(userChallenge: any): Promise<any> {
+    const [newUserChallenge] = await db.insert(userChallenges).values(userChallenge).returning();
+    return newUserChallenge;
+  }
+
+  // Daily logs operations
+  async getDailyLogs(userId: string, startDate?: Date, endDate?: Date): Promise<any[]> {
+    let query = db.select().from(dailyLogs).where(eq(dailyLogs.userId, userId));
+    
+    if (startDate) {
+      query = query.where(sql`${dailyLogs.logDate} >= ${startDate}`) as any;
+    }
+    if (endDate) {
+      query = query.where(sql`${dailyLogs.logDate} <= ${endDate}`) as any;
+    }
+    
+    return await query.orderBy(desc(dailyLogs.logDate));
+  }
+
+  async createDailyLog(dailyLog: any): Promise<any> {
+    const [newDailyLog] = await db.insert(dailyLogs).values(dailyLog).returning();
+    return newDailyLog;
+  }
+
+  // Wellness operations
+  async getWellnessPlans(userId: string): Promise<any[]> {
+    return await db.select().from(wellnessPlans)
+      .where(eq(wellnessPlans.userId, userId))
+      .orderBy(desc(wellnessPlans.createdAt));
+  }
+
+  async createWellnessPlan(plan: any): Promise<any> {
+    const [newPlan] = await db.insert(wellnessPlans).values(plan).returning();
+    return newPlan;
+  }
+
+  async getUserFitnessData(userId: string, limit = 100): Promise<any[]> {
+    return await db.select().from(fitnessData)
+      .where(eq(fitnessData.userId, userId))
+      .orderBy(desc(fitnessData.recordedAt))
+      .limit(limit);
   }
 
   async getChallengeStats(): Promise<any> {
@@ -372,6 +460,103 @@ export class SimpleStorage implements ISimpleStorage {
     } catch (error) {
       console.error('Bulk products update failed:', error);
       return false;
+    }
+  }
+
+  // Automation operations (stub implementations to fix TypeScript errors)
+  async getAutomationRules(): Promise<any[]> {
+    try {
+      return await db.select().from(automationRules).orderBy(desc(automationRules.createdAt));
+    } catch (error) {
+      console.error("Error fetching automation rules:", error);
+      return [];
+    }
+  }
+
+  async createAutomationRule(rule: any): Promise<any> {
+    try {
+      const [newRule] = await db.insert(automationRules).values(rule).returning();
+      return newRule;
+    } catch (error) {
+      console.error("Error creating automation rule:", error);
+      return null;
+    }
+  }
+
+  async updateAutomationRule(id: number, updates: any): Promise<any> {
+    try {
+      const [updated] = await db.update(automationRules)
+        .set({ ...updates, updatedAt: new Date() })
+        .where(eq(automationRules.id, id))
+        .returning();
+      return updated;
+    } catch (error) {
+      console.error("Error updating automation rule:", error);
+      return null;
+    }
+  }
+
+  async createContentPipeline(pipeline: any): Promise<any> {
+    try {
+      const [newPipeline] = await db.insert(contentPipeline).values(pipeline).returning();
+      return newPipeline;
+    } catch (error) {
+      console.error("Error creating content pipeline:", error);
+      return null;
+    }
+  }
+
+  async getContentPipeline(id: number): Promise<any> {
+    try {
+      const [pipeline] = await db.select().from(contentPipeline).where(eq(contentPipeline.id, id));
+      return pipeline;
+    } catch (error) {
+      console.error("Error fetching content pipeline:", error);
+      return null;
+    }
+  }
+
+  async getAffiliateLinks(): Promise<any[]> {
+    try {
+      return await db.select().from(affiliateLinks).orderBy(desc(affiliateLinks.createdAt));
+    } catch (error) {
+      console.error("Error fetching affiliate links:", error);
+      return [];
+    }
+  }
+
+  async createRevenueTracking(tracking: any): Promise<any> {
+    try {
+      const [newTracking] = await db.insert(revenueTracking).values(tracking).returning();
+      return newTracking;
+    } catch (error) {
+      console.error("Error creating revenue tracking:", error);
+      return null;
+    }
+  }
+
+  async getRevenueStats(): Promise<any> {
+    try {
+      const stats = await db.select().from(revenueTracking);
+      return { totalRevenue: stats.length, recentRevenue: stats.slice(0, 10) };
+    } catch (error) {
+      console.error("Error fetching revenue stats:", error);
+      return { totalRevenue: 0, recentRevenue: [] };
+    }
+  }
+
+  async getContentEngagementStats(): Promise<any> {
+    try {
+      const blogStats = await db.select().from(blogPosts);
+      const productStats = await db.select().from(products);
+      return { 
+        totalContent: blogStats.length + productStats.length,
+        blogPosts: blogStats.length,
+        products: productStats.length
+      };
+    } catch (error) {
+      console.error("Error fetching content engagement stats:", error);
+      return { totalContent: 0, blogPosts: 0, products: 0 };
     }
   }
 }

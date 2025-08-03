@@ -114,7 +114,7 @@ export class AutomationController {
 
   private matchesSchedule(schedule: string, lastExecuted?: Date): boolean {
     // Simple schedule matching (would implement proper cron parsing in production)
-    const schedules = {
+    const schedules: Record<string, number> = {
       'daily': 24 * 60 * 60 * 1000,
       'hourly': 60 * 60 * 1000,
       '4hours': 4 * 60 * 60 * 1000,
