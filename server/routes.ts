@@ -3076,46 +3076,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ============== AUTONOMOUS SYSTEM ENDPOINTS ==============
 
-  // Start autonomous mode
+  // Start autonomous foundation (Week 1 upgrade)
   app.post('/api/automation/autonomous/start', isAuthenticated, requireAdmin, asyncHandler(async (req, res) => {
     try {
-      const { AutonomousController } = await import('./automation/autonomousController');
-      const controller = new AutonomousController();
-      const result = await controller.startAutonomousMode();
+      const { autonomousFoundation } = await import('./automation/autonomousFoundation');
+      const result = await autonomousFoundation.activateFoundation();
       
       if (result.success) {
-        sendSuccess(res, { autonomousMode: true, message: result.message });
+        sendSuccess(res, { 
+          autonomousMode: true, 
+          message: result.message,
+          autonomyLevel: result.autonomyLevel,
+          weekPhase: 'Foundation (Week 1)'
+        });
       } else {
         sendError(res, result.message, 400);
       }
     } catch (error) {
-      console.error('Error starting autonomous mode:', error);
-      sendError(res, 'Failed to start autonomous mode', 500);
+      console.error('Error starting autonomous foundation:', error);
+      sendError(res, 'Failed to start autonomous foundation', 500);
     }
   }));
 
-  // Stop autonomous mode
+  // Stop autonomous foundation
   app.post('/api/automation/autonomous/stop', isAuthenticated, requireAdmin, asyncHandler(async (req, res) => {
     try {
-      const { AutonomousController } = await import('./automation/autonomousController');
-      const controller = new AutonomousController();
-      const result = await controller.stopAutonomousMode();
+      const { autonomousFoundation } = await import('./automation/autonomousFoundation');
+      const result = await autonomousFoundation.deactivateFoundation();
       
       if (result.success) {
-        sendSuccess(res, { autonomousMode: false, message: result.message });
+        sendSuccess(res, { 
+          autonomousMode: false, 
+          message: result.message,
+          weekPhase: 'Stopped'
+        });
       } else {
         sendError(res, result.message, 400);
       }
     } catch (error) {
-      console.error('Error stopping autonomous mode:', error);
-      sendError(res, 'Failed to stop autonomous mode', 500);
+      console.error('Error stopping autonomous foundation:', error);
+      sendError(res, 'Failed to stop autonomous foundation', 500);
     }
   }));
 
-  // Get autonomous system metrics
+  // Get autonomous foundation status and metrics
   app.get('/api/automation/autonomous/metrics', isAuthenticated, asyncHandler(async (req, res) => {
-    const metrics = await storage.getSystemMetrics();
-    sendSuccess(res, metrics);
+    try {
+      const { autonomousFoundation } = await import('./automation/autonomousFoundation');
+      const foundationStatus = await autonomousFoundation.getFoundationStatus();
+      const systemMetrics = await storage.getSystemMetrics();
+      
+      sendSuccess(res, {
+        ...systemMetrics,
+        foundation: foundationStatus,
+        weekPhase: foundationStatus.isActive ? 'Foundation (Week 1)' : 'Inactive',
+        targetAutonomy: foundationStatus.isActive ? '60%' : 'N/A'
+      });
+    } catch (error) {
+      console.error('Error fetching autonomous metrics:', error);
+      const fallbackMetrics = await storage.getSystemMetrics();
+      sendSuccess(res, fallbackMetrics);
+    }
   }));
 
   // ============== REVENUE TRACKING ENDPOINTS ==============

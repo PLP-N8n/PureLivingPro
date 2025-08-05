@@ -358,7 +358,7 @@ export class SimpleStorage implements ISimpleStorage {
       .from(userChallenges)
       .innerJoin(challenges, eq(userChallenges.challengeId, challenges.id))
       .where(eq(userChallenges.userId, userId))
-      .orderBy(desc(userChallenges.joinedAt));
+      .orderBy(desc(userChallenges.createdAt));
       
       return result || [];
     } catch (error) {
@@ -367,7 +367,7 @@ export class SimpleStorage implements ISimpleStorage {
       try {
         return await db.select().from(userChallenges)
           .where(eq(userChallenges.userId, userId))
-          .orderBy(desc(userChallenges.joinedAt));
+          .orderBy(desc(userChallenges.createdAt));
       } catch (fallbackError) {
         console.error('Fallback query also failed:', fallbackError);
         return [];
@@ -385,13 +385,13 @@ export class SimpleStorage implements ISimpleStorage {
     let query = db.select().from(dailyLogs).where(eq(dailyLogs.userId, userId));
     
     if (startDate) {
-      query = query.where(sql`${dailyLogs.logDate} >= ${startDate}`) as any;
+      query = query.where(sql`${dailyLogs.date} >= ${startDate}`) as any;
     }
     if (endDate) {
-      query = query.where(sql`${dailyLogs.logDate} <= ${endDate}`) as any;
+      query = query.where(sql`${dailyLogs.date} <= ${endDate}`) as any;
     }
     
-    return await query.orderBy(desc(dailyLogs.logDate));
+    return await query.orderBy(desc(dailyLogs.date));
   }
 
   async createDailyLog(dailyLog: any): Promise<any> {
