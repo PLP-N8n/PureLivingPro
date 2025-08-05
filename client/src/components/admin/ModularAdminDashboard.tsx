@@ -27,6 +27,7 @@ const AutomationDashboard = lazy(() => import('../AutomationDashboard').then(m =
 const AdvancedRiskManagement = lazy(() => import('./AdvancedRiskManagement').then(m => ({ default: m.AdvancedRiskManagement })));
 const MarketOracle = lazy(() => import('./MarketOracle').then(m => ({ default: m.MarketOracle })));
 const AutonomousNegotiation = lazy(() => import('./AutonomousNegotiation').then(m => ({ default: m.AutonomousNegotiation })));
+const AgentConsole = lazy(() => import('../../pages/agent-console').then(m => ({ default: m.default })));
 
 // Loading component for suspense
 const ComponentLoader = () => (
@@ -159,10 +160,14 @@ export function ModularAdminDashboard() {
 
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-7">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-8">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
               Overview
+            </TabsTrigger>
+            <TabsTrigger value="agents" className="flex items-center gap-2">
+              <Bot className="h-4 w-4" />
+              Agents
             </TabsTrigger>
             <TabsTrigger value="blog" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
@@ -261,6 +266,13 @@ export function ModularAdminDashboard() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          {/* Agent Console Tab */}
+          <TabsContent value="agents">
+            <Suspense fallback={<ComponentLoader />}>
+              <AgentConsole />
+            </Suspense>
           </TabsContent>
 
           {/* Blog Management Tab */}

@@ -286,11 +286,11 @@ export default function AgentConsole() {
   const avgUptime = agents.reduce((sum, agent) => sum + agent.uptime, 0) / agents.length;
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8">
-      {/* Header */}
+    <div className="space-y-6">
+      {/* Agent Console Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Agent Console</h1>
+          <h2 className="text-2xl font-bold text-gray-900">Agent Console</h2>
           <p className="text-gray-600 mt-1">Autonomous wellness platform control center</p>
         </div>
         <div className="flex space-x-3">
