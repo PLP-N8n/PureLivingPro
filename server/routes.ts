@@ -3007,6 +3007,191 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ============== AGENT MANAGEMENT ENDPOINTS ==============
+  
+  // Get agent system status and metrics
+  app.get('/api/agents/status', isAuthenticated, asyncHandler(async (req, res) => {
+    const systemMetrics = await storage.getSystemMetrics();
+    const agentStats = await storage.getAgentStats();
+    
+    sendSuccess(res, {
+      autonomyLevel: systemMetrics.autonomyLevel,
+      systemHealth: systemMetrics.systemHealth,
+      uptime: systemMetrics.uptime,
+      agents: {
+        totalTasks: agentStats.totalTasks,
+        pendingTasks: agentStats.pendingTasks,
+        completedTasks: agentStats.completedTasks,
+        failedTasks: agentStats.failedTasks,
+        successRate: agentStats.successRate
+      },
+      revenue: {
+        total: systemMetrics.totalRevenue,
+        contentGenerated: systemMetrics.contentGenerated
+      },
+      lastUpdated: systemMetrics.lastUpdated
+    });
+  }));
+
+  // Create new agent task
+  app.post('/api/agents/task', isAuthenticated, requireAdmin, asyncHandler(async (req, res) => {
+    const { type, priority, parameters, estimatedDuration } = req.body;
+    
+    if (!type || !priority) {
+      return sendError(res, 'Task type and priority are required', 400);
+    }
+
+    const task = await storage.createAgentTask({
+      type,
+      priority,
+      parameters,
+      estimatedDuration: estimatedDuration || 15,
+      scheduledFor: new Date()
+    });
+
+    sendSuccess(res, task, 'Task created successfully');
+  }));
+
+  // Get agent task history
+  app.get('/api/agents/history', isAuthenticated, asyncHandler(async (req, res) => {
+    const { status, limit = 50 } = req.query;
+    const tasks = await storage.getAgentTasks(status as string);
+    
+    const limitedTasks = tasks.slice(0, parseInt(limit as string) || 50);
+    sendSuccess(res, limitedTasks);
+  }));
+
+  // Update agent task status
+  app.patch('/api/agents/task/:id', isAuthenticated, requireAdmin, asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const updates = req.body;
+    
+    const updatedTask = await storage.updateAgentTask(parseInt(id), updates);
+    if (!updatedTask) {
+      return sendError(res, 'Task not found', 404);
+    }
+    
+    sendSuccess(res, updatedTask, 'Task updated successfully');
+  }));
+
+  // ============== AUTONOMOUS SYSTEM ENDPOINTS ==============
+
+  // Start autonomous mode
+  app.post('/api/automation/autonomous/start', isAuthenticated, requireAdmin, asyncHandler(async (req, res) => {
+    try {
+      const { AutonomousController } = await import('./automation/autonomousController');
+      const controller = new AutonomousController();
+      const result = await controller.startAutonomousMode();
+      
+      if (result.success) {
+        sendSuccess(res, { autonomousMode: true, message: result.message });
+      } else {
+        sendError(res, result.message, 400);
+      }
+    } catch (error) {
+      console.error('Error starting autonomous mode:', error);
+      sendError(res, 'Failed to start autonomous mode', 500);
+    }
+  }));
+
+  // Stop autonomous mode
+  app.post('/api/automation/autonomous/stop', isAuthenticated, requireAdmin, asyncHandler(async (req, res) => {
+    try {
+      const { AutonomousController } = await import('./automation/autonomousController');
+      const controller = new AutonomousController();
+      const result = await controller.stopAutonomousMode();
+      
+      if (result.success) {
+        sendSuccess(res, { autonomousMode: false, message: result.message });
+      } else {
+        sendError(res, result.message, 400);
+      }
+    } catch (error) {
+      console.error('Error stopping autonomous mode:', error);
+      sendError(res, 'Failed to stop autonomous mode', 500);
+    }
+  }));
+
+  // Get autonomous system metrics
+  app.get('/api/automation/autonomous/metrics', isAuthenticated, asyncHandler(async (req, res) => {
+    const metrics = await storage.getSystemMetrics();
+    sendSuccess(res, metrics);
+  }));
+
+  // ============== REVENUE TRACKING ENDPOINTS ==============
+
+  // Get revenue analytics
+  app.get('/api/revenue/analytics', isAuthenticated, requireAdmin, asyncHandler(async (req, res) => {
+    const revenueStats = await storage.getRevenueStats();
+    const contentStats = await storage.getContentEngagementStats();
+    
+    sendSuccess(res, {
+      revenue: revenueStats,
+      content: contentStats,
+      performance: {
+        revenuePerContent: revenueStats.totalRevenue / (contentStats.totalContent || 1),
+        contentProductivity: contentStats.totalContent,
+        engagementRate: 0.75 // Placeholder - implement actual engagement tracking
+      }
+    });
+  }));
+
+  // Track revenue event
+  app.post('/api/revenue/track', asyncHandler(async (req, res) => {
+    const { amount, source, productId, affiliateId } = req.body;
+    
+    if (!amount || !source) {
+      return sendError(res, 'Amount and source are required', 400);
+    }
+
+    const tracking = await storage.createRevenueTracking({
+      amount,
+      source,
+      productId,
+      affiliateId,
+      timestamp: new Date()
+    });
+
+    sendSuccess(res, tracking, 'Revenue tracked successfully');
+  }));
+
+  // ============== SOCIAL MEDIA ENDPOINTS ==============
+
+  // Publish to social media
+  app.post('/api/social/publish', isAuthenticated, requireAdmin, asyncHandler(async (req, res) => {
+    const { platform, content, imageUrl, scheduledFor } = req.body;
+    
+    if (!platform || !content) {
+      return sendError(res, 'Platform and content are required', 400);
+    }
+
+    // Create social publishing task
+    const task = await storage.createAgentTask({
+      type: 'SOCIAL_PUBLISH',
+      priority: 'MEDIUM',
+      parameters: { platform, content, imageUrl, scheduledFor },
+      scheduledFor: scheduledFor ? new Date(scheduledFor) : new Date()
+    });
+
+    sendSuccess(res, task, 'Social media post scheduled successfully');
+  }));
+
+  // Get social media stats
+  app.get('/api/social/stats', isAuthenticated, asyncHandler(async (req, res) => {
+    // Placeholder implementation - integrate with actual social media APIs
+    const stats = {
+      platforms: {
+        twitter: { followers: 1250, posts: 45, engagement: 3.2 },
+        instagram: { followers: 2800, posts: 32, engagement: 4.1 },
+        tiktok: { followers: 950, posts: 18, engagement: 5.8 }
+      },
+      totalReach: 5000,
+      totalEngagement: 4.2
+    };
+    
+    sendSuccess(res, stats);
+  }));
+
   const httpServer = createServer(app);
   return httpServer;
 }
