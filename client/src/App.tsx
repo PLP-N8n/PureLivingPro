@@ -25,6 +25,7 @@ import Admin from "@/pages/admin";
 import { AnalyticsDashboard } from "@/components/AnalyticsDashboard";
 import { AutonomousControl } from "@/components/AutonomousControl";
 import { AutomationDashboard } from "@/components/AutomationDashboard";
+import AdvancedAnalytics from "@/pages/advanced-analytics";
 
 
 function Router() {
@@ -56,6 +57,7 @@ function Router() {
           <Route path="/subscribe" component={Subscribe} />
           <Route path="/admin" component={Admin} />
           <Route path="/analytics" component={AnalyticsDashboard} />
+          <Route path="/advanced-analytics" component={AdvancedAnalytics} />
           <Route path="/autonomous" component={AutonomousControl} />
           <Route path="/automation" component={AutomationDashboard} />
 

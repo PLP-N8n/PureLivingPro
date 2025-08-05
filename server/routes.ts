@@ -3213,6 +3213,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
     sendSuccess(res, stats);
   }));
 
+  // ============== ADVANCED ANALYTICS ENDPOINTS ==============
+
+  // Get user wellness insights
+  app.get('/api/analytics/wellness/user', isAuthenticated, asyncHandler(async (req, res) => {
+    const userId = (req.user as any).claims.sub;
+    const { timeframe = '30' } = req.query;
+    
+    try {
+      const { wellnessAnalytics } = await import('./analytics/wellnessAnalytics');
+      const insights = await wellnessAnalytics.getUserWellnessInsights(userId, parseInt(timeframe as string));
+      sendSuccess(res, insights);
+    } catch (error) {
+      console.error('Error fetching wellness insights:', error);
+      sendError(res, 'Failed to fetch wellness insights', 500);
+    }
+  }));
+
+  // Get platform analytics
+  app.get('/api/analytics/platform', isAuthenticated, requireAdmin, asyncHandler(async (req, res) => {
+    const { timeframe = '30' } = req.query;
+    
+    try {
+      const { wellnessAnalytics } = await import('./analytics/wellnessAnalytics');
+      const analytics = await wellnessAnalytics.getPlatformAnalytics(parseInt(timeframe as string));
+      sendSuccess(res, analytics);
+    } catch (error) {
+      console.error('Error fetching platform analytics:', error);
+      sendError(res, 'Failed to fetch platform analytics', 500);
+    }
+  }));
+
+  // Get wellness insights for specific user (admin only)
+  app.get('/api/analytics/wellness/user/:userId', isAuthenticated, requireAdmin, asyncHandler(async (req, res) => {
+    const { userId } = req.params;
+    const { timeframe = '30' } = req.query;
+    
+    try {
+      const { wellnessAnalytics } = await import('./analytics/wellnessAnalytics');
+      const insights = await wellnessAnalytics.getUserWellnessInsights(userId, parseInt(timeframe as string));
+      sendSuccess(res, insights);
+    } catch (error) {
+      console.error('Error fetching user wellness insights:', error);
+      sendError(res, 'Failed to fetch user wellness insights', 500);
+    }
+  }));
+
+  // Generate wellness report
+  app.post('/api/analytics/wellness/report', isAuthenticated, asyncHandler(async (req, res) => {
+    const userId = (req.user as any).claims.sub;
+    const { reportType, timeframe = 30, includeRecommendations = true } = req.body;
+    
+    try {
+      const { wellnessAnalytics } = await import('./analytics/wellnessAnalytics');
+      const insights = await wellnessAnalytics.getUserWellnessInsights(userId, timeframe);
+      
+      const report = {
+        generatedAt: new Date(),
+        reportType,
+        timeframe,
+        userId,
+        insights,
+        summary: {
+          overallRating: insights.overallScore >= 80 ? 'Excellent' : 
+                        insights.overallScore >= 60 ? 'Good' : 
+                        insights.overallScore >= 40 ? 'Fair' : 'Needs Improvement',
+          keyStrengths: insights.trends.mood.trend === 'up' ? ['Mood improvement'] : [],
+          priorityAreas: insights.achievements.improvementAreas,
+          nextActions: includeRecommendations ? insights.recommendations : []
+        }
+      };
+      
+      sendSuccess(res, report, 'Wellness report generated successfully');
+    } catch (error) {
+      console.error('Error generating wellness report:', error);
+      sendError(res, 'Failed to generate wellness report', 500);
+    }
+  }));
+
   const httpServer = createServer(app);
   return httpServer;
 }
