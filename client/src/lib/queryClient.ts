@@ -41,17 +41,29 @@ export const getQueryFn: <T>(options: {
     return await res.json();
   };
 
+// Enhanced Query Client with better error handling and caching
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
       refetchOnWindowFocus: false,
-      staleTime: Infinity,
-      retry: false,
+      staleTime: 30 * 1000, // 30 seconds stale time for better UX
+      gcTime: 5 * 60 * 1000, // 5 minutes garbage collection
+      retry: (failureCount, error: any) => {
+        // Don't retry on 4xx errors except 429 (rate limit)
+        if (error?.message?.includes('4') && !error?.message?.includes('429')) {
+          return false;
+        }
+        return failureCount < 2;
+      },
     },
     mutations: {
-      retry: false,
+      retry: 1,
+      onError: (error: any) => {
+        console.error('Mutation error:', error);
+        // Global error handling can be added here
+      },
     },
   },
 });

@@ -1,6 +1,7 @@
 # Pure Living Pro - Development Standards
+## 🎯 **Enhanced Replit Development Guidelines - Pure Living Pro Edition**
 
-## 🎯 **Adopted from Replit Development Guidelines Framework**
+*Optimized for TanStack Query + Wouter + shadcn/ui Stack*
 
 ### **1. Coding Standards & Best Practices**
 
@@ -25,14 +26,69 @@
     /wellness     → Wellness-specific components
     /admin        → Admin dashboard components  
     /layout       → Layout components
-  /pages          → Route-based pages
-  /hooks          → Custom React hooks
-  /lib            → API helpers, utilities
+  /pages          → Route-based pages (Wouter routing)
+  /hooks          → Custom React hooks + TanStack Query hooks
+  /services       → Query hooks and context providers (replaces /store)
+  /lib            → API helpers, utilities, interceptors
   /types          → Global TypeScript interfaces
   /i18n           → Internationalization
+  /theme          → Design system tokens and theme configuration
 ```
 
-### **3. Security & Performance Standards**
+### **3. State Management with TanStack Query (Not Zustand)**
+
+#### **Query Service Pattern**
+```typescript
+// /services/wellness-service.ts
+export const WELLNESS_KEYS = {
+  all: ['wellness'] as const,
+  plans: () => [...WELLNESS_KEYS.all, 'plans'] as const,
+  plan: (id: string) => [...WELLNESS_KEYS.plans(), id] as const,
+};
+
+export const useWellnessPlans = () => {
+  return useQuery({
+    queryKey: WELLNESS_KEYS.plans(),
+    queryFn: () => apiRequest('/api/wellness/plans'),
+  });
+};
+```
+
+#### **State Management Layers**
+- **TanStack Query**: Server state, caching, mutations
+- **React Context**: Global UI state (modals, themes)
+- **localStorage**: User preferences, settings
+- **Component State**: Local form and UI state
+
+### **4. Wouter Routing Best Practices**
+
+#### **Route Organization**
+```typescript
+// App.tsx - Clean route structure
+const { isAuthenticated, isLoading } = useAuth();
+
+return (
+  <Switch>
+    {isLoading || !isAuthenticated ? (
+      <Route path="/" component={Landing} />
+    ) : (
+      <>
+        <Route path="/" component={Home} />
+        <Route path="/wellness/:section" component={WellnessSection} />
+        <Route path="/admin/:view?" component={AdminDashboard} />
+      </>
+    )}
+  </Switch>
+);
+```
+
+#### **Navigation Patterns**
+- Use `Link` component for navigation
+- Use `useLocation` hook for route-based logic
+- Implement route guards with authentication checks
+- Support nested parameters with TypeScript safety
+
+### **5. Security & Performance Standards**
 
 #### **API Security**
 - ✅ Environment variables properly configured
@@ -41,29 +97,64 @@
 - ✅ Replit Auth with session management
 
 #### **Performance Optimizations**
-- ✅ TanStack Query for caching and data fetching
+- ✅ TanStack Query caching (30s stale time, 5min GC)
 - ✅ Lazy loading for admin components
 - ✅ Image optimization with proper formats
 - ✅ Database query optimization with pagination
+- ✅ Component memoization for expensive renders
 
 ### **4. Component Standards**
 
-#### **Reusable Component Template**
+#### **Reusable Component with Theme Integration**
 ```typescript
-interface ComponentProps {
+import { cardClasses, buttonClasses } from '@/theme';
+
+interface WellnessCardProps {
   title: string;
-  status: 'active' | 'inactive';
+  status: 'active' | 'inactive' | 'pending';
+  description?: string;
   onClick: () => void;
 }
 
-const WellnessCard = ({ title, status, onClick }: ComponentProps) => (
-  <div className="p-4 shadow rounded-xl border hover:bg-gray-50 cursor-pointer" onClick={onClick}>
-    <h2 className="text-xl font-semibold">{title}</h2>
-    <p className="text-sm text-gray-500">{status}</p>
+const WellnessCard = ({ title, status, description, onClick }: WellnessCardProps) => (
+  <div className={`${cardClasses} cursor-pointer`} onClick={onClick}>
+    <div className="flex justify-between items-start mb-2">
+      <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+      <Badge variant={status === 'active' ? 'default' : 'secondary'}>
+        {status}
+      </Badge>
+    </div>
+    {description && (
+      <p className="text-sm text-gray-600 mb-3">{description}</p>
+    )}
   </div>
 );
 
 export default WellnessCard;
+```
+
+#### **shadcn/ui Component Wrapping**
+```typescript
+// /components/ui/custom-dialog.tsx
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+
+interface CustomDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children: React.ReactNode;
+}
+
+export const CustomDialog = ({ isOpen, onClose, title, children }: CustomDialogProps) => (
+  <Dialog open={isOpen} onOpenChange={onClose}>
+    <DialogContent className="sm:max-w-md">
+      <DialogHeader>
+        <DialogTitle>{title}</DialogTitle>
+      </DialogHeader>
+      {children}
+    </DialogContent>
+  </Dialog>
+);
 ```
 
 ### **5. Git Workflow Standards**
@@ -108,7 +199,45 @@ export default WellnessCard;
 - Touch-friendly interface elements
 - Progressive enhancement
 
-### **8. AI Integration Best Practices**
+### **8. Error Handling & API Health Management**
+
+#### **Global Error Interceptors**
+```typescript
+// Enhanced Query Client with global error handling
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: (failureCount, error: any) => {
+        if (error?.message?.includes('4') && !error?.message?.includes('429')) {
+          return false;
+        }
+        return failureCount < 2;
+      },
+    },
+    mutations: {
+      onError: (error: any) => {
+        if (error?.message?.includes('401')) {
+          window.location.href = '/api/login';
+        }
+      },
+    },
+  },
+});
+```
+
+#### **Fallback UI Components**
+```typescript
+// /components/error-boundary.tsx
+const APIErrorFallback = ({ error, resetErrorBoundary }) => (
+  <div className="p-6 text-center">
+    <h3 className="text-lg font-semibold mb-2">Service Temporarily Unavailable</h3>
+    <p className="text-gray-600 mb-4">We're experiencing connectivity issues.</p>
+    <Button onClick={resetErrorBoundary}>Try Again</Button>
+  </div>
+);
+```
+
+### **9. AI Integration Best Practices**
 
 #### **AI Service Management**
 - OpenAI GPT-4o for complex wellness planning
@@ -154,15 +283,36 @@ export default WellnessCard;
 
 ## ✅ **Implementation Status**
 
-- [x] TypeScript strict mode configuration
-- [x] Component naming conventions
-- [x] Folder structure optimization
-- [x] Security best practices
-- [x] Performance optimizations
-- [x] UI/UX consistency standards
-- [x] AI integration framework
-- [x] Testing and quality assurance
-- [x] Git workflow establishment
-- [x] Documentation standards
+### **Completed Framework Enhancements**
+- [x] **TanStack Query Service Layer**: Replaced Zustand with query-based state management
+- [x] **Theme System Integration**: Centralized design tokens and component styling
+- [x] **Enhanced Error Handling**: Global interceptors and fallback UI components
+- [x] **Wouter Routing Optimization**: Type-safe route patterns and navigation
+- [x] **shadcn/ui Component Wrapping**: Custom component abstractions for consistency
+- [x] **TypeScript Strict Configuration**: Enhanced type safety across the stack
+- [x] **Performance Caching Strategy**: 30s stale time, 5min garbage collection
+- [x] **Security Framework**: Input validation, authentication, and rate limiting
 
-**Status**: All major development standards implemented and operational.
+### **New Development Capabilities**
+- [x] **Modular Service Architecture**: Query keys, hooks, and mutation patterns
+- [x] **Design System Foundation**: Consistent spacing, colors, and component tokens
+- [x] **API Health Monitoring**: Retry logic, error boundaries, and fallback states
+- [x] **Component Reusability**: Theme-integrated, TypeScript-safe component patterns
+
+**Status**: Enhanced Replit Development Guidelines fully integrated and operational.
+
+---
+
+## 🚀 **Upgrade Summary**
+
+**From**: Basic Replit setup with Zustand references
+**To**: Production-ready TanStack Query + Wouter + shadcn/ui framework
+
+**Key Improvements**:
+1. **Better State Management**: TanStack Query replaces Zustand for API-heavy operations
+2. **Enhanced Routing**: Wouter optimization with type-safe patterns
+3. **Design System**: Centralized theme with reusable component patterns
+4. **Robust Error Handling**: Global interceptors and user-friendly fallbacks
+5. **Performance Focus**: Intelligent caching, retry logic, and optimization strategies
+
+This framework now perfectly aligns with Pure Living Pro's architecture and provides a solid foundation for rapid, maintainable development.
