@@ -51,6 +51,16 @@ Preferred communication style: Simple, everyday language.
 - **TypeScript**: Language used across the stack.
 - **ESBuild**: Backend bundling.
 
+## Development Standards Integration (January 2025)
+
+### **Replit Development Guidelines Framework Adopted**
+- ✅ **Enhanced Coding Standards**: Implemented consistent naming conventions (kebab-case files, camelCase variables, PascalCase components)
+- ✅ **Component Architecture**: Adopted reusable component patterns with proper TypeScript interfaces
+- ✅ **Security Framework**: Enhanced input sanitization, rate limiting, and authentication workflows
+- ✅ **Performance Standards**: Established loading time targets (<2s pages, <500ms API responses)
+- ✅ **Git Workflow**: Implemented branch strategy with conventional commit messages
+- ✅ **Quality Assurance**: TypeScript strict mode, ESLint/Prettier, comprehensive error handling
+
 ## Recent Critical Fixes (January 2025)
 
 ### TypeScript & Dependency Resolution

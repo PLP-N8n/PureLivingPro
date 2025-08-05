@@ -1,0 +1,226 @@
+Awesome. Since you're ready, here's your Replit Development Guidelines — tailored to your AI Execution Agent PRD and the Pure Living Pro ecosystem.
+
+
+---
+
+🧭 REPLIT DEVELOPMENT GUIDELINES
+
+For V1KAS / Pure Living Pro Projects
+Aligned with PRD: AI Execution Agent System
+
+
+---
+
+⚙️ 1. Environment Setup
+
+✅ Initial Setup
+
+Language: TypeScript preferred (for strong typing), else JS is acceptable.
+
+Framework: React (with Vite or Create React App for bootstrap)
+
+File Structure: Use src/, components/, pages/, and utils/ folders.
+
+Package Manager: pnpm (or npm if Replit limitations arise)
+
+
+📦 Essential Dependencies
+
+pnpm install react-router-dom zustand axios dotenv
+
+Optional:
+
+pnpm install tailwindcss @headlessui/react
+
+
+---
+
+🧠 2. Coding Standards & Practices
+
+✅ Best Practices
+
+Use functional components with hooks
+
+Stick to arrow functions and named exports
+
+Maintain a consistent naming convention: kebab-case for files, camelCase for variables, PascalCase for components
+
+
+🔍 Linting + Formatting
+
+Add ESLint + Prettier plugins in Replit's .replit config or .vscode if exported
+
+Enforce Prettier formatting on save
+
+
+
+---
+
+🗂️ 3. Folder Structure Proposal
+
+/src
+  /components      → Reusable UI components
+  /pages           → View-based routes
+  /store           → Zustand state files
+  /hooks           → Custom hooks
+  /utils           → API helpers, constants, utilities
+  /assets          → Logos, images
+  /types           → Global TS interfaces
+
+
+---
+
+🔐 4. Security & Auth Considerations
+
+Hide API keys using .env (Replit Secrets for production)
+
+Sanitize all user input
+
+Use OAuth (Google / GitHub) or JWT auth if necessary
+
+Rate-limit calls to any agent endpoints (especially Suna / V1KAS core)
+
+
+
+---
+
+🔁 5. API Communication Strategy
+
+Tool	Role	Notes
+
+axios	API call abstraction	Centralize in utils/api.ts
+zustand	Frontend state mgmt	Replace Redux for leaner setup
+WebSockets	Realtime updates (optional)	For task status / agent feedback
+RabbitMQ	Backend only, exposed via API	React should only call REST or GraphQL
+
+
+
+---
+
+🧪 6. Testing and Debugging
+
+Use console logging + Replit live preview for real-time testing
+
+Use React Developer Tools in Chrome for component state introspection
+
+Add unit tests with Vitest (or Jest) later if needed
+
+
+
+---
+
+📦 7. Version Control Workflow (Git)
+
+1. Enable Git in Replit
+
+
+2. Use GitHub repo for versioning
+
+
+3. Create branches:
+
+main → Production-ready
+
+dev → Experimental / WIP
+
+
+
+4. Pull requests & commit naming conventions:
+
+feat: added new agent card UI
+fix: resolved API timeout issue
+chore: updated dependencies
+
+
+
+
+---
+
+🎨 8. UI/UX Guidelines
+
+Minimalist design (TailwindCSS highly recommended)
+
+Mobile-first responsiveness
+
+Consistent spacing (px-4 py-2, gap-4, etc.)
+
+Components should be reusable: buttons, cards, modals, tabs
+
+
+
+---
+
+🧩 9. Component Example (Card UI)
+
+// src/components/AgentCard.tsx
+import React from 'react';
+
+interface AgentCardProps {
+  name: string;
+  status: string;
+  onClick: () => void;
+}
+
+const AgentCard = ({ name, status, onClick }: AgentCardProps) => (
+  <div className="p-4 shadow rounded-xl border hover:bg-gray-50 cursor-pointer" onClick={onClick}>
+    <h2 className="text-xl font-semibold">{name}</h2>
+    <p className="text-sm text-gray-500">{status}</p>
+  </div>
+);
+
+export default AgentCard;
+
+
+---
+
+🧠 10. Memory Integration Guidelines
+
+Short-Term: Zustand (frontend)
+
+Long-Term: Call backend endpoints tied to ChromaDB or Postgres
+
+
+Frontend only handles:
+
+UI controls to send memory context
+
+Visual feedback of memory states (e.g., task history, agent context logs)
+
+
+
+---
+
+📊 11. MVP Frontend Scope Checklist
+
+Module	Status
+
+Agent Dashboard UI	⬜️ Planned
+Task Submission Interface	⬜️ Planned
+Workflow Monitor Panel	⬜️ Optional MVP
+Memory Snapshot Display	⬜️ Optional MVP
+API Health Indicator	⬜️ Optional
+
+
+
+---
+
+⏭️ 12. Next Steps
+
+1. Set up your base Replit project with the above structure
+
+
+2. Create AgentCard and Dashboard pages
+
+
+3. Wire a dummy API call to test async flow
+
+
+4. Expand to full agent orchestration dashboard
+
+
+
+
+---
+
+Would you like this turned into a downloadable PDF checklist or embedded into your GitHub README.md? I can also scaffold the folder structure + files in a downloadable .zip. Just say the word.
+
