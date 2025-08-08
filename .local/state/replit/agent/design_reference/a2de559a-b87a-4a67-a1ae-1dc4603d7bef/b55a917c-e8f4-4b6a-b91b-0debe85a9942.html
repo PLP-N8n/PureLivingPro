@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pure Living Pro - Wellness Platform Design Mockup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        sage: {
+                            25: '#f8faf9',
+                            50: '#f0f4f1',
+                            100: '#d9e5db',
+                            200: '#b8d0bd',
+                            300: '#94b89b',
+                            400: '#6b8e5a',
+                            500: '#4a7c59',
+                            600: '#3d6847',
+                            700: '#325438',
+                            800: '#2a442d',
+                            900: '#1f3322'
+                        },
+                        earth: {
+                            50: '#faf9f7',
+                            100: '#f4f1ec',
+                            200: '#e8e0d5',
+                            300: '#d9cbba',
+                            400: '#c7b299',
+                            500: '#a0956b',
+                            600: '#8b7355',
+                            700: '#6b5a44',
+                            800: '#4a3f32',
+                            900: '#2d2520'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        .wellness-gradient {
+            background: linear-gradient(135deg, #f8faf9 0%, #f0f4f1 100%);
+        }
+        .organic-border {
+            border-radius: 1.5rem;
+        }
+        .premium-shadow {
+            box-shadow: 0 10px 25px -5px rgba(74, 124, 89, 0.1), 0 10px 10px -5px rgba(74, 124, 89, 0.04);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px -10px rgba(74, 124, 89, 0.2);
+        }
+        .meditation-circle {
+            background: conic-gradient(#4a7c59 0deg, #4a7c59 180deg, #e2e8f0 180deg, #e2e8f0 360deg);
+        }
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        .hero-pattern {
+            background-image: radial-gradient(circle at 20% 20%, rgba(74, 124, 89, 0.1) 0%, transparent 50%),
+                              radial-gradient(circle at 80% 80%, rgba(160, 149, 107, 0.1) 0%, transparent 50%);
+        }
+    </style>
+</head>
+<body class="font-sans text-gray-900 bg-sage-25">
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-sm border-b border-sage-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-sage-500 to-sage-600 rounded-xl flex items-center justify-center">
+                        <i data-lucide="leaf" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <span class="text-xl font-bold text-sage-700">Pure Living Pro</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#home" class="text-sage-700 hover:text-sage-500 transition-colors">Home</a>
+                    <a href="#blog" class="text-sage-600 hover:text-sage-500 transition-colors">Blog</a>
+                    <a href="#products" class="text-sage-600 hover:text-sage-500 transition-colors">Wellness Picks</a>
+                    <a href="#premium" class="text-sage-600 hover:text-sage-500 transition-colors">Premium</a>
+                    <button class="bg-sage-600 hover:bg-sage-700 text-white px-4 py-2 rounded-lg transition-colors">
+                        <i data-lucide="user" class="w-4 h-4 mr-2 inline"></i>
+                        Sign In
+                    </button>
+                </div>
+                <button class="md:hidden p-2 rounded-lg hover:bg-sage-100" data-mock="true">
+                    <i data-lucide="menu" class="w-6 h-6 text-sage-700"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="pt-24 pb-16 wellness-gradient hero-pattern">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <div class="text-center lg:text-left">
+                    <div class="inline-flex items-center bg-sage-100 text-sage-700 px-4 py-2 rounded-full text-sm font-medium mb-6">
+                        <i data-lucide="sparkles" class="w-4 h-4 mr-2"></i>
+                        Your Wellness Journey Starts Here
+                    </div>
+                    <h1 class="text-4xl md:text-6xl font-bold text-sage-800 mb-6 leading-tight">
+                        Transform Your Life with
+                        <span class="text-transparent bg-gradient-to-r from-sage-600 to-earth-500 bg-clip-text">
+                            Pure Living
+                        </span>
+                    </h1>
+                    <p class="text-xl text-sage-600 mb-8 max-w-2xl">
+                        Discover personalized wellness content, expert-curated products, and AI-powered recommendations to support your holistic health journey.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                        <button class="bg-sage-600 hover:bg-sage-700 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all transform hover:scale-105 premium-shadow">
+                            <i data-lucide="arrow-right" class="w-5 h-5 mr-2 inline"></i>
+                            Start Your Journey
+                        </button>
+                        <button class="border-2 border-sage-600 text-sage-600 hover:bg-sage-50 px-8 py-4 rounded-xl text-lg font-semibold transition-all">
+                            <i data-lucide="play" class="w-5 h-5 mr-2 inline"></i>
+                            Watch Demo
+                        </button>
+                    </div>
+                </div>
+                <div class="relative">
+                    <!-- Meditation practice visualization -->
+                    <div class="relative animate-float">
+                        <!-- A serene meditation scene with a person in lotus position surrounded by nature -->
+                        <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" 
+                             alt="Peaceful meditation scene in nature" 
+                             class="rounded-3xl shadow-2xl w-full h-auto" />
+                        <div class="absolute -top-4 -right-4 bg-white rounded-2xl p-4 premium-shadow">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                                <span class="text-sm font-medium text-sage-700">Live Session</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Overview -->
+    <section class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-sage-800 mb-4">
+                    Everything You Need for Wellness
+                </h2>
+                <p class="text-xl text-sage-600 max-w-3xl mx-auto">
+                    From personalized content to expert-curated products, we provide comprehensive tools for your wellness transformation.
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Feature Card 1 -->
+                <div class="bg-sage-50 rounded-2xl p-6 card-hover">
+                    <div class="w-12 h-12 bg-sage-600 rounded-xl flex items-center justify-center mb-4">
+                        <i data-lucide="brain" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-sage-800 mb-2">AI-Powered Insights</h3>
+                    <p class="text-sage-600">Personalized recommendations based on your wellness profile and goals.</p>
+                </div>
+
+                <!-- Feature Card 2 -->
+                <div class="bg-earth-50 rounded-2xl p-6 card-hover">
+                    <div class="w-12 h-12 bg-earth-600 rounded-xl flex items-center justify-center mb-4">
+                        <i data-lucide="shopping-bag" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-sage-800 mb-2">Curated Products</h3>
+                    <p class="text-sage-600">Expert-selected wellness products with detailed reviews and research.</p>
+                </div>
+
+                <!-- Feature Card 3 -->
+                <div class="bg-green-50 rounded-2xl p-6 card-hover">
+                    <div class="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center mb-4">
+                        <i data-lucide="heart" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-sage-800 mb-2">Wellness Tracking</h3>
+                    <p class="text-sage-600">Monitor your progress with comprehensive wellness analytics and insights.</p>
+                </div>
+
+                <!-- Feature Card 4 -->
+                <div class="bg-amber-50 rounded-2xl p-6 card-hover">
+                    <div class="w-12 h-12 bg-amber-600 rounded-xl flex items-center justify-center mb-4">
+                        <i data-lucide="users" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-sage-800 mb-2">Community Support</h3>
+                    <p class="text-sage-600">Connect with like-minded individuals on similar wellness journeys.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Meditation Timer Interface -->
+    <section class="py-20 wellness-gradient">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-sage-800 mb-4">
+                    Meditation & Mindfulness
+                </h2>
+                <p class="text-xl text-sage-600">
+                    Guided meditation sessions designed for every experience level
+                </p>
+            </div>
+
+            <div class="grid lg:grid-cols-3 gap-8">
+                <!-- Session Selection -->
+                <div class="space-y-4">
+                    <div class="bg-white rounded-2xl p-6 premium-shadow">
+                        <h3 class="text-lg font-semibold text-sage-800 mb-4 flex items-center">
+                            <i data-lucide="sparkles" class="w-5 h-5 mr-2"></i>
+                            Choose Your Practice
+                        </h3>
+                        <div class="space-y-3">
+                            <div class="bg-sage-100 border-2 border-sage-300 rounded-xl p-4 cursor-pointer">
+                                <div class="flex items-center space-x-3">
+                                    <i data-lucide="wind" class="w-6 h-6 text-sage-600"></i>
+                                    <div>
+                                        <h4 class="font-semibold text-sage-700">Deep Breathing</h4>
+                                        <p class="text-sm text-sage-600">Simple breathwork to calm your mind</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white border-2 border-sage-100 rounded-xl p-4 cursor-pointer hover:border-sage-200">
+                                <div class="flex items-center space-x-3">
+                                    <i data-lucide="brain" class="w-6 h-6 text-sage-400"></i>
+                                    <div>
+                                        <h4 class="font-semibold text-sage-600">Mindfulness</h4>
+                                        <p class="text-sm text-sage-500">Present-moment awareness practice</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white border-2 border-sage-100 rounded-xl p-4 cursor-pointer hover:border-sage-200">
+                                <div class="flex items-center space-x-3">
+                                    <i data-lucide="heart" class="w-6 h-6 text-sage-400"></i>
+                                    <div>
+                                        <h4 class="font-semibold text-sage-600">Loving Kindness</h4>
+                                        <p class="text-sm text-sage-500">Cultivate compassion and love</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timer Display -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-2xl p-8 premium-shadow min-h-[400px] flex flex-col items-center justify-center">
+                        <!-- Timer Circle -->
+                        <div class="relative w-64 h-64 mb-8">
+                            <div class="absolute inset-0 rounded-full border-8 border-sage-200"></div>
+                            <div class="absolute inset-0 rounded-full border-8 border-transparent meditation-circle"></div>
+                            <div class="absolute inset-8 bg-white rounded-full flex items-center justify-center">
+                                <div class="text-center">
+                                    <div class="text-4xl font-bold text-sage-700 mb-2">10:00</div>
+                                    <i data-lucide="wind" class="w-8 h-8 text-sage-600 mx-auto"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Session Info -->
+                        <div class="text-center mb-8">
+                            <h3 class="text-2xl font-bold text-sage-700 mb-4">Deep Breathing</h3>
+                            <div class="bg-sage-50 rounded-xl p-4">
+                                <p class="text-sage-700 italic">Find a comfortable seated position</p>
+                            </div>
+                        </div>
+
+                        <!-- Controls -->
+                        <div class="flex items-center space-x-4">
+                            <button class="bg-sage-600 hover:bg-sage-700 text-white p-4 rounded-full transition-colors">
+                                <i data-lucide="play" class="w-6 h-6"></i>
+                            </button>
+                            <button class="bg-sage-100 hover:bg-sage-200 text-sage-700 p-4 rounded-full transition-colors">
+                                <i data-lucide="rotate-ccw" class="w-6 h-6"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Product Catalog -->
+    <section id="products" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <div class="flex items-center justify-center mb-4">
+                    <i data-lucide="heart" class="w-8 h-8 text-amber-600 mr-3"></i>
+                    <span class="text-amber-600 font-medium uppercase tracking-wider">Wellness Picks</span>
+                </div>
+                <h2 class="text-3xl md:text-4xl font-bold text-sage-800 mb-4">
+                    Curated Wellness Products
+                </h2>
+                <p class="text-xl text-sage-600 max-w-2xl mx-auto">
+                    Hand-picked products that align with your wellness goals, thoroughly researched and recommended by our experts.
+                </p>
+            </div>
+
+            <!-- Search and Filters -->
+            <div class="mb-12">
+                <div class="relative mb-8 max-w-lg mx-auto">
+                    <i data-lucide="search" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-sage-500"></i>
+                    <input type="text" placeholder="Search products..." class="w-full pl-12 pr-4 py-3 border border-sage-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage-500 focus:border-transparent">
+                </div>
+
+                <div class="flex flex-wrap justify-center gap-2 mb-6">
+                    <button class="bg-sage-600 text-white px-4 py-2 rounded-full text-sm font-medium">All Products</button>
+                    <button class="bg-sage-100 text-sage-700 hover:bg-sage-200 px-4 py-2 rounded-full text-sm font-medium transition-colors">Supplements</button>
+                    <button class="bg-sage-100 text-sage-700 hover:bg-sage-200 px-4 py-2 rounded-full text-sm font-medium transition-colors">Skincare</button>
+                    <button class="bg-sage-100 text-sage-700 hover:bg-sage-200 px-4 py-2 rounded-full text-sm font-medium transition-colors">Fitness</button>
+                    <button class="bg-sage-100 text-sage-700 hover:bg-sage-200 px-4 py-2 rounded-full text-sm font-medium transition-colors">Meditation</button>
+                </div>
+            </div>
+
+            <!-- Product Grid -->
+            <div class="product-grid">
+                <!-- Product Card 1 -->
+                <div class="bg-white rounded-2xl premium-shadow overflow-hidden card-hover">
+                    <!-- High-quality organic vitamin supplements arranged aesthetically -->
+                    <img src="https://images.unsplash.com/photo-1584017911766-d451b3d0e843?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=300" 
+                         alt="Premium organic vitamin supplements" 
+                         class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">Editor's Pick</span>
+                            <div class="flex items-center space-x-1">
+                                <i data-lucide="star" class="w-4 h-4 text-amber-400 fill-current"></i>
+                                <span class="text-sm text-sage-600">4.9</span>
+                            </div>
+                        </div>
+                        <h3 class="text-lg font-semibold text-sage-800 mb-2">Premium Multivitamin Complex</h3>
+                        <p class="text-sage-600 text-sm mb-4">Comprehensive daily nutrition with 25 essential vitamins and minerals</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-2xl font-bold text-sage-800">£49.99</span>
+                            <button class="bg-sage-600 hover:bg-sage-700 text-white px-4 py-2 rounded-lg transition-colors">
+                                <i data-lucide="shopping-cart" class="w-4 h-4 mr-1 inline"></i>
+                                Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Card 2 -->
+                <div class="bg-white rounded-2xl premium-shadow overflow-hidden card-hover">
+                    <!-- Natural skincare products with botanical ingredients -->
+                    <img src="https://pixabay.com/get/gc2e9edd1db522466b269a02aef71e3ae46048f412932356685906e1784c40a5aef2f2010da744d1a7a66a8333f6fcb585ccaa5937afe13c9a4d76a212e098bba_1280.jpg" 
+                         alt="Natural organic skincare collection" 
+                         class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="bg-amber-100 text-amber-800 px-2 py-1 rounded-full text-xs font-medium">Best Seller</span>
+                            <div class="flex items-center space-x-1">
+                                <i data-lucide="star" class="w-4 h-4 text-amber-400 fill-current"></i>
+                                <span class="text-sm text-sage-600">4.8</span>
+                            </div>
+                        </div>
+                        <h3 class="text-lg font-semibold text-sage-800 mb-2">Organic Skincare Set</h3>
+                        <p class="text-sage-600 text-sm mb-4">Complete natural skincare routine with botanical extracts</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-2xl font-bold text-sage-800">£89.99</span>
+                            <button class="bg-sage-600 hover:bg-sage-700 text-white px-4 py-2 rounded-lg transition-colors">
+                                <i data-lucide="shopping-cart" class="w-4 h-4 mr-1 inline"></i>
+                                Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Card 3 -->
+                <div class="bg-white rounded-2xl premium-shadow overflow-hidden card-hover">
+                    <!-- Meditation cushions and accessories in peaceful setting -->
+                    <img src="https://images.unsplash.com/photo-1540206351-d6465b3ac5c1?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=300" 
+                         alt="Meditation cushions and accessories" 
+                         class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-medium">Trending</span>
+                            <div class="flex items-center space-x-1">
+                                <i data-lucide="star" class="w-4 h-4 text-amber-400 fill-current"></i>
+                                <span class="text-sm text-sage-600">4.7</span>
+                            </div>
+                        </div>
+                        <h3 class="text-lg font-semibold text-sage-800 mb-2">Meditation Cushion Set</h3>
+                        <p class="text-sage-600 text-sm mb-4">Comfortable meditation support with organic cotton cover</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-2xl font-bold text-sage-800">£39.99</span>
+                            <button class="bg-sage-600 hover:bg-sage-700 text-white px-4 py-2 rounded-lg transition-colors">
+                                <i data-lucide="shopping-cart" class="w-4 h-4 mr-1 inline"></i>
+                                Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Premium Subscription -->
+    <section id="premium" class="py-20 bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <div class="inline-flex items-center bg-gradient-to-r from-amber-500 to-orange-600 text-white px-6 py-3 rounded-full text-lg font-semibold mb-6">
+                    <i data-lucide="crown" class="w-5 h-5 mr-2"></i>
+                    Premium Membership
+                </div>
+                <h2 class="text-4xl md:text-5xl font-bold text-transparent bg-gradient-to-r from-amber-600 via-orange-600 to-red-600 bg-clip-text mb-6">
+                    Unlock Your Full<br>Wellness Potential
+                </h2>
+                <p class="text-xl text-sage-600 mb-8 max-w-3xl mx-auto">
+                    Join Pure Living Pro Premium and access exclusive content, personalized wellness plans, and advanced tools designed to accelerate your wellness transformation.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                <!-- Free Plan -->
+                <div class="bg-white rounded-2xl p-8 premium-shadow">
+                    <div class="text-center mb-8">
+                        <div class="w-16 h-16 bg-sage-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i data-lucide="heart" class="w-8 h-8 text-sage-600"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-sage-700 mb-2">Free</h3>
+                        <div class="text-3xl font-bold text-sage-700 mb-2">£0</div>
+                        <p class="text-sage-600">Perfect for getting started</p>
+                    </div>
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-start space-x-3">
+                            <div class="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
+                                <i data-lucide="check" class="w-3 h-3 text-green-600"></i>
+                            </div>
+                            <div>
+                                <div class="font-medium text-sage-700">Basic Articles</div>
+                                <div class="text-sm text-sage-600">Access to free wellness content</div>
+                            </div>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <div class="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
+                                <i data-lucide="check" class="w-3 h-3 text-green-600"></i>
+                            </div>
+                            <div>
+                                <div class="font-medium text-sage-700">Community Access</div>
+                                <div class="text-sm text-sage-600">Join discussions and connect</div>
+                            </div>
+                        </li>
+                        <li class="flex items-start space-x-3 opacity-50">
+                            <div class="w-5 h-5 bg-gray-200 rounded-full flex items-center justify-center mt-0.5">
+                                <div class="w-2 h-2 bg-gray-400 rounded-full"></div>
+                            </div>
+                            <div>
+                                <div class="font-medium text-sage-700">Premium Content</div>
+                                <div class="text-sm text-sage-600">In-depth, research-backed articles</div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Pro Plan -->
+                <div class="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-8 premium-shadow relative">
+                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                        <div class="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-2 rounded-full text-sm font-semibold">
+                            <i data-lucide="sparkles" class="w-4 h-4 mr-1 inline"></i>
+                            Most Popular
+                        </div>
+                    </div>
+                    <div class="text-center mb-8 pt-4">
+                        <div class="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i data-lucide="crown" class="w-8 h-8 text-white"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-sage-700 mb-2">Pro</h3>
+                        <div class="text-3xl font-bold text-sage-700 mb-2">
+                            £19.99<span class="text-lg font-normal text-sage-500">/month</span>
+                        </div>
+                        <p class="text-sage-600">Everything you need to thrive</p>
+                    </div>
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-start space-x-3">
+                            <div class="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
+                                <i data-lucide="check" class="w-3 h-3 text-green-600"></i>
+                            </div>
+                            <div>
+                                <div class="font-medium text-sage-700">Premium Articles</div>
+                                <div class="text-sm text-sage-600">Access to in-depth, research-backed content</div>
+                            </div>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <div class="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
+                                <i data-lucide="check" class="w-3 h-3 text-green-600"></i>
+                            </div>
+                            <div>
+                                <div class="font-medium text-sage-700">Ad-Free Experience</div>
+                                <div class="text-sm text-sage-600">Clean, distraction-free reading</div>
+                            </div>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <div class="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
+                                <i data-lucide="check" class="w-3 h-3 text-green-600"></i>
+                            </div>
+                            <div>
+                                <div class="font-medium text-sage-700">AI Recommendations</div>
+                                <div class="text-sm text-sage-600">Personalized content curation</div>
+                            </div>
+                        </li>
+                    </ul>
+                    <button class="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white py-3 rounded-xl font-semibold transition-all">
+                        <i data-lucide="crown" class="w-4 h-4 mr-2 inline"></i>
+                        Upgrade to Pro
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Wellness Dashboard Preview -->
+    <section class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-sage-800 mb-4">
+                    Your Personal Wellness Dashboard
+                </h2>
+                <p class="text-xl text-sage-600 max-w-2xl mx-auto">
+                    Track your progress, complete challenges, and stay motivated with comprehensive wellness analytics.
+                </p>
+            </div>
+
+            <div class="grid lg:grid-cols-3 gap-8">
+                <!-- Daily Log Card -->
+                <div class="bg-gradient-to-br from-sage-50 to-sage-100 rounded-2xl p-6 premium-shadow">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-sage-800">Today's Progress</h3>
+                        <i data-lucide="calendar" class="w-5 h-5 text-sage-600"></i>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sage-700">Mood</span>
+                            <div class="flex space-x-1">
+                                <i data-lucide="smile" class="w-4 h-4 text-amber-400 fill-current"></i>
+                                <i data-lucide="smile" class="w-4 h-4 text-amber-400 fill-current"></i>
+                                <i data-lucide="smile" class="w-4 h-4 text-amber-400 fill-current"></i>
+                                <i data-lucide="smile" class="w-4 h-4 text-amber-400 fill-current"></i>
+                                <i data-lucide="smile" class="w-4 h-4 text-sage-300"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sage-700">Energy</span>
+                            <div class="flex space-x-1">
+                                <i data-lucide="zap" class="w-4 h-4 text-green-400 fill-current"></i>
+                                <i data-lucide="zap" class="w-4 h-4 text-green-400 fill-current"></i>
+                                <i data-lucide="zap" class="w-4 h-4 text-green-400 fill-current"></i>
+                                <i data-lucide="zap" class="w-4 h-4 text-sage-300"></i>
+                                <i data-lucide="zap" class="w-4 h-4 text-sage-300"></i>
+                            </div>
+                        </div>
+                        <div class="pt-2">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sage-700">Daily Goals</span>
+                                <span class="text-sage-600 text-sm">3/5</span>
+                            </div>
+                            <div class="w-full bg-sage-200 rounded-full h-2">
+                                <div class="bg-sage-600 h-2 rounded-full" style="width: 60%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Weekly Challenge Card -->
+                <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-6 premium-shadow">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-sage-800">Weekly Challenge</h3>
+                        <i data-lucide="target" class="w-5 h-5 text-amber-600"></i>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i data-lucide="droplets" class="w-8 h-8 text-amber-600"></i>
+                        </div>
+                        <h4 class="font-semibold text-sage-800 mb-2">Hydration Hero</h4>
+                        <p class="text-sage-600 text-sm mb-4">Drink 8 glasses of water daily for 7 days</p>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sage-700 text-sm">Progress</span>
+                            <span class="text-sage-600 text-sm">5/7 days</span>
+                        </div>
+                        <div class="w-full bg-amber-200 rounded-full h-2">
+                            <div class="bg-amber-500 h-2 rounded-full" style="width: 71%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Streak Card -->
+                <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 premium-shadow">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-sage-800">Wellness Streak</h3>
+                        <i data-lucide="flame" class="w-5 h-5 text-orange-500"></i>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-4xl font-bold text-sage-800 mb-2">12</div>
+                        <p class="text-sage-600 mb-4">Days in a row!</p>
+                        <div class="flex justify-center space-x-1">
+                            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                            <div class="w-3 h-3 bg-green-300 rounded-full"></div>
+                            <div class="w-3 h-3 bg-green-300 rounded-full"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Blog Section -->
+    <section id="blog" class="py-20 wellness-gradient">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-sage-800 mb-4">
+                    Latest Wellness Insights
+                </h2>
+                <p class="text-xl text-sage-600 max-w-2xl mx-auto">
+                    Evidence-based articles and expert insights to support your wellness journey.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Blog Card 1 -->
+                <article class="bg-white rounded-2xl overflow-hidden premium-shadow card-hover">
+                    <!-- A peaceful morning routine setup with healthy foods and wellness items -->
+                    <img src="https://images.unsplash.com/photo-1506619216599-9d16d0903dfd?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=250" 
+                         alt="Peaceful morning routine wellness setup" 
+                         class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <div class="flex items-center space-x-2 mb-3">
+                            <span class="bg-sage-100 text-sage-700 px-2 py-1 rounded-full text-xs font-medium">Mindfulness</span>
+                            <span class="text-sage-500 text-sm">5 min read</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-sage-800 mb-3">
+                            Creating Your Perfect Morning Routine
+                        </h3>
+                        <p class="text-sage-600 text-sm mb-4">
+                            Discover how to start your day with intention and create lasting habits that support your wellness goals.
+                        </p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sage-500 text-sm">March 15, 2024</span>
+                            <button class="text-sage-600 hover:text-sage-800 font-medium text-sm">Read More →</button>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Blog Card 2 -->
+                <article class="bg-white rounded-2xl overflow-hidden premium-shadow card-hover">
+                    <!-- Colorful healthy meal prep containers with nutritious foods -->
+                    <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=250" 
+                         alt="Healthy meal prep containers with nutritious foods" 
+                         class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <div class="flex items-center space-x-2 mb-3">
+                            <span class="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium">Nutrition</span>
+                            <span class="text-sage-500 text-sm">7 min read</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-sage-800 mb-3">
+                            Meal Prep for Busy Professionals
+                        </h3>
+                        <p class="text-sage-600 text-sm mb-4">
+                            Learn effective strategies for preparing nutritious meals that fit your busy lifestyle without sacrificing flavor or quality.
+                        </p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sage-500 text-sm">March 12, 2024</span>
+                            <button class="text-sage-600 hover:text-sage-800 font-medium text-sm">Read More →</button>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Blog Card 3 -->
+                <article class="bg-white rounded-2xl overflow-hidden premium-shadow card-hover">
+                    <!-- Person doing yoga or stretching in a serene outdoor setting -->
+                    <img src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=250" 
+                         alt="Person practicing yoga in peaceful outdoor setting" 
+                         class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <div class="flex items-center space-x-2 mb-3">
+                            <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-medium">Fitness</span>
+                            <span class="text-sage-500 text-sm">6 min read</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-sage-800 mb-3">
+                            The Science of Gentle Movement
+                        </h3>
+                        <p class="text-sage-600 text-sm mb-4">
+                            Explore how incorporating gentle, mindful movement into your daily routine can transform your physical and mental wellbeing.
+                        </p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sage-500 text-sm">March 10, 2024</span>
+                            <button class="text-sage-600 hover:text-sage-800 font-medium text-sm">Read More →</button>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <div class="text-center mt-12">
+                <button class="bg-sage-600 hover:bg-sage-700 text-white px-8 py-3 rounded-xl font-semibold transition-colors">
+                    View All Articles
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-sage-800 text-white py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-10 h-10 bg-sage-600 rounded-xl flex items-center justify-center">
+                            <i data-lucide="leaf" class="w-6 h-6 text-white"></i>
+                        </div>
+                        <span class="text-xl font-bold">Pure Living Pro</span>
+                    </div>
+                    <p class="text-sage-300 mb-4">
+                        Your trusted partner in holistic wellness and healthy living.
+                    </p>
+                    <div class="flex space-x-4">
+                        <button class="text-sage-300 hover:text-white transition-colors">
+                            <i data-lucide="facebook" class="w-5 h-5"></i>
+                        </button>
+                        <button class="text-sage-300 hover:text-white transition-colors">
+                            <i data-lucide="twitter" class="w-5 h-5"></i>
+                        </button>
+                        <button class="text-sage-300 hover:text-white transition-colors">
+                            <i data-lucide="instagram" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Wellness</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-sage-300 hover:text-white transition-colors">Blog</a></li>
+                        <li><a href="#" class="text-sage-300 hover:text-white transition-colors">Wellness Picks</a></li>
+                        <li><a href="#" class="text-sage-300 hover:text-white transition-colors">Challenges</a></li>
+                        <li><a href="#" class="text-sage-300 hover:text-white transition-colors">Meditation</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Support</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-sage-300 hover:text-white transition-colors">Help Center</a></li>
+                        <li><a href="#" class="text-sage-300 hover:text-white transition-colors">Contact</a></li>
+                        <li><a href="#" class="text-sage-300 hover:text-white transition-colors">About</a></li>
+                        <li><a href="#" class="text-sage-300 hover:text-white transition-colors">Premium</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Newsletter</h4>
+                    <p class="text-sage-300 mb-4">Stay updated with our latest wellness tips and insights.</p>
+                    <div class="flex">
+                        <input type="email" placeholder="Your email" class="flex-1 px-4 py-2 bg-sage-700 border border-sage-600 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-sage-500">
+                        <button class="bg-sage-600 hover:bg-sage-500 px-4 py-2 rounded-r-lg transition-colors">
+                            <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-t border-sage-700 mt-12 pt-8 text-center text-sage-300">
+                <p>&copy; 2024 Pure Living Pro. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Initialize Lucide Icons -->
+    <script>
+        // Initialize Lucide icons
+        (function() {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        })();
+
+        // TODO: Implement interactive functionality for:
+        // - Mobile menu toggle
+        // - Meditation timer controls
+        // - Product filtering and search
+        // - User authentication flows
+        // - Premium subscription handling
+        // - Form submissions
+        // - Progressive Web App features
+        // - Analytics tracking
+        // - Performance monitoring
+        // - Accessibility enhancements
+    </script>
+</body>
+</html>
