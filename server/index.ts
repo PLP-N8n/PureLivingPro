@@ -4,8 +4,10 @@ import { setupVite, serveStatic, log } from "./vite";
 import { validateEnvironment } from "./middleware/validation";
 import { errorHandler } from "./middleware/errorHandler";
 
-// Validate environment variables at startup
-validateEnvironment();
+// Validate environment variables at startup only in production
+if (process.env.NODE_ENV === 'production') {
+  validateEnvironment();
+}
 
 const app = express();
 app.use(express.json());

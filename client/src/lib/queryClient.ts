@@ -7,11 +7,42 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
+type ApiRequestOptions = {
+  method?: string;
+  data?: unknown;
+  params?: Record<string, any>;
+};
+
 export async function apiRequest(
-  method: string,
-  url: string,
-  data?: unknown | undefined,
+  urlOrMethod: string,
+  maybeUrlOrOptions?: string | ApiRequestOptions,
+  maybeData?: unknown
 ): Promise<Response> {
+  let method = 'GET';
+  let url = '';
+  let data: unknown | undefined;
+  let params: Record<string, any> | undefined;
+
+  if (typeof maybeUrlOrOptions === 'string') {
+    method = urlOrMethod.toUpperCase();
+    url = maybeUrlOrOptions;
+    data = maybeData;
+  } else {
+    url = urlOrMethod;
+    const options = (maybeUrlOrOptions || {}) as ApiRequestOptions;
+    method = (options.method || 'GET').toUpperCase();
+    data = options.data;
+    params = options.params;
+  }
+
+  if (params && Object.keys(params).length > 0) {
+    const qs = new URLSearchParams();
+    for (const [k, v] of Object.entries(params)) {
+      if (v !== undefined && v !== null) qs.set(k, String(v));
+    }
+    url += (url.includes('?') ? '&' : '?') + qs.toString();
+  }
+
   const res = await fetch(url, {
     method,
     headers: data ? { "Content-Type": "application/json" } : {},

@@ -232,7 +232,7 @@ export class WellnessAnalytics {
         averageWellnessScore: this.calculatePlatformWellnessScore(moodData[0]),
         moodDistribution: {}, // Implement mood distribution calculation
         energyTrends: [], // Implement energy trends
-        challengeCompletionRate: this.calculateChallengeCompletionRate(),
+        challengeCompletionRate: await this.calculateChallengeCompletionRate(),
         mostPopularChallenges: challengeStats.map(stat => ({
           id: stat.challenge.id,
           title: stat.challenge.title,

@@ -9,7 +9,11 @@ import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
 
 if (!process.env.REPLIT_DOMAINS) {
-  throw new Error("Environment variable REPLIT_DOMAINS not provided");
+  if (process.env.NODE_ENV === "test" || process.env.NODE_ENV === "development") {
+    process.env.REPLIT_DOMAINS = "localhost,replit.com";
+  } else {
+    throw new Error("Environment variable REPLIT_DOMAINS not provided");
+  }
 }
 
 const getOidcConfig = memoize(
@@ -24,6 +28,18 @@ const getOidcConfig = memoize(
 
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
+  if (process.env.NODE_ENV === "test" || process.env.NODE_ENV === "development") {
+    return session({
+      secret: process.env.SESSION_SECRET || "test-secret",
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        httpOnly: true,
+        secure: false,
+        maxAge: sessionTtl,
+      },
+    });
+  }
   const pgStore = connectPg(session);
   const sessionStore = new pgStore({
     conString: process.env.DATABASE_URL,
@@ -71,6 +87,15 @@ export async function setupAuth(app: Express) {
   app.use(getSession());
   app.use(passport.initialize());
   app.use(passport.session());
+
+  if (process.env.NODE_ENV !== "production" && !process.env.REPL_ID) {
+    passport.serializeUser((user: Express.User, cb) => cb(null, user));
+    passport.deserializeUser((user: Express.User, cb) => cb(null, user));
+    app.get("/api/login", (_req, res) => res.status(501).json({ message: "Login not configured in development." }));
+    app.get("/api/callback", (_req, res) => res.status(501).json({ message: "Callback not configured in development." }));
+    app.get("/api/logout", (_req, res) => res.redirect("/"));
+    return;
+  }
 
   const config = await getOidcConfig();
 

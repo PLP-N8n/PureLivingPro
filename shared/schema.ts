@@ -599,6 +599,13 @@ export const automationRules = pgTable("automation_rules", {
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
+export const automationLogs = pgTable("automation_logs", {
+  id: serial("id").primaryKey(),
+  action: varchar("action", { length: 100 }).notNull(),
+  description: text("description").notNull(),
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
 
 // Revenue Tracking
 export const revenueTracking = pgTable("revenue_tracking", {

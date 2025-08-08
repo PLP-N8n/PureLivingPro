@@ -1,10 +1,27 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
-if (!process.env.GEMINI_API_KEY) {
-  throw new Error("GEMINI_API_KEY environment variable must be set");
+export async function generateAIMealPlan(input: {
+  dietaryPreferences?: string[];
+  healthGoals?: string[];
+  allergies?: string[];
+  calorieTarget?: number;
+  mealsPerDay?: number;
+  cookingTime?: string;
+  servingSize?: number;
+  additionalNotes?: string;
+}): Promise<any> {
+  return {
+    plan: [],
+    summary: 'AI meal plan generation is not fully implemented yet.'
+  };
 }
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+let genAI: GoogleGenerativeAI | null = null;
+if (process.env.GEMINI_API_KEY) {
+  genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+} else if (process.env.NODE_ENV !== 'test' && process.env.NODE_ENV !== 'development') {
+  throw new Error("GEMINI_API_KEY environment variable must be set");
+}
 
 export async function generateWellnessBlogPostGemini(
   title: string,
@@ -12,6 +29,14 @@ export async function generateWellnessBlogPostGemini(
   tone: string = "informative and encouraging"
 ): Promise<{ title: string; content: string; excerpt: string; tags: string[] }> {
   try {
+    if (!genAI) {
+      return {
+        title,
+        content: `Placeholder content for "${title}" in category ${category}.`,
+        excerpt: `Preview of ${title} (test environment).`,
+        tags: [category.toLowerCase(), "wellness"]
+      };
+    }
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
     const prompt = `Create a comprehensive wellness blog post with the following specifications:
@@ -56,8 +81,9 @@ Please format the response as JSON with these fields:
     }
   } catch (error) {
     console.error("Gemini API error:", error);
-    throw new Error(`Failed to generate content with Gemini: ${error.message}`);
-  }
+    const msg = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to generate content with Gemini: ${msg}`);
+ }
 }
 
 export async function optimizeContentForSEOGemini(
@@ -65,6 +91,13 @@ export async function optimizeContentForSEOGemini(
   targetKeywords: string[]
 ): Promise<{ optimizedContent: string; metaDescription: string; suggestedTitle: string }> {
   try {
+    if (!genAI) {
+      return {
+        optimizedContent: content,
+        metaDescription: `SEO meta for ${targetKeywords.slice(0, 2).join(", ")}`,
+        suggestedTitle: `${targetKeywords[0] || "Wellness"} Guide`
+      };
+    }
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
     const prompt = `Optimize this wellness content for SEO while maintaining its natural flow and readability:
@@ -101,7 +134,8 @@ Return as JSON:
     }
   } catch (error) {
     console.error("Gemini SEO optimization error:", error);
-    throw new Error(`Failed to optimize content: ${error.message}`);
+    const msg = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to optimize content: ${msg}`);
   }
 }
 
@@ -111,6 +145,13 @@ export async function generateProductDescriptionGemini(
   benefits: string[]
 ): Promise<{ description: string; keyFeatures: string[]; targetAudience: string }> {
   try {
+    if (!genAI) {
+      return {
+        description: `${productName} is a quality ${category.toLowerCase()} with benefits: ${benefits.join(", ")}.`,
+        keyFeatures: benefits.slice(0, 3),
+        targetAudience: "Health-conscious individuals"
+      };
+    }
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
     const prompt = `Create a compelling product description for this wellness product:
@@ -152,6 +193,7 @@ Return as JSON:
     }
   } catch (error) {
     console.error("Gemini product description error:", error);
-    throw new Error(`Failed to generate product description: ${error.message}`);
+    const msg = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to generate product description: ${msg}`);
   }
 }

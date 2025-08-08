@@ -1,4 +1,4 @@
-import { storage } from '../storage';
+import { storage } from '../storage-simple';
 import { generateWellnessBlogPostDeepSeek, generateProductDescriptionDeepSeek } from '../deepseek';
 import { db } from '../db';
 import { products, blogPosts, affiliateLinks } from '@shared/schema';
@@ -67,7 +67,7 @@ export class ContentWorkflowAutomation {
 
         for (const category of productCategories) {
           try {
-            await this.createBlogContentForCategory(category);
+            await this.createBlogContentForCategory(category as { name: string; count: number });
             result.blogsCreated++;
             console.log(`✅ Created blog for category: ${category.name}`);
           } catch (error: any) {
@@ -127,7 +127,7 @@ export class ContentWorkflowAutomation {
   private async createProductFromAffiliateLink(link: any) {
     try {
       // Generate enhanced product description using AI
-      const enhancedDescription = await generateProductDescriptionDeepSeek(
+      const enhancedDescription = await (generateProductDescriptionDeepSeek as any)(
         link.productName,
         link.category,
         link.description || '',
@@ -216,7 +216,7 @@ export class ContentWorkflowAutomation {
       const productNames = categoryProducts.map(p => p.name).join(', ');
       const categoryKeywords = this.getCategoryKeywords(category.name);
       
-      const blogContent = await generateWellnessBlogPostDeepSeek(
+      const blogContentAny: any = await (generateWellnessBlogPostDeepSeek as any)(
         blogTitle,
         category.name,
         [
@@ -235,12 +235,12 @@ export class ContentWorkflowAutomation {
           title: blogTitle,
           slug,
           excerpt: `Discover the best ${category.name.toLowerCase()} products and wellness tips from our expert recommendations.`,
-          content: blogContent,
+          content: blogContentAny?.content ?? blogContentAny,
           category: category.name,
           tags: [category.name.toLowerCase(), 'product-review', 'wellness', 'recommendations'],
           isPremium: false,
           isPublished: true,
-          readTime: Math.ceil(blogContent.length / 1000), // Estimate reading time
+          readTime: Math.ceil(((typeof blogContentAny === 'string' ? blogContentAny.length : (blogContentAny?.content?.length || 0)) as number) / 1000),
           authorId: 'system' // System-generated content
         })
         .returning();

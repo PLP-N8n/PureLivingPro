@@ -101,7 +101,7 @@ export class IntelligentScheduler {
     }
   }
 
-  private async optimizeSchedulingTime(task: ScheduleTask): Promise<Date> {
+  private async optimizeSchedulingTime(task: { scheduledFor: Date; priority: ScheduleTask['priority']; type: ScheduleTask['type'] }): Promise<Date> {
     const now = new Date();
     const requestedTime = task.scheduledFor;
 

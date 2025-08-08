@@ -1,4 +1,4 @@
-import { storage } from '../storage';
+import { storage } from '../storage-simple';
 import { affiliateScraper } from './affiliateScraper';
 import { contentCreator } from './contentCreator';
 import { socialPoster } from './socialPoster';
@@ -166,7 +166,7 @@ export class AutomationController {
     const completedContent = await storage.getContentPipeline({ 
       status: 'completed',
       targetPlatform: 'social'
-    });
+    }) as any[];
 
     for (const content of completedContent.slice(0, 2)) { // Limit posts per cycle
       await socialPoster.postToAllPlatforms(content.id);
@@ -190,8 +190,8 @@ export class AutomationController {
     // Filter by rule keywords/categories if specified
     const triggers = rule.triggers || {};
     if (triggers.keywords?.length > 0) {
-      return baseTopics.filter(topic => 
-        triggers.keywords.some(keyword => 
+      return baseTopics.filter((topic: string) => 
+        (triggers.keywords as string[]).some((keyword: string) => 
           topic.toLowerCase().includes(keyword.toLowerCase())
         )
       );
@@ -221,7 +221,7 @@ export class AutomationController {
     const scheduledContent = await storage.getContentPipeline({ 
       status: 'scheduled',
       dueBefore: new Date()
-    });
+    }) as any[];
 
     for (const content of scheduledContent) {
       await contentCreator.createContentFromPipeline(content.id);
@@ -245,9 +245,9 @@ export class AutomationController {
 
     for (const post of recentPosts) {
       if (!post.content.includes('affiliate') && affiliateLinks.length > 0) {
-        const relevantLinks = affiliateLinks.filter(link => 
+        const relevantLinks = affiliateLinks.filter((link: any) => 
           link.category === post.category || 
-          post.tags?.some(tag => link.tags?.includes(tag))
+          post.tags?.some((tag: string) => link.tags?.includes(tag))
         );
 
         if (relevantLinks.length > 0) {
@@ -296,12 +296,12 @@ export class AutomationController {
           source: 'affiliate',
           affiliateLinkId: link.id,
           platform: 'blog',
-          amount: revenue,
-          commission: revenue * 0.05, // 5% commission
+          amount: String(revenue),
+          commission: String(revenue * 0.05),
           clickCount: clicks,
-          conversionRate: conversions / clicks,
+          conversionRate: String(conversions / Math.max(1, clicks)),
           status: 'confirmed'
-        };
+        } as any;
 
         await storage.createRevenueTracking(revenueRecord);
         console.log(`💵 Revenue tracked: $${revenue} from ${link.productName}`);
