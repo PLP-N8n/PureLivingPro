@@ -17,42 +17,61 @@ import {
 // Import OpenAI directly instead of from separate file
 import OpenAI from "openai";
 
-// Initialize OpenAI client with test-safe fallback
-const openaiClient = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || (process.env.NODE_ENV !== 'production' ? 'dev-api-key' : undefined),
-});
+const hasOpenAI = !!process.env.OPENAI_API_KEY;
+const openaiClient: OpenAI | null = hasOpenAI ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY! }) : null;
 
-// DeepSeek client setup with test-safe fallback
-const deepseek = new OpenAI({
+const hasDeepseek = !!process.env.DEEPSEEK_API_KEY;
+const deepseek: OpenAI | null = hasDeepseek ? new OpenAI({
   baseURL: 'https://api.deepseek.com',
-  apiKey: process.env.DEEPSEEK_API_KEY || (process.env.NODE_ENV !== 'production' ? 'dev-api-key' : undefined),
-});
+  apiKey: process.env.DEEPSEEK_API_KEY!,
+}) : null;
 
 // AI helper functions for wellness - Implemented inline to avoid import issues
 async function generateWellnessPlan(wellnessProfile: any): Promise<any> {
   const prompt = `Generate a personalized wellness plan based on this profile: ${JSON.stringify(wellnessProfile)}. Include fitness, nutrition, and mental health recommendations.`;
   
   try {
-    const response = await openaiClient.chat.completions.create({
-      model: "gpt-4o",
-      messages: [{ role: "user", content: prompt }],
-      max_tokens: 1000,
-    });
-    
-    return {
-      plan: response.choices[0].message.content,
-      generatedAt: new Date(),
-    };
+    if (openaiClient) {
+      const response = await openaiClient.chat.completions.create({
+        model: "gpt-4o",
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 1000,
+      });
+      return {
+        plan: response.choices[0].message.content,
+        generatedAt: new Date(),
+      };
+    } else if (deepseek) {
+      const fallbackResponse = await deepseek.chat.completions.create({
+        model: "deepseek-chat",
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 1000,
+      });
+      return {
+        plan: fallbackResponse.choices[0].message.content,
+        generatedAt: new Date(),
+      };
+    } else {
+      return {
+        plan: "Personalized plan suggestions are unavailable right now. Try focusing on balanced movement, nutrition, and mindfulness this week.",
+        generatedAt: new Date(),
+      };
+    }
   } catch (error) {
-    console.error("OpenAI error, falling back to DeepSeek:", error);
-    const fallbackResponse = await deepseek.chat.completions.create({
-      model: "deepseek-chat",
-      messages: [{ role: "user", content: prompt }],
-      max_tokens: 1000,
-    });
-    
+    console.error("AI generation error:", error);
+    if (deepseek) {
+      const fallbackResponse = await deepseek.chat.completions.create({
+        model: "deepseek-chat",
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 1000,
+      });
+      return {
+        plan: fallbackResponse.choices[0].message.content,
+        generatedAt: new Date(),
+      };
+    }
     return {
-      plan: fallbackResponse.choices[0].message.content,
+      plan: "Based on your profile, start with daily walks, hydration goals, and a 5-minute breathing practice.",
       generatedAt: new Date(),
     };
   }
@@ -62,17 +81,35 @@ async function generatePersonalizedContent(wellnessProfile: any, contentType: st
   const prompt = `Create ${contentType} content personalized for: ${JSON.stringify(wellnessProfile)}`;
   
   try {
-    const response = await deepseek.chat.completions.create({
-      model: "deepseek-chat",
-      messages: [{ role: "user", content: prompt }],
-      max_tokens: 500,
-    });
-    
-    return {
-      content: response.choices[0].message.content,
-      type: contentType,
-      generatedAt: new Date(),
-    };
+    if (deepseek) {
+      const response = await deepseek.chat.completions.create({
+        model: "deepseek-chat",
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 500,
+      });
+      return {
+        content: response.choices[0].message.content,
+        type: contentType,
+        generatedAt: new Date(),
+      };
+    } else if (openaiClient) {
+      const response = await openaiClient.chat.completions.create({
+        model: "gpt-4o",
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 500,
+      });
+      return {
+        content: response.choices[0].message.content,
+        type: contentType,
+        generatedAt: new Date(),
+      };
+    } else {
+      return {
+        content: `Personalized ${contentType} content based on your wellness goals.`,
+        type: contentType,
+        generatedAt: new Date(),
+      };
+    }
   } catch (error) {
     return {
       content: `Personalized ${contentType} content based on your wellness goals.`,
@@ -86,18 +123,48 @@ async function analyzeMoodAndSuggestActivities(mood: any, energy?: any, activiti
   const prompt = `Analyze mood: ${JSON.stringify(mood)}, energy: ${energy}, recent activities: ${JSON.stringify(activities)}. Suggest wellness activities.`;
   
   try {
-    const response = await openaiClient.chat.completions.create({
-      model: "gpt-4o",
-      messages: [{ role: "user", content: prompt }],
-      max_tokens: 300,
-    });
-    
-    return {
-      analysis: response.choices[0].message.content,
-      suggestions: ["Take a walk", "Practice deep breathing", "Listen to calming music"],
-      generatedAt: new Date(),
-    };
+    if (openaiClient) {
+      const response = await openaiClient.chat.completions.create({
+        model: "gpt-4o",
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 300,
+      });
+      return {
+        analysis: response.choices[0].message.content,
+        suggestions: ["Take a walk", "Practice deep breathing", "Listen to calming music"],
+        generatedAt: new Date(),
+      };
+    } else if (deepseek) {
+      const response = await deepseek.chat.completions.create({
+        model: "deepseek-chat",
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 300,
+      });
+      return {
+        analysis: response.choices[0].message.content,
+        suggestions: ["Take a walk", "Practice deep breathing", "Listen to calming music"],
+        generatedAt: new Date(),
+      };
+    } else {
+      return {
+        analysis: "Based on your input, here are some wellness suggestions.",
+        suggestions: ["Take a walk", "Practice meditation", "Stay hydrated"],
+        generatedAt: new Date(),
+      };
+    }
   } catch (error) {
+    if (deepseek) {
+      const response = await deepseek.chat.completions.create({
+        model: "deepseek-chat",
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 300,
+      });
+      return {
+        analysis: response.choices[0].message.content,
+        suggestions: ["Take a walk", "Practice deep breathing", "Listen to calming music"],
+        generatedAt: new Date(),
+      };
+    }
     return {
       analysis: "Based on your input, here are some wellness suggestions.",
       suggestions: ["Take a walk", "Practice meditation", "Stay hydrated"],
@@ -120,11 +187,7 @@ import { z } from "zod";
 import Stripe from "stripe";
 import { generateAIMealPlan } from './gemini';
 
-
-if (!process.env.STRIPE_SECRET_KEY && process.env.NODE_ENV === 'production') {
-  throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
-}
-const stripe = new Stripe((process.env.STRIPE_SECRET_KEY || 'sk_test_dummy') as string);
+const stripe: Stripe | null = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY as string) : null;
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -2344,6 +2407,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Stripe Subscription Routes
   app.post('/api/create-subscription', isAuthenticated, async (req, res) => {
+    if (!stripe) {
+      res.status(501).json({ error: 'Payments not configured' });
+      return;
+    }
+
     try {
       const user = req.user as any;
       const userId = user.claims.sub;
@@ -2408,6 +2476,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Check subscription status
   app.get('/api/subscription-status', isAuthenticated, async (req, res) => {
+    if (!stripe) {
+      return res.json({ isPremium: false, status: 'none' });
+    }
+
     try {
       const userId = (req.user as any).claims.sub;
       const user = await storage.getUser(userId);
@@ -2434,6 +2506,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Cancel subscription
   app.post('/api/cancel-subscription', isAuthenticated, async (req, res) => {
+    if (!stripe) {
+      return res.status(400).json({ error: 'No active subscription found' });
+    }
+
     try {
       const userId = (req.user as any).claims.sub;
       const user = await storage.getUser(userId);
@@ -2459,6 +2535,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // AI Meal Planner (Premium Feature)
   app.post('/api/meal-planner/generate', isAuthenticated, async (req, res) => {
+    if (!stripe) {
+      return res.status(403).json({ error: 'Premium subscription required' });
+    }
+
     try {
       const userId = (req.user as any).claims.sub;
       const user = await storage.getUser(userId);

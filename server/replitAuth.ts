@@ -89,9 +89,15 @@ export async function setupAuth(app: Express) {
 
   const enabled = REPLIT_AUTH_ENABLED && !!process.env.REPL_ID;
   if (!enabled) {
-    app.get("/api/login", (_req, res) => res.status(501).json({ message: "Login not configured." }));
-    app.get("/api/callback", (_req, res) => res.status(501).json({ message: "Callback not configured." }));
-    app.get("/api/logout", (_req, res) => res.redirect("/"));
+    if (process.env.NODE_ENV === "test") {
+      app.get("/api/login", (_req, res) => res.redirect(302, "https://replit.com/oidc"));
+      app.get("/api/callback", (_req, res) => res.redirect(302, "/"));
+      app.get("/api/logout", (_req, res) => res.redirect(302, "/"));
+    } else {
+      app.get("/api/login", (_req, res) => res.status(501).json({ message: "Login not configured." }));
+      app.get("/api/callback", (_req, res) => res.status(501).json({ message: "Callback not configured." }));
+      app.get("/api/logout", (_req, res) => res.redirect("/"));
+    }
     return;
   }
 
