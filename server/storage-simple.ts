@@ -792,21 +792,41 @@ export class SimpleStorage implements ISimpleStorage {
 
   async getAffiliateLinks(filters: any = {}): Promise<any[]> {
     let query = db.select().from(affiliateLinks) as any;
-    if (filters.id) query = query.where(eq(affiliateLinks.id, Number(filters.id))) as any;
-    if (filters.category) query = query.where(eq(affiliateLinks.category, filters.category)) as any;
-    if (filters.status) query = query.where(eq(affiliateLinks.status, filters.status)) as any;
-    if (filters.isActive !== undefined) query = query.where(eq(affiliateLinks.isActive, !!filters.isActive)) as any;
-    if (filters.limit) query = query.limit(filters.limit) as any;
-    if (filters.offset) query = query.offset(filters.offset) as any;
 
-    const q: any = query as any;
-    if (q && typeof q.orderBy === 'function') {
-      const ordered = await q.orderBy(desc(affiliateLinks.createdAt));
-      return Array.isArray(ordered) ? ordered : (ordered ? [ordered] : []);
+    const canChain = query && typeof query.where === 'function';
+    if (canChain) {
+      if (filters.id) query = query.where(eq(affiliateLinks.id, Number(filters.id))) as any;
+      if (filters.category) query = query.where(eq(affiliateLinks.category, filters.category)) as any;
+      if (filters.status) query = query.where(eq(affiliateLinks.status, filters.status)) as any;
+      if (filters.isActive !== undefined) query = query.where(eq(affiliateLinks.isActive, !!filters.isActive)) as any;
+      if (filters.limit) query = query.limit(filters.limit) as any;
+      if (filters.offset) query = query.offset(filters.offset) as any;
+
+      if (typeof (query as any).orderBy === 'function') {
+        return await (query as any).orderBy(desc(affiliateLinks.createdAt));
+      }
+      return await query;
     }
 
-    const rows = await q;
-    return Array.isArray(rows) ? rows : (rows ? [rows] : []);
+    const rows: any[] = Array.isArray(query) ? query : await query;
+    let filtered = rows;
+
+    if (filters.id !== undefined) filtered = filtered.filter(r => Number(r.id) === Number(filters.id));
+    if (filters.category !== undefined) filtered = filtered.filter(r => r.category === filters.category);
+    if (filters.status !== undefined) filtered = filtered.filter(r => r.status === filters.status);
+    if (filters.isActive !== undefined) filtered = filtered.filter(r => !!r.isActive === !!filters.isActive);
+
+    filtered = filtered.sort((a, b) => {
+      const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return bTime - aTime;
+    });
+
+    const offset = Number(filters.offset) || 0;
+    const limit = Number(filters.limit) || undefined;
+    const sliced = limit ? filtered.slice(offset, offset + limit) : filtered.slice(offset);
+
+    return sliced;
   }
 
 
