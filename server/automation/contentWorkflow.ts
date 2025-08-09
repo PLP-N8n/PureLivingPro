@@ -1,4 +1,4 @@
-import { storage } from '../storage-simple';
+import { storage } from '../storage';
 import { generateWellnessBlogPostDeepSeek, generateProductDescriptionDeepSeek } from '../deepseek';
 import { db } from '../db';
 import { products, blogPosts, affiliateLinks } from '@shared/schema';

@@ -6,7 +6,7 @@
 
 import { AutonomousController } from './autonomousController';
 import { IntelligentScheduler } from './intelligentScheduler';
-import { storage } from '../storage-simple';
+import { storage } from '../storage';
 
 export class AutonomousFoundation {
   private autonomousController: AutonomousController;

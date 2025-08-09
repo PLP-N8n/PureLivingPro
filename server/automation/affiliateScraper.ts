@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { storage } from '../storage-simple';
+import { storage } from '../storage';
 import type { InsertAffiliateLink } from '@shared/schema';
 
 interface ScrapedProduct {
