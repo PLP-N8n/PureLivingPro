@@ -76,7 +76,15 @@ export default function ProductCard({
 
   const handlePurchaseClick = () => {
     if (product.affiliateLink) {
-      window.open(product.affiliateLink, '_blank', 'noopener,noreferrer');
+      import('@/lib/affiliate').then(({ buildAffiliateUrl }) => {
+        const href = buildAffiliateUrl({
+          affiliateId: (product as any)?.affiliateId ?? null,
+          url: product.affiliateLink,
+        });
+        window.open(href, '_blank', 'noopener,noreferrer');
+      }).catch(() => {
+        window.open(product.affiliateLink, '_blank', 'noopener,noreferrer');
+      });
     }
   };
 

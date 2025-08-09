@@ -354,7 +354,17 @@ function ProductCard({ product, index, isRecommended }: {
               <Button
                 size="sm"
                 className="bg-sage-600 hover:bg-sage-700 text-white"
-                onClick={() => window.open(product.affiliateLink!, '_blank')}
+                onClick={() => {
+                  import('@/lib/affiliate').then(({ buildAffiliateUrl }) => {
+                    const href = buildAffiliateUrl({
+                      affiliateId: (product as any)?.affiliateId ?? null,
+                      url: product.affiliateLink!,
+                    });
+                    window.open(href, '_blank', 'noopener,noreferrer');
+                  }).catch(() => {
+                    window.open(product.affiliateLink!, '_blank', 'noopener,noreferrer');
+                  });
+                }}
               >
                 <ExternalLink className="w-4 h-4 mr-1" />
                 Shop Now

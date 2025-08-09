@@ -536,7 +536,18 @@ export function OptimizedProductManagement() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => window.open(product.affiliateLink!, '_blank')}
+                                onClick={() => {
+                                  if (!product.affiliateLink) return;
+                                  import('@/lib/affiliate').then(({ buildAffiliateUrl }) => {
+                                    const href = buildAffiliateUrl({
+                                      affiliateId: (product as any)?.affiliateId ?? null,
+                                      url: product.affiliateLink!,
+                                    });
+                                    window.open(href, '_blank', 'noopener,noreferrer');
+                                  }).catch(() => {
+                                    window.open(product.affiliateLink!, '_blank', 'noopener,noreferrer');
+                                  });
+                                }}
                               >
                                 <ExternalLink className="h-3 w-3" />
                               </Button>
