@@ -1,10 +1,11 @@
 import { SimpleStorage } from "./storage-simple";
+import type { ISimpleStorage } from "./storage-simple";
 import { db } from "./db";
 import { blogPosts, products } from "@shared/schema";
 import { ilike, or } from "drizzle-orm";
 
 export class DatabaseStorage {
-  private impl: SimpleStorage;
+  private impl: ISimpleStorage;
 
   constructor() {
     this.impl = new SimpleStorage();
@@ -288,7 +289,7 @@ export class DatabaseStorage {
   }
 
   async updateUserStripeInfo(userId: string, stripeCustomerId: string, stripeSubscriptionId: string) {
-    return (this.impl as any).updateUserStripeInfo(userId, stripeCustomerId, stripeSubscriptionId);
+    return this.impl.updateUserStripeInfo(userId, stripeCustomerId, stripeSubscriptionId);
   }
 
   async bulkUpdateBlogPosts(action: string, ids: number[]) {

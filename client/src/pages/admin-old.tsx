@@ -185,7 +185,7 @@ export default function Admin() {
 }
 
 function OverviewTab() {
-  const { data: stats } = useQuery({
+  const { data: stats } = useQuery<any>({
     queryKey: ["/api/admin/stats"],
     retry: false,
   });
@@ -1106,7 +1106,7 @@ function ProductManagement() {
     isRecommended: false
   });
 
-  const { data: productsData = [], isLoading: productsLoading } = useQuery({
+  const { data: productsData = [], isLoading: productsLoading } = useQuery<any>({
     queryKey: ["/api/products"],
     onSuccess: (data) => setProducts(data)
   });
@@ -1444,7 +1444,7 @@ function ChallengeManagement() {
     isActive: true
   });
 
-  const { data: challengesData = [], isLoading: challengesLoading } = useQuery({
+  const { data: challengesData = [], isLoading: challengesLoading } = useQuery<any>({
     queryKey: ["/api/challenges"],
     onSuccess: (data) => setChallenges(data)
   });
@@ -2387,7 +2387,7 @@ function AutomationDashboard_OLD({ systemStatus, setSystemStatus, automationSett
   const [lastRefresh, setLastRefresh] = useState(new Date().toLocaleTimeString());
 
   // Real-time system status query
-  const { data: liveSystemStatus, isLoading: statusLoading } = useQuery({
+  const { data: liveSystemStatus, isLoading: statusLoading } = useQuery<any>({
     queryKey: ['/api/admin/system-status'],
     refetchInterval: 30000, // Refresh every 30 seconds
     onSuccess: (data) => {
@@ -2407,7 +2407,7 @@ function AutomationDashboard_OLD({ systemStatus, setSystemStatus, automationSett
   });
 
   // Automation settings query
-  const { data: liveAutomationSettings } = useQuery({
+  const { data: liveAutomationSettings } = useQuery<any>({
     queryKey: ['/api/admin/automation-settings'],
     onSuccess: (data) => setAutomationSettings(data),
     onError: (error) => {
@@ -2423,7 +2423,7 @@ function AutomationDashboard_OLD({ systemStatus, setSystemStatus, automationSett
   });
 
   // Scheduled content query
-  const { data: scheduledContent = [], refetch: refetchScheduled } = useQuery({
+  const { data: scheduledContent = [], refetch: refetchScheduled } = useQuery<any>({
     queryKey: ['/api/admin/scheduled-content'],
     onError: (error) => {
       if (isUnauthorizedError(error)) {

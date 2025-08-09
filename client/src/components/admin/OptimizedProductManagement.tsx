@@ -79,7 +79,7 @@ export function OptimizedProductManagement() {
   });
 
   // Fetch paginated products with caching
-  const { data: productData, isLoading, error } = useQuery({
+  const { data: productData, isLoading, error } = useQuery<any>({
     queryKey: ['/api/admin/products', currentPage, pageSize, searchTerm, categoryFilter],
     queryFn: async () => {
       const params = new URLSearchParams({

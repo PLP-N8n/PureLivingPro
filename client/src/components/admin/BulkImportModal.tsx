@@ -56,7 +56,7 @@ export function BulkImportModal({ isOpen, onClose }: BulkImportModalProps) {
       // Parse CSV data into affiliate links
       const lines = csvData.split('\n').filter(line => line.trim());
       const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
-      const linkData = [];
+      const linkData: any[] = [];
 
       for (let i = 1; i < lines.length; i++) {
         const values = lines[i].split(',').map(v => v.trim());
@@ -104,7 +104,7 @@ export function BulkImportModal({ isOpen, onClose }: BulkImportModalProps) {
 
       // Process links in batches
       const batchSize = 5;
-      const results = [];
+      const results: any[] = [];
       
       for (let i = 0; i < linkData.length; i += batchSize) {
         const batch = linkData.slice(i, i + batchSize);

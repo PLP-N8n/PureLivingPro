@@ -43,7 +43,7 @@ export default function ProductManagement() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: products, isLoading } = useQuery({
+  const { data: products, isLoading } = useQuery<any>({
     queryKey: ['/api/products'],
   });
 
@@ -266,7 +266,7 @@ export default function ProductManagement() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => window.open(product.affiliateLink, '_blank')}
+                  onClick={() => window.open(product.affiliateLink || undefined, '_blank')}
                 >
                   <ExternalLink className="h-4 w-4 mr-2" />
                   View Product

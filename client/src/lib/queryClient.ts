@@ -98,3 +98,15 @@ export const queryClient = new QueryClient({
     },
   },
 });
+export async function apiRequestJson<T = any>(
+  urlOrMethod: string,
+  maybeUrlOrOptions?: string | {
+    method?: string;
+    data?: unknown;
+    params?: Record<string, any>;
+  },
+  maybeData?: unknown
+): Promise<T> {
+  const res = await apiRequest(urlOrMethod, maybeUrlOrOptions as any, maybeData);
+  return res.json() as Promise<T>;
+}

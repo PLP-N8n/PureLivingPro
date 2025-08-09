@@ -10,7 +10,8 @@
     "check": "tsc -p tsconfig.server.json",
     "check:server": "tsc -p tsconfig.server.json",
     "test": "vitest run",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "check:client": "tsc -p tsconfig.json"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

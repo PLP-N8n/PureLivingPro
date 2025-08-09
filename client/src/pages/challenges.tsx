@@ -29,12 +29,12 @@ export default function Challenges() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("available");
 
-  const { data: availableChallenges, isLoading: challengesLoading } = useQuery({
+  const { data: availableChallenges, isLoading: challengesLoading } = useQuery<any>({
     queryKey: ["/api/challenges"],
     retry: false,
   });
 
-  const { data: userChallenges, isLoading: userChallengesLoading } = useQuery({
+  const { data: userChallenges, isLoading: userChallengesLoading } = useQuery<any>({
     queryKey: ["/api/user/challenges"],
     retry: false,
     enabled: isAuthenticated,

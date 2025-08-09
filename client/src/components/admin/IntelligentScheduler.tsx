@@ -56,20 +56,20 @@ export function IntelligentScheduler() {
   const queryClient = useQueryClient();
 
   // Fetch scheduled tasks
-  const { data: scheduledTasks = [] } = useQuery({
+  const { data: scheduledTasks = [] } = useQuery<any>({
     queryKey: ['/api/scheduler/tasks'],
     refetchInterval: 30000,
     select: (data: any) => data?.data || []
   });
 
   // Fetch optimal timing data
-  const { data: optimalTimings = [] } = useQuery({
+  const { data: optimalTimings = [] } = useQuery<any>({
     queryKey: ['/api/scheduler/optimal-timings'],
     select: (data: any) => data?.data || []
   });
 
   // Fetch scheduler metrics
-  const { data: schedulerMetrics } = useQuery({
+  const { data: schedulerMetrics } = useQuery<any>({
     queryKey: ['/api/scheduler/metrics'],
     refetchInterval: 60000,
     select: (data: any) => data?.data || {}

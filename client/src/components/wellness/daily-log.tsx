@@ -40,7 +40,7 @@ export default function DailyLog() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const { data: todayLog } = useQuery({
+  const { data: todayLog } = useQuery<import("@/types/models").DailyLog | null>({
     queryKey: ["/api/user/logs", { date: today.toISOString() }],
     retry: false,
     enabled: !!user,
@@ -49,11 +49,11 @@ export default function DailyLog() {
   // Load existing log data if available
   useEffect(() => {
     if (todayLog) {
-      setMood([todayLog.mood || 3]);
-      setEnergy([todayLog.energy || 3]);
-      setSleep([todayLog.sleep || 7]);
-      setExercise(todayLog.exercise || false);
-      setMeditation(todayLog.meditation || false);
+      setMood([todayLog.mood ?? 3]);
+      setEnergy([todayLog.energy ?? 3]);
+      setSleep([todayLog.sleep ?? 7]);
+      setExercise(!!todayLog.exercise);
+      setMeditation(!!todayLog.meditation);
       setNotes(todayLog.notes || "");
       setIsSubmitted(true);
     }

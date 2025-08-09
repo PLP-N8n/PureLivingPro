@@ -68,7 +68,7 @@ export function AnalyticsDashboard() {
   const [timeRange, setTimeRange] = useState('30d');
   const [selectedTab, setSelectedTab] = useState('overview');
 
-  const { data: insights, isLoading, refetch } = useQuery({
+  const { data: insights, isLoading, refetch } = useQuery<any>({
     queryKey: ['/api/analytics/wellness-insights', timeRange],
     queryFn: async () => {
       const response = await apiRequest('GET', `/api/analytics/wellness-insights?timeRange=${timeRange}`);

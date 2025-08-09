@@ -79,7 +79,8 @@ export const TaskSubmissionForm = ({ onSubmit, className }: TaskSubmissionFormPr
       const submissionData = {
         ...data,
         triggers: {
-          ...data.triggers,
+          immediate: !!data.triggers?.immediate,
+          scheduled: data.triggers?.scheduled,
           keywords,
         },
       };

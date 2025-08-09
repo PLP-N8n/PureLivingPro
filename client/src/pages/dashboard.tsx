@@ -70,17 +70,17 @@ export default function Dashboard() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  const { data: userChallenges, isLoading: challengesLoading } = useQuery({
+  const { data: userChallenges, isLoading: challengesLoading } = useQuery<any>({
     queryKey: ["/api/user/challenges"],
     retry: false,
   });
 
-  const { data: dailyLogs, isLoading: logsLoading } = useQuery({
+  const { data: dailyLogs, isLoading: logsLoading } = useQuery<any>({
     queryKey: ["/api/user/logs"],
     retry: false,
   });
 
-  const { data: wellnessPlan, isLoading: planLoading } = useQuery({
+  const { data: wellnessPlan, isLoading: planLoading } = useQuery<any>({
     queryKey: ["/api/wellness/generate-plan"],
     retry: false,
     enabled: !!user?.wellnessProfile,
@@ -480,7 +480,7 @@ export default function Dashboard() {
                   </div>
                   
                   <div className="grid grid-cols-1 gap-2">
-                    {t('dashboard.aiCoach.suggestions', { returnObjects: true }).map((suggestion, index) => (
+                    {(t('dashboard.aiCoach.suggestions', { returnObjects: true }) as unknown as string[]).map((suggestion, index) => (
                       <Button
                         key={index}
                         variant="outline"

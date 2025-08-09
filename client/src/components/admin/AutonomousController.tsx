@@ -112,21 +112,21 @@ export function AutonomousController() {
   const queryClient = useQueryClient();
 
   // Fetch system metrics
-  const { data: systemMetrics } = useQuery({
+  const { data: systemMetrics } = useQuery<any>({
     queryKey: ['/api/autonomous/metrics'],
     refetchInterval: 30000, // Refresh every 30 seconds
     select: (data: any) => data?.data || {}
   });
 
   // Fetch recent autonomous decisions
-  const { data: recentDecisions = [] } = useQuery({
+  const { data: recentDecisions = [] } = useQuery<any>({
     queryKey: ['/api/autonomous/decisions'],
     refetchInterval: 15000, // Refresh every 15 seconds
     select: (data: any) => data?.data || []
   });
 
   // Fetch autonomous status
-  const { data: autonomousStatus } = useQuery({
+  const { data: autonomousStatus } = useQuery<any>({
     queryKey: ['/api/autonomous/status'],
     refetchInterval: 10000, // Refresh every 10 seconds
     select: (data: any) => data?.data || {}
@@ -183,7 +183,7 @@ export function AutonomousController() {
     setConfig(prev => ({
       ...prev,
       [section]: {
-        ...prev[section],
+        ...(prev[section] as any),
         [field]: value
       }
     }));

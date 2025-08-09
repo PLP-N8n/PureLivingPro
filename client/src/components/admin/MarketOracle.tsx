@@ -69,25 +69,25 @@ export function MarketOracle() {
   const queryClient = useQueryClient();
 
   // Fetch trend forecasts
-  const { data: trendForecasts = [] } = useQuery({
+  const { data: trendForecasts = [] } = useQuery<any>({
     queryKey: ['/api/market-oracle/trends', selectedHorizon],
     select: (data: any) => data?.data || []
   });
 
   // Fetch arbitrage opportunities
-  const { data: arbitrageOpps = [] } = useQuery({
+  const { data: arbitrageOpps = [] } = useQuery<any>({
     queryKey: ['/api/market-oracle/arbitrage'],
     select: (data: any) => data?.data || []
   });
 
   // Fetch competitor intelligence
-  const { data: competitorIntel = [] } = useQuery({
+  const { data: competitorIntel = [] } = useQuery<any>({
     queryKey: ['/api/market-oracle/competitors'],
     select: (data: any) => data?.data || []
   });
 
   // Fetch seasonal strategies
-  const { data: seasonalStrategies = [] } = useQuery({
+  const { data: seasonalStrategies = [] } = useQuery<any>({
     queryKey: ['/api/market-oracle/seasonal'],
     select: (data: any) => data?.data || []
   });

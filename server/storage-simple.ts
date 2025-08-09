@@ -33,72 +33,94 @@ import {
 import { eq, desc, asc, like, and, or, sql, count, ilike } from "drizzle-orm";
 
 // Simple interface to avoid complex Drizzle types
-interface ISimpleStorage {
+export interface ISimpleStorage {
   getUser(id: string): Promise<any>;
   upsertUser(user: any): Promise<any>;
+  updateUserStripeInfo(userId: string, stripeCustomerId: string, stripeSubscriptionId: string): Promise<void>;
+  updateUserPremiumStatus(userId: string, isPremium: boolean): Promise<void>;
+
   getBlogPosts(filters?: any): Promise<any[]>;
   getBlogPostsPaginated(page: number, pageSize: number, filters?: any): Promise<any>;
   createBlogPost(post: any): Promise<any>;
   updateBlogPost(id: number, updates: any): Promise<any>;
   deleteBlogPost(id: number): Promise<boolean>;
+  getBlogPost(slug: string): Promise<any>;
   getBlogPostStats(): Promise<any>;
+  getBlogPostsCount?(filters?: any): Promise<number>;
+
   getProducts(filters?: any): Promise<any[]>;
   getProductsPaginated(page: number, pageSize: number, filters?: any): Promise<any>;
   createProduct(product: any): Promise<any>;
   updateProduct(id: number, updates: any): Promise<any>;
   deleteProduct(id: number): Promise<boolean>;
+  searchProducts(query: string): Promise<any[]>;
+  getProduct(id: number): Promise<any>;
   getProductStats(): Promise<any>;
+  getProductsCount?(filters?: any): Promise<number>;
+
   getChallenges(limit?: number, offset?: number): Promise<any[]>;
   getChallenge(id: number): Promise<any>;
   createChallenge(challenge: any): Promise<any>;
   updateChallenge(id: number, updates: any): Promise<any>;
   deleteChallenge(id: number): Promise<boolean>;
   getChallengeStats(): Promise<any>;
+
   getUserChallenges(userId: string): Promise<any[]>;
   createUserChallenge(userChallenge: any): Promise<any>;
+
   getDailyLogs(userId: string, startDate?: Date, endDate?: Date): Promise<any[]>;
   createDailyLog(dailyLog: any): Promise<any>;
+
   getWellnessPlans(userId: string): Promise<any[]>;
   createWellnessPlan(plan: any): Promise<any>;
+
   getUserFitnessData(userId: string, limit?: number): Promise<any[]>;
+
   bulkUpdateBlogPosts(action: string, ids: number[]): Promise<boolean>;
   bulkUpdateProducts(action: string, ids: number[]): Promise<boolean>;
+
   getAutomationRules(filters?: any): Promise<any[]>;
   createAutomationRule(rule: any): Promise<any>;
   updateAutomationRule(id: number, updates: any): Promise<any>;
+
   createContentPipeline(pipeline: any): Promise<any>;
+  updateContentPipeline(id: number, updates: any): Promise<any>;
   getContentPipeline(filtersOrId?: any): Promise<any | any[]>;
+
   getAffiliateLinks(filters?: any): Promise<any[]>;
   createRevenueTracking(tracking: any): Promise<any>;
   getRevenueStats(): Promise<any>;
   getContentEngagementStats(): Promise<any>;
+
   getSocialAccounts(filters?: any): Promise<any[]>;
   updateSocialAccount(id: number, updates: any): Promise<any>;
   createSocialAccount(data: any): Promise<any>;
+
   createAgentTask(task: any): Promise<any>;
   getAgentTasks(status?: string): Promise<any[]>;
   updateAgentTask(id: number, updates: any): Promise<any>;
   getAgentStats(): Promise<any>;
   getSystemMetrics(): Promise<any>;
+
   createAffiliateLink(link: any): Promise<any>;
   updateAffiliateLink(id: number, updates: any): Promise<any>;
-  getProduct?(id: number): Promise<any>;
-  createWellnessAssessment?(assessment: any): Promise<any>;
-  getWellnessAssessments?(userId: string, planId?: number): Promise<any[]>;
-  createCoachingSession?(session: any): Promise<any>;
-  getCoachingSessions?(userId: string, planId?: number): Promise<any[]>;
-  createWellnessGoal?(goal: any): Promise<any>;
-  getWellnessGoals?(userId: string, planId?: number): Promise<any[]>;
-  updateWellnessGoal?(id: number, updates: any): Promise<any>;
-  bulkCreateFitnessData?(items: any[]): Promise<void>;
-  updateUserDeviceTokens?(userId: string, device: string, tokens: any): Promise<void>;
-  getFitnessData?(userId: string, dataType?: string, start?: Date, end?: Date): Promise<any[]>;
-  createWellnessQuizResponse?(data: any): Promise<any>;
-  updateUserWellnessProfile?(userId: string, updates: any): Promise<void>;
-  getAffiliateProducts?(filters?: any): Promise<any[]>;
-  createAffiliateProduct?(product: any): Promise<any>;
-  createAiCoachingSession?(session: any): Promise<any>;
-  getAiCoachingSessions?(userId: string): Promise<any[]>;
+
+  createWellnessAssessment(assessment: any): Promise<any>;
+  getWellnessAssessments(userId: string, planId?: number): Promise<any[]>;
+  createCoachingSession(session: any): Promise<any>;
+  getCoachingSessions(userId: string, planId?: number): Promise<any[]>;
+  createWellnessGoal(goal: any): Promise<any>;
+  getWellnessGoals(userId: string, planId?: number): Promise<any[]>;
+  updateWellnessGoal(id: number, updates: any): Promise<any>;
+  bulkCreateFitnessData(items: any[]): Promise<void>;
+  updateUserDeviceTokens(userId: string, device: string, tokens: any): Promise<void>;
+  getFitnessData(userId: string, dataType?: string, start?: Date, end?: Date): Promise<any[]>;
+  createWellnessQuizResponse(data: any): Promise<any>;
+  updateUserWellnessProfile(userId: string, updates: any): Promise<void>;
+  getAffiliateProducts(filters?: any): Promise<any[]>;
+  createAffiliateProduct(product: any): Promise<any>;
+  createAiCoachingSession(session: any): Promise<any>;
+  getAiCoachingSessions(userId: string): Promise<any[]>;
 }
 
 export class SimpleStorage implements ISimpleStorage {

@@ -79,7 +79,7 @@ export function OptimizedBlogManagement() {
   });
 
   // Fetch paginated posts with caching
-  const { data: postData, isLoading, error } = useQuery({
+  const { data: postData, isLoading, error } = useQuery<any>({
     queryKey: ['/api/admin/blog-posts', currentPage, pageSize, searchTerm, categoryFilter, statusFilter],
     queryFn: async () => {
       const params = new URLSearchParams({
