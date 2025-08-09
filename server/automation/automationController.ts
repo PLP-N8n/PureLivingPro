@@ -1,4 +1,4 @@
-import { storage } from '../storage-simple';
+import { storage } from '../storage';
 import { affiliateScraper } from './affiliateScraper';
 import { contentCreator } from './contentCreator';
 import { socialPoster } from './socialPoster';

@@ -1,4 +1,4 @@
-import { storage } from '../storage-simple';
+import { storage } from '../storage';
 import { generateWellnessBlogPostDeepSeek } from '../deepseek';
 import { generateWellnessBlogPost } from '../openai';
 import type { InsertContentPipeline, InsertBlogPost } from '@shared/schema';

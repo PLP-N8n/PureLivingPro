@@ -1,7 +1,7 @@
 // Bulk import endpoints for affiliate links
 import type { Express } from "express";
 import { insertAffiliateLinkSchema } from "@shared/schema";
-import { storage } from "./storage-simple";
+import { storage } from "./storage";
 import { isAuthenticated } from "./replitAuth";
 
 export function registerBulkRoutes(app: Express) {
