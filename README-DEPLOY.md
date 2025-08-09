@@ -1,3 +1,35 @@
+Production Environment Notes
+- Minimum required to boot in production:
+  - NODE_ENV=production
+  - SESSION_SECRET=32+ chars
+  - PORT is honored if provided, defaults to 5000
+- Optional in production (server will degrade gracefully without them):
+  - DATABASE_URL (affects DB-backed features)
+  - OPENAI_API_KEY, DEEPSEEK_API_KEY, GEMINI_API_KEY
+  - STRIPE_SECRET_KEY, SENDGRID_API_KEY
+  - Replit OIDC: REPLIT_AUTH_ENABLED=true, REPL_ID, REPLIT_DOMAINS, ISSUER_URL
+- CORS in production is restricted to:
+  - https://purelivingpro.com
+  - https://www.purelivingpro.com
+
+Local Production Smoke Test
+1) Build and run:
+   NODE_ENV=production SESSION_SECRET="your-32-char-secret" PORT=5000 npm run build && node dist/index.js
+2) Verify endpoints:
+   curl -s http://localhost:5000/robots.txt
+   curl -s http://localhost:5000/sitemap.xml | head
+   curl -i http://localhost:5000/healthz
+   curl -i http://localhost:5000/r/123  # 404 if not found, 302 if configured
+
+Docker Smoke Test
+- Build:
+  docker build -t purelivingpro:latest .
+- Run:
+  docker run -p 5000:5000 -e NODE_ENV=production -e SESSION_SECRET="your-32-char-secret" purelivingpro:latest
+- Verify:
+  curl -s http://localhost:5000/robots.txt
+
+
 Pure Living Pro - Deployment Options
 
 Overview
