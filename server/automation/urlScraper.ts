@@ -38,7 +38,7 @@ export class URLScraper {
       console.log(`✅ Successfully scraped product: ${productInfo.productName}`);
       return productInfo;
 
-    } catch (error) {
+    } catch (error: any) {
       console.error(`❌ Error scraping URL ${url}:`, error);
       throw new Error(`Failed to scrape product information: ${error.message}`);
     }
@@ -58,7 +58,7 @@ export class URLScraper {
         return response.request.res.responseUrl || url;
       }
       return url;
-    } catch (error) {
+    } catch (error: any) {
       console.log('URL resolution failed, using original URL:', error.message);
       return url;
     }
@@ -120,7 +120,7 @@ export class URLScraper {
     });
     
     // Remove duplicates and return the first few best candidates
-    const uniqueUrls = [...new Set(imageUrls)];
+    const uniqueUrls = Array.from(new Set(imageUrls));
     return uniqueUrls.slice(0, 5); // Return top 5 candidates
   }
 
@@ -174,7 +174,7 @@ export class URLScraper {
         html: response.data
       };
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Primary fetch failed, trying fallback method:', error.message);
       
       // Fallback: Try with minimal headers
@@ -264,13 +264,12 @@ Focus on finding:
 
 Return only valid JSON, no explanations.`;
 
+    let result: string = '';
     try {
-      let result: string;
-      
       if (aiProvider === 'deepseek') {
         result = await generateProductDescriptionDeepSeek('', '', prompt);
       } else {
-        result = await generateProductDescription('', '', prompt);
+        result = await generateProductDescriptionDeepSeek('', '', prompt);
       }
 
       // Parse the AI response
@@ -303,7 +302,7 @@ Return only valid JSON, no explanations.`;
       console.log('✅ Scraped and validated:', validatedInfo.productName);
       return validatedInfo;
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('AI extraction failed, using fallback method:', error);
       console.error('AI response that caused error:', result);
       return this.fallbackExtraction(content, url, merchant);
@@ -336,7 +335,7 @@ Return only valid JSON, no explanations.`;
       const domainParts = domain.replace('www.', '').split('.');
       return domainParts[0].charAt(0).toUpperCase() + domainParts[0].slice(1);
       
-    } catch (error) {
+    } catch (error: any) {
       return 'Unknown Merchant';
     }
   }

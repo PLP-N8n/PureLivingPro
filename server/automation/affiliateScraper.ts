@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { storage } from '../storage';
+import { storage } from '../storage-simple';
 import type { InsertAffiliateLink } from '@shared/schema';
 
 interface ScrapedProduct {
@@ -40,8 +40,8 @@ export class AffiliateScraper {
       try {
         await source.scraper(category);
         console.log(`✅ Scraped ${source.name} for ${category}`);
-      } catch (error) {
-        console.error(`❌ Failed to scrape ${source.name}:`, error.message);
+      } catch (error: any) {
+        console.error(`❌ Failed to scrape ${source.name}:`, (error && (error as any).message) || error);
       }
     }
   }
@@ -61,7 +61,7 @@ export class AffiliateScraper {
             merchant: 'Amazon',
             productName: product.name,
             category,
-            commission: 4.00, // Amazon's typical commission rate
+            commission: '4.00',
             scrapedData: {
               price: product.price,
               rating: product.rating,
@@ -106,8 +106,8 @@ export class AffiliateScraper {
           tags: [category, 'clickbank', 'digital']
         });
       }
-    } catch (error) {
-      console.error('ClickBank scraping failed:', error);
+    } catch (error: any) {
+      console.error('ClickBank scraping failed:', (error && (error as any).message) || error);
     }
   }
 
@@ -121,7 +121,7 @@ export class AffiliateScraper {
   }
 
   private getCategorySearchTerms(category: string): string[] {
-    const terms = {
+    const terms: Record<string, string[]> = {
       supplements: ['protein powder', 'vitamins', 'omega 3', 'probiotics', 'multivitamin'],
       fitness: ['yoga mat', 'resistance bands', 'dumbbells', 'fitness tracker'],
       meditation: ['meditation cushion', 'essential oils', 'singing bowls', 'mindfulness'],
@@ -165,8 +165,8 @@ export class AffiliateScraper {
     try {
       await storage.createAffiliateLink(linkData);
       console.log(`💾 Saved affiliate link: ${linkData.productName}`);
-    } catch (error) {
-      console.error('Failed to save affiliate link:', error);
+    } catch (error: any) {
+      console.error('Failed to save affiliate link:', (error && (error as any).message) || error);
     }
   }
 
@@ -181,7 +181,7 @@ export class AffiliateScraper {
   async validateExistingLinks(): Promise<void> {
     console.log('🔍 Validating existing affiliate links...');
     
-    const links = await storage.getAffiliateLinks({ status: 'active', limit: 50 });
+    const links: any[] = await storage.getAffiliateLinks({ status: 'active', limit: 50 }) as any[];
     
     for (const link of links) {
       try {
@@ -196,7 +196,7 @@ export class AffiliateScraper {
             lastChecked: new Date()
           });
         }
-      } catch (error) {
+      } catch (error: any) {
         await storage.updateAffiliateLink(link.id, {
           status: 'expired',
           lastChecked: new Date()

@@ -1,7 +1,7 @@
 // Bulk import endpoints for affiliate links
 import type { Express } from "express";
 import { insertAffiliateLinkSchema } from "@shared/schema";
-import { storage } from "./storage";
+import { storage } from "./storage-simple";
 import { isAuthenticated } from "./replitAuth";
 
 export function registerBulkRoutes(app: Express) {
@@ -17,8 +17,8 @@ export function registerBulkRoutes(app: Express) {
         });
       }
 
-      const results = [];
-      const errors = [];
+      const results: any[] = [];
+      const errors: any[] = [];
 
       for (let i = 0; i < links.length; i++) {
         try {
@@ -42,7 +42,7 @@ export function registerBulkRoutes(app: Express) {
           errors.push({
             index: i,
             link: links[i],
-            error: error.message
+            error: (error as any)?.message
           });
         }
       }
@@ -62,7 +62,7 @@ export function registerBulkRoutes(app: Express) {
       console.error("Bulk import error:", error);
       res.status(500).json({
         success: false,
-        error: error.message
+        error: (error as any)?.message
       });
     }
   });
@@ -142,7 +142,7 @@ export function registerBulkRoutes(app: Express) {
       console.error("URL validation error:", error);
       res.status(500).json({
         success: false,
-        error: error.message
+        error: (error as any)?.message
       });
     }
   });
@@ -210,7 +210,7 @@ export function registerBulkRoutes(app: Express) {
       console.error("Workflow rules error:", error);
       res.status(500).json({
         success: false,
-        error: error.message
+        error: (error as any)?.message
       });
     }
   });
@@ -234,7 +234,7 @@ export function registerBulkRoutes(app: Express) {
       console.error("Performance metrics error:", error);
       res.status(500).json({
         success: false,
-        error: error.message
+        error: (error as any)?.message
       });
     }
   });
@@ -262,7 +262,7 @@ export function registerBulkRoutes(app: Express) {
       console.error("Workflow optimization error:", error);
       res.status(500).json({
         success: false,
-        error: error.message
+        error: (error as any)?.message
       });
     }
   });
@@ -287,7 +287,7 @@ export function registerBulkRoutes(app: Express) {
       console.error("Autonomous status error:", error);
       res.status(500).json({
         success: false,
-        error: error.message
+        error: (error as any)?.message
       });
     }
   });
@@ -315,7 +315,7 @@ export function registerBulkRoutes(app: Express) {
       console.error("Autonomous metrics error:", error);
       res.status(500).json({
         success: false,
-        error: error.message
+        error: (error as any)?.message
       });
     }
   });
@@ -381,7 +381,7 @@ export function registerBulkRoutes(app: Express) {
       console.error("Autonomous decisions error:", error);
       res.status(500).json({
         success: false,
-        error: error.message
+        error: (error as any)?.message
       });
     }
   });
@@ -405,7 +405,7 @@ export function registerBulkRoutes(app: Express) {
       console.error("Autonomous toggle error:", error);
       res.status(500).json({
         success: false,
-        error: error.message
+        error: (error as any)?.message
       });
     }
   });
@@ -431,7 +431,7 @@ export function registerBulkRoutes(app: Express) {
       console.error("Force optimization error:", error);
       res.status(500).json({
         success: false,
-        error: error.message
+        error: (error as any)?.message
       });
     }
   });
@@ -457,7 +457,7 @@ export function registerBulkRoutes(app: Express) {
       console.error("Emergency stop error:", error);
       res.status(500).json({
         success: false,
-        error: error.message
+        error: (error as any)?.message
       });
     }
   });
@@ -528,7 +528,7 @@ export function registerBulkRoutes(app: Express) {
       console.error("Scheduler tasks error:", error);
       res.status(500).json({
         success: false,
-        error: error.message
+        error: (error as any)?.message
       });
     }
   });
@@ -581,7 +581,7 @@ export function registerBulkRoutes(app: Express) {
       console.error("Optimal timings error:", error);
       res.status(500).json({
         success: false,
-        error: error.message
+        error: (error as any)?.message
       });
     }
   });
@@ -604,7 +604,7 @@ export function registerBulkRoutes(app: Express) {
       console.error("Scheduler metrics error:", error);
       res.status(500).json({
         success: false,
-        error: error.message
+        error: (error as any)?.message
       });
     }
   });
@@ -628,7 +628,7 @@ export function registerBulkRoutes(app: Express) {
       console.error("Schedule optimization error:", error);
       res.status(500).json({
         success: false,
-        error: error.message
+        error: (error as any)?.message
       });
     }
   });
@@ -652,7 +652,7 @@ export function registerBulkRoutes(app: Express) {
       console.error("Scheduler learning error:", error);
       res.status(500).json({
         success: false,
-        error: error.message
+        error: (error as any)?.message
       });
     }
   });
@@ -702,7 +702,7 @@ export function registerBulkRoutes(app: Express) {
       console.error("Market trends error:", error);
       res.status(500).json({
         success: false,
-        error: error.message
+        error: (error as any)?.message
       });
     }
   });
@@ -742,7 +742,7 @@ export function registerBulkRoutes(app: Express) {
       console.error("Arbitrage opportunities error:", error);
       res.status(500).json({
         success: false,
-        error: error.message
+        error: (error as any)?.message
       });
     }
   });
@@ -777,7 +777,7 @@ export function registerBulkRoutes(app: Express) {
       console.error("Competitor intel error:", error);
       res.status(500).json({
         success: false,
-        error: error.message
+        error: (error as any)?.message
       });
     }
   });
@@ -815,7 +815,7 @@ export function registerBulkRoutes(app: Express) {
       console.error("Seasonal strategies error:", error);
       res.status(500).json({
         success: false,
-        error: error.message
+        error: (error as any)?.message
       });
     }
   });
@@ -864,7 +864,7 @@ export function registerBulkRoutes(app: Express) {
       console.error("Negotiation targets error:", error);
       res.status(500).json({
         success: false,
-        error: error.message
+        error: (error as any)?.message
       });
     }
   });
@@ -902,7 +902,7 @@ export function registerBulkRoutes(app: Express) {
       console.error("Exclusive deals error:", error);
       res.status(500).json({
         success: false,
-        error: error.message
+        error: (error as any)?.message
       });
     }
   });
@@ -938,7 +938,7 @@ export function registerBulkRoutes(app: Express) {
       console.error("Partnerships error:", error);
       res.status(500).json({
         success: false,
-        error: error.message
+        error: (error as any)?.message
       });
     }
   });
@@ -981,7 +981,7 @@ export function registerBulkRoutes(app: Express) {
       console.error("Risk alerts error:", error);
       res.status(500).json({
         success: false,
-        error: error.message
+        error: (error as any)?.message
       });
     }
   });
@@ -1005,7 +1005,7 @@ export function registerBulkRoutes(app: Express) {
       console.error("Risk metrics error:", error);
       res.status(500).json({
         success: false,
-        error: error.message
+        error: (error as any)?.message
       });
     }
   });

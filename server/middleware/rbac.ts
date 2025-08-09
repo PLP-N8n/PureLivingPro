@@ -36,10 +36,9 @@ export const requireRole = (requiredRole: UserRole) => {
         throw new AppError('User not found', 404);
       }
 
-      const userRole = user.role || UserRole.USER;
+      const userRole = (user.role as UserRole) || UserRole.USER;
       
-      // Check role hierarchy: admin > editor > user
-      const roleHierarchy = {
+      const roleHierarchy: Record<UserRole, number> = {
         [UserRole.USER]: 0,
         [UserRole.EDITOR]: 1,
         [UserRole.ADMIN]: 2
@@ -52,8 +51,7 @@ export const requireRole = (requiredRole: UserRole) => {
         throw new AppError(`Insufficient permissions. Required: ${requiredRole}`, 403);
       }
 
-      // Add role to request for downstream use
-      req.user.role = userRole;
+      req.user.role = userRole as UserRole;
       next();
     } catch (error) {
       next(error);

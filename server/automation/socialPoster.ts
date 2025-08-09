@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { storage } from '../storage';
+import { storage } from '../storage-simple';
 import type { SocialAccount, ContentPipeline } from '@shared/schema';
 
 /**
@@ -28,12 +28,12 @@ export class SocialPoster {
   async postToAllPlatforms(contentId: number): Promise<void> {
     console.log('📱 Starting multi-platform posting...');
     
-    const content = await storage.getContentPipeline(contentId);
+    const content: any = await storage.getContentPipeline(contentId);
     if (!content || content.status !== 'completed') {
       throw new Error('Content not ready for posting');
     }
 
-    const activeAccounts = await storage.getSocialAccounts({ isActive: true });
+    const activeAccounts: any[] = await storage.getSocialAccounts({ isActive: true });
     
     for (const account of activeAccounts) {
       if (await this.canPostToday(account)) {
@@ -41,8 +41,8 @@ export class SocialPoster {
           await this.postToPlatform(account, content);
           await this.updatePostCount(account);
           console.log(`✅ Posted to ${account.platform}: ${account.username}`);
-        } catch (error) {
-          console.error(`❌ Failed to post to ${account.platform}:`, error.message);
+        } catch (error: any) {
+          console.error(`❌ Failed to post to ${account.platform}:`, (error && (error as any).message) || error);
         }
       } else {
         console.log(`⏰ Daily limit reached for ${account.platform}: ${account.username}`);
@@ -130,8 +130,8 @@ export class SocialPoster {
   }
 
   private formatContentForX(content: ContentPipeline): string {
-    const generatedContent = content.generatedContent;
-    let text = generatedContent.text;
+    const generatedContent: any = content.generatedContent || {};
+    let text: string = generatedContent.text || '';
     
     // Truncate to X's character limit
     if (text.length > 250) {
@@ -139,15 +139,15 @@ export class SocialPoster {
     }
     
     // Add hashtags
-    const hashtags = generatedContent.hashtags?.slice(0, 2).join(' ') || '#wellness #health';
+    const hashtags = (generatedContent.hashtags?.slice(0, 2).join(' ')) || '#wellness #health';
     
     return `${text}\n\n${hashtags}`;
   }
 
   private formatContentForInstagram(content: ContentPipeline): any {
-    const generatedContent = content.generatedContent;
+    const generatedContent: any = content.generatedContent || {};
     
-    let caption = generatedContent.text;
+    let caption: string = generatedContent.text || '';
     
     // Add hashtags (Instagram allows up to 30)
     const hashtags = generatedContent.hashtags?.join(' ') || '#wellness #health #mindfulness';
@@ -165,13 +165,13 @@ export class SocialPoster {
   }
 
   private formatContentForTikTok(content: ContentPipeline): any {
-    const generatedContent = content.generatedContent;
-    
+    const generatedContent: any = content.generatedContent || {};
+    const baseText: string = generatedContent.text || '';
     return {
-      description: generatedContent.text.substring(0, 150),
+      description: baseText.substring(0, 150),
       hashtags: generatedContent.hashtags?.slice(0, 5) || ['#wellness', '#health'],
       videoScript: `Quick wellness tip: ${content.title}`,
-      duration: 15 // seconds
+      duration: 15
     };
   }
 
@@ -256,7 +256,7 @@ export class SocialPoster {
 
     for (const content of pendingContent) {
       const platform = content.targetPlatform;
-      const times = optimalTimes[platform] || optimalTimes.instagram;
+      const times = (optimalTimes as any)[platform] || optimalTimes.instagram;
       
       // Schedule for next available optimal time
       const nextTime = this.getNextOptimalTime(times);
@@ -298,7 +298,7 @@ export class SocialPoster {
   async monitorEngagement(): Promise<void> {
     console.log('📈 Monitoring social media engagement...');
     
-    const activeAccounts = await storage.getSocialAccounts({ isActive: true });
+    const activeAccounts: any[] = await storage.getSocialAccounts({ isActive: true });
     
     for (const account of activeAccounts) {
       try {

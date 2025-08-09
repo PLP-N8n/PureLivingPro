@@ -1,5 +1,5 @@
 import { db } from '../db';
-import { automationRules, automationLogs, affiliateLinks, products, blogPosts } from '@shared/schema';
+import { automationRules, affiliateLinks, products, blogPosts, automationLogs } from '@shared/schema';
 import { eq, desc, gte, lte, and, count, sql } from 'drizzle-orm';
 import { contentWorkflow } from './contentWorkflow';
 import { urlScraper } from './urlScraper';
@@ -111,7 +111,7 @@ export class AutonomousController {
 
     } catch (error) {
       console.error('❌ Autonomous cycle error:', error);
-      await this.logActivity('CYCLE_ERROR', 'Error in autonomous cycle', { error: error.message });
+      await this.logActivity('CYCLE_ERROR', 'Error in autonomous cycle', { error: (error as any)?.message });
       
       // Continue with next cycle despite error
       this.scheduleNextCycle();
@@ -214,8 +214,7 @@ export class AutonomousController {
           processUnprocessedLinks: true,
           createProducts: true,
           createBlogs: true,
-          maxLinksToProcess: this.config.maxLinksPerCycle,
-          autoPublish: this.config.autoPublish
+          maxLinksToProcess: this.config.maxLinksPerCycle
         });
 
         results.productsCreated = workflowResult.productsCreated || 0;
@@ -238,7 +237,7 @@ export class AutonomousController {
       }
 
     } catch (error) {
-      results.errors.push(error.message);
+      results.errors.push((error as any)?.message || 'Unknown error');
       console.error('🚨 Action execution error:', error);
     }
 

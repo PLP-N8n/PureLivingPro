@@ -1,4 +1,4 @@
-import { storage } from '../storage';
+import { storage } from '../storage-simple';
 import { generateWellnessBlogPostDeepSeek } from '../deepseek';
 import { generateWellnessBlogPost } from '../openai';
 import type { InsertContentPipeline, InsertBlogPost } from '@shared/schema';
@@ -66,7 +66,7 @@ export class ContentCreator {
   }
 
   private async createBlogContent(pipeline: any): Promise<any> {
-    const aiProvider = this.aiProviders[pipeline.aiProvider] || this.aiProviders.deepseek;
+    const aiProvider = (this.aiProviders as any)[pipeline.aiProvider] || this.aiProviders.deepseek;
     
     // Extract category from pipeline or prompt
     const category = this.extractCategoryFromPrompt(pipeline.prompt);
@@ -99,7 +99,7 @@ export class ContentCreator {
       tiktok: { maxLength: 150, hashtags: 5 }
     };
 
-    const platform = pipeline.targetPlatform || 'instagram';
+    const platform = (pipeline.targetPlatform || 'instagram') as keyof typeof platforms;
     const limits = platforms[platform];
 
     // Use DeepSeek for cost-effective social content
@@ -108,14 +108,14 @@ export class ContentCreator {
     Max length: ${limits.maxLength} characters.
     Target audience: Health-conscious individuals aged 25-45.`;
 
-    const content = await generateWellnessBlogPostDeepSeek(
+    const content = await (generateWellnessBlogPostDeepSeek as any)(
       pipeline.title,
       'social-media',
       { tone: 'engaging', length: 'short', platform }
     );
 
     // Generate hashtags
-    const hashtags = this.generateHashtags(pipeline.title, platform, limits.hashtags);
+    const hashtags = this.generateHashtags(pipeline.title, platform as string, limits.hashtags);
 
     return {
       text: content.content,
@@ -160,7 +160,7 @@ export class ContentCreator {
       category,
       status: 'approved',
       limit: 3
-    });
+    }) as any[];
 
     if (affiliateLinks.length === 0) {
       console.log('No affiliate links found for category:', category);
@@ -237,7 +237,7 @@ export class ContentCreator {
       tiktok: 1000
     };
 
-    return Math.floor(baseReach[platform] * (1 + hashtagCount * 0.1));
+    return Math.floor((baseReach as any)[platform] * (1 + hashtagCount * 0.1));
   }
 
   private extractCategoryFromPrompt(prompt: string): string {

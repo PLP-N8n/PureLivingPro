@@ -61,9 +61,10 @@ export class AutonomousFoundation {
 
     } catch (error) {
       console.error('Foundation activation failed:', error);
+      const msg = error instanceof Error ? error.message : String(error);
       return {
         success: false,
-        message: `Foundation activation failed: ${error.message}`,
+        message: `Foundation activation failed: ${msg}`,
         autonomyLevel: 26
       };
     }
@@ -73,7 +74,7 @@ export class AutonomousFoundation {
    * Schedule initial foundation tasks for autonomous operation
    */
   private async scheduleFoundationTasks(): Promise<void> {
-    const foundationTasks = [
+    const foundationTasks: Omit<import('./intelligentScheduler').ScheduleTask, 'id' | 'status' | 'retryCount'>[] = [
       {
         type: 'CONTENT_CREATION',
         priority: 'MEDIUM',
@@ -83,6 +84,7 @@ export class AutonomousFoundation {
           autoPublish: false 
         },
         estimatedDuration: 30,
+        maxRetries: 3,
         scheduledFor: new Date(Date.now() + 5 * 60 * 1000) // 5 minutes from now
       },
       {
@@ -93,6 +95,7 @@ export class AutonomousFoundation {
           maxProducts: 5 
         },
         estimatedDuration: 20,
+        maxRetries: 3,
         scheduledFor: new Date(Date.now() + 10 * 60 * 1000) // 10 minutes from now
       },
       {
@@ -103,6 +106,7 @@ export class AutonomousFoundation {
           includeRevenue: true 
         },
         estimatedDuration: 15,
+        maxRetries: 3,
         scheduledFor: new Date(Date.now() + 60 * 60 * 1000) // 1 hour from now
       }
     ];
@@ -169,24 +173,29 @@ export class AutonomousFoundation {
    * Schedule recovery tasks when performance drops
    */
   private async scheduleRecoveryTasks(): Promise<void> {
-    const recoveryTasks = [
+    const recoveryTasks: Omit<import('./intelligentScheduler').ScheduleTask, 'id' | 'status' | 'retryCount'>[] = [
       {
         type: 'BLOG_OPTIMIZATION',
         priority: 'HIGH',
         parameters: { action: 'performance_recovery' },
-        estimatedDuration: 25
+        estimatedDuration: 25,
+        maxRetries: 3,
+        scheduledFor: new Date(Date.now() + 2 * 60 * 1000)
       },
       {
         type: 'PRODUCT_UPDATE',
         priority: 'MEDIUM',
         parameters: { action: 'quality_check' },
-        estimatedDuration: 20
+        estimatedDuration: 20,
+        maxRetries: 3,
+        scheduledFor: new Date(Date.now() + 2 * 60 * 1000)
       }
     ];
 
     for (const task of recoveryTasks) {
       await this.intelligentScheduler.scheduleTask({
         ...task,
+        maxRetries: 3,
         scheduledFor: new Date(Date.now() + 2 * 60 * 1000) // 2 minutes from now
       });
     }
@@ -196,7 +205,7 @@ export class AutonomousFoundation {
    * Schedule optimization tasks when performing well
    */
   private async scheduleOptimizationTasks(): Promise<void> {
-    const optimizationTasks = [
+    const optimizationTasks: Omit<import('./intelligentScheduler').ScheduleTask, 'id' | 'status' | 'retryCount'>[] = [
       {
         type: 'CONTENT_CREATION',
         priority: 'MEDIUM',
@@ -205,13 +214,16 @@ export class AutonomousFoundation {
           count: 3,
           optimized: true 
         },
-        estimatedDuration: 35
+        estimatedDuration: 35,
+        maxRetries: 3,
+        scheduledFor: new Date(Date.now() + 30 * 60 * 1000)
       }
     ];
 
     for (const task of optimizationTasks) {
       await this.intelligentScheduler.scheduleTask({
         ...task,
+        maxRetries: 3,
         scheduledFor: new Date(Date.now() + 30 * 60 * 1000) // 30 minutes from now
       });
     }
@@ -238,9 +250,10 @@ export class AutonomousFoundation {
       };
 
     } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
       return {
         success: false,
-        message: `Failed to deactivate foundation: ${error.message}`
+        message: `Failed to deactivate foundation: ${msg}`
       };
     }
   }
