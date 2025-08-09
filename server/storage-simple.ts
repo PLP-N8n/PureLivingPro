@@ -791,6 +791,10 @@ export class SimpleStorage implements ISimpleStorage {
   }
 
   async getAffiliateLinks(filters: any = {}): Promise<any[]> {
+    if (!process.env.DATABASE_URL) {
+      return [];
+    }
+
     let query = db.select().from(affiliateLinks) as any;
     if (filters.id) query = query.where(eq(affiliateLinks.id, Number(filters.id))) as any;
     if (filters.category) query = query.where(eq(affiliateLinks.category, filters.category)) as any;
@@ -799,14 +803,7 @@ export class SimpleStorage implements ISimpleStorage {
     if (filters.limit) query = query.limit(filters.limit) as any;
     if (filters.offset) query = query.offset(filters.offset) as any;
 
-    const q: any = query as any;
-    if (q && typeof q.orderBy === 'function') {
-      const ordered = await q.orderBy(desc(affiliateLinks.createdAt));
-      return Array.isArray(ordered) ? ordered : (ordered ? [ordered] : []);
-    }
-
-    const rows = await q;
-    return Array.isArray(rows) ? rows : (rows ? [rows] : []);
+    return await query.orderBy(desc(affiliateLinks.createdAt));
   }
 
 
