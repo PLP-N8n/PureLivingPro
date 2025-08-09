@@ -798,8 +798,15 @@ export class SimpleStorage implements ISimpleStorage {
     if (filters.isActive !== undefined) query = query.where(eq(affiliateLinks.isActive, !!filters.isActive)) as any;
     if (filters.limit) query = query.limit(filters.limit) as any;
     if (filters.offset) query = query.offset(filters.offset) as any;
-    const result = await (query as any).orderBy?.(desc(affiliateLinks.createdAt));
-    return Array.isArray(result) ? result : (result ? [result] : []);
+
+    const q: any = query as any;
+    if (q && typeof q.orderBy === 'function') {
+      const ordered = await q.orderBy(desc(affiliateLinks.createdAt));
+      return Array.isArray(ordered) ? ordered : (ordered ? [ordered] : []);
+    }
+
+    const rows = await q;
+    return Array.isArray(rows) ? rows : (rows ? [rows] : []);
   }
 
 
