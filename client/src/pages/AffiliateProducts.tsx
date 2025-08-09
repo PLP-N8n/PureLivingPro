@@ -217,7 +217,6 @@ export default function AffiliateProducts() {
   });
 
   const handleProductClick = (product: AffiliateProduct) => {
-    // Track click for analytics
     window.gtag?.('event', 'affiliate_click', {
       product_id: product.id,
       product_name: product.title,
@@ -225,9 +224,16 @@ export default function AffiliateProducts() {
       platform: product.platform,
       price: product.price
     });
-    
-    // Open affiliate link in new tab
-    window.open(product.affiliateLink, '_blank');
+
+    import('@/lib/affiliate').then(({ buildAffiliateUrl }) => {
+      const href = buildAffiliateUrl({
+        affiliateId: (product as any)?.affiliateId ?? null,
+        url: product.affiliateLink,
+      });
+      window.open(href, '_blank', 'noopener,noreferrer');
+    }).catch(() => {
+      window.open(product.affiliateLink, '_blank', 'noopener,noreferrer');
+    });
   };
 
   return (
