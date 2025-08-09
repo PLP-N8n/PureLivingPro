@@ -19,8 +19,8 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 let genAI: GoogleGenerativeAI | null = null;
 if (process.env.GEMINI_API_KEY) {
   genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-} else if (process.env.NODE_ENV !== 'test' && process.env.NODE_ENV !== 'development') {
-  throw new Error("GEMINI_API_KEY environment variable must be set");
+} else {
+  genAI = null;
 }
 
 export async function generateWellnessBlogPostGemini(
