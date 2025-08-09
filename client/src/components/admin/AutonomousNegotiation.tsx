@@ -64,20 +64,20 @@ export function AutonomousNegotiation() {
   const queryClient = useQueryClient();
 
   // Fetch negotiation targets
-  const { data: negotiationTargets = [] } = useQuery({
+  const { data: negotiationTargets = [] } = useQuery<any>({
     queryKey: ['/api/negotiation/targets'],
     refetchInterval: 60000,
     select: (data: any) => data?.data || []
   });
 
   // Fetch exclusive deals
-  const { data: exclusiveDeals = [] } = useQuery({
+  const { data: exclusiveDeals = [] } = useQuery<any>({
     queryKey: ['/api/negotiation/exclusive-deals'],
     select: (data: any) => data?.data || []
   });
 
   // Fetch partnership opportunities
-  const { data: partnerships = [] } = useQuery({
+  const { data: partnerships = [] } = useQuery<any>({
     queryKey: ['/api/negotiation/partnerships'],
     select: (data: any) => data?.data || []
   });

@@ -28,12 +28,12 @@ export default function BlogPost() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading, user } = useAuth();
 
-  const { data: post, isLoading: postLoading, error } = useQuery({
+  const { data: post, isLoading: postLoading, error } = useQuery<import("@/types/models").BlogPost | null>({
     queryKey: [`/api/blog/posts/${slug}`],
     retry: false,
   });
 
-  const { data: relatedPosts } = useQuery({
+  const { data: relatedPosts = [] } = useQuery<import("@/types/models").BlogPost[]>({
     queryKey: ["/api/blog/posts?limit=3"],
     retry: false,
   });
@@ -156,7 +156,7 @@ export default function BlogPost() {
                 </div>
                 <div className="flex items-center">
                   <Calendar className="w-4 h-4 mr-2" />
-                  <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                  <span>{new Date((post.createdAt as any) ?? Date.now()).toLocaleDateString()}</span>
                 </div>
                 <div className="flex items-center">
                   <Clock className="w-4 h-4 mr-2" />

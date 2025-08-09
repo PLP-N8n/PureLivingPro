@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
+import { apiRequestJson } from '@/lib/queryClient';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -30,13 +30,13 @@ export function AutonomousControl() {
   const [configOpen, setConfigOpen] = useState(false);
 
   // Get autonomous system status
-  const { data: autonomousStatus, isLoading: statusLoading } = useQuery({
+  const { data: autonomousStatus, isLoading: statusLoading } = useQuery<any>({
     queryKey: ['/api/automation/autonomous/status'],
     refetchInterval: 10000, // Refresh every 10 seconds
   });
 
   // Get scheduler status
-  const { data: schedulerStatus } = useQuery({
+  const { data: schedulerStatus } = useQuery<any>({
     queryKey: ['/api/automation/scheduler/status'],
     refetchInterval: 15000, // Refresh every 15 seconds
   });
@@ -44,13 +44,12 @@ export function AutonomousControl() {
   // Start autonomous mode
   const startAutonomous = useMutation({
     mutationFn: async () => {
-      return await apiRequest('POST', '/api/automation/autonomous/start');
+      return await apiRequestJson<{ message?: string }>('POST', '/api/automation/autonomous/start');
     },
-    onSuccess: (response) => {
-      const data = response.json();
+    onSuccess: (data) => {
       toast({
         title: "Autonomous Mode Started",
-        description: data.message,
+        description: data?.message,
       });
       queryClient.invalidateQueries({ queryKey: ['/api/automation/autonomous/status'] });
     },
@@ -66,13 +65,12 @@ export function AutonomousControl() {
   // Stop autonomous mode
   const stopAutonomous = useMutation({
     mutationFn: async () => {
-      return await apiRequest('POST', '/api/automation/autonomous/stop');
+      return await apiRequestJson<{ message?: string }>('POST', '/api/automation/autonomous/stop');
     },
-    onSuccess: (response) => {
-      const data = response.json();
+    onSuccess: (data) => {
       toast({
         title: "Autonomous Mode Stopped",
-        description: data.message,
+        description: data?.message,
       });
       queryClient.invalidateQueries({ queryKey: ['/api/automation/autonomous/status'] });
     },
@@ -88,7 +86,7 @@ export function AutonomousControl() {
   // Start scheduler
   const startScheduler = useMutation({
     mutationFn: async () => {
-      return await apiRequest('POST', '/api/automation/scheduler/start');
+      return await apiRequestJson('POST', '/api/automation/scheduler/start');
     },
     onSuccess: () => {
       toast({
@@ -109,7 +107,7 @@ export function AutonomousControl() {
   // Stop scheduler
   const stopScheduler = useMutation({
     mutationFn: async () => {
-      return await apiRequest('POST', '/api/automation/scheduler/stop');
+      return await apiRequestJson('POST', '/api/automation/scheduler/stop');
     },
     onSuccess: () => {
       toast({

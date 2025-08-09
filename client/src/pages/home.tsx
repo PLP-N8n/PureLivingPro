@@ -40,17 +40,17 @@ export default function Home() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  const { data: recentPosts } = useQuery({
+  const { data: recentPosts } = useQuery<any>({
     queryKey: ["/api/blog/posts?limit=3"],
     retry: false,
   });
 
-  const { data: featuredProducts } = useQuery({
+  const { data: featuredProducts } = useQuery<any>({
     queryKey: ["/api/products?limit=3"],
     retry: false,
   });
 
-  const { data: userChallenges } = useQuery({
+  const { data: userChallenges } = useQuery<any>({
     queryKey: ["/api/user/challenges"],
     retry: false,
   });

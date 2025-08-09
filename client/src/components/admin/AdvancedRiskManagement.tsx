@@ -58,14 +58,14 @@ export function AdvancedRiskManagement() {
   const queryClient = useQueryClient();
 
   // Fetch risk alerts
-  const { data: riskAlerts = [] } = useQuery({
+  const { data: riskAlerts = [] } = useQuery<any>({
     queryKey: ['/api/risk/alerts'],
     refetchInterval: 10000,
     select: (data: any) => data?.data || []
   });
 
   // Fetch risk metrics
-  const { data: riskMetrics } = useQuery({
+  const { data: riskMetrics } = useQuery<any>({
     queryKey: ['/api/risk/metrics'],
     refetchInterval: 30000,
     select: (data: any) => data?.data || {}

@@ -81,12 +81,12 @@ export default function WellnessPlan() {
     },
   });
 
-  const { data: plans = [], isLoading } = useQuery({
+  const { data: plans = [], isLoading } = useQuery<any>({
     queryKey: ["/api/wellness-plans"],
     enabled: isAuthenticated,
   });
 
-  const { data: goals = [] } = useQuery({
+  const { data: goals = [] } = useQuery<any>({
     queryKey: ["/api/wellness-goals"],
     enabled: isAuthenticated,
   });

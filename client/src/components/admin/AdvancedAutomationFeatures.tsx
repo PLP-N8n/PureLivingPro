@@ -53,13 +53,13 @@ export function AdvancedAutomationFeatures() {
   const queryClient = useQueryClient();
 
   // Fetch workflow rules
-  const { data: workflowRules = [] } = useQuery({
+  const { data: workflowRules = [] } = useQuery<any>({
     queryKey: ['/api/automation/workflow-rules'],
     select: (data: any) => data?.data || []
   });
 
   // Fetch performance metrics
-  const { data: performanceMetrics } = useQuery({
+  const { data: performanceMetrics } = useQuery<any>({
     queryKey: ['/api/automation/performance-metrics'],
     select: (data: any) => data?.data || {}
   });

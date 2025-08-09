@@ -98,13 +98,13 @@ export default function AdvancedAnalyticsDashboard() {
   const [activeTab, setActiveTab] = useState('personal');
 
   // Fetch user wellness insights
-  const { data: userInsights, isLoading: insightsLoading } = useQuery({
+  const { data: userInsights, isLoading: insightsLoading } = useQuery<any>({
     queryKey: ['/api/analytics/wellness/user', timeframe],
     enabled: activeTab === 'personal'
   });
 
   // Fetch platform analytics
-  const { data: platformAnalytics, isLoading: platformLoading } = useQuery({
+  const { data: platformAnalytics, isLoading: platformLoading } = useQuery<any>({
     queryKey: ['/api/analytics/platform', timeframe],
     enabled: activeTab === 'platform'
   });

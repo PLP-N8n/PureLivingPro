@@ -25,7 +25,8 @@ import {
   Tag,
   FileText,
   Wand2,
-  AlertTriangle
+  AlertTriangle,
+  Star
 } from "lucide-react";
 import { BlogPost } from "@shared/schema";
 import { blogPostSchema, type BlogPostFormData } from "@shared/validation/admin";
@@ -58,7 +59,7 @@ export default function BlogManagement() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: blogPosts, isLoading } = useQuery({
+  const { data: blogPosts, isLoading } = useQuery<any>({
     queryKey: ['/api/blog/posts'],
   });
 
@@ -397,10 +398,10 @@ export default function BlogManagement() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2 mb-4">
-                  <Badge variant={post.published ? "default" : "secondary"}>
-                    {post.published ? "Published" : "Draft"}
+                  <Badge variant={post.isPublished ? "default" : "secondary"}>
+                    {post.isPublished ? "Published" : "Draft"}
                   </Badge>
-                  {post.featured && (
+                  {(post as any).featured && (
                     <Badge variant="outline" className="border-yellow-200 text-yellow-700">
                       <Star className="h-3 w-3 mr-1" />
                       Featured

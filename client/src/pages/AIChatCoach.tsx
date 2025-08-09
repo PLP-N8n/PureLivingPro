@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequestJson } from "@/lib/queryClient";
 import { 
   Send, 
   Bot, 
@@ -90,13 +90,13 @@ export default function AIChatCoach() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Fetch chat history
-  const { data: chatHistory, isLoading } = useQuery({
+  const { data: chatHistory, isLoading } = useQuery<any>({
     queryKey: ["/api/ai-coach/history"],
     enabled: !!user,
   });
 
   // Fetch recent coaching sessions
-  const { data: sessions } = useQuery({
+  const { data: sessions } = useQuery<any>({
     queryKey: ["/api/ai-coach/sessions"],
     enabled: !!user,
   });
@@ -104,7 +104,7 @@ export default function AIChatCoach() {
   // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: async (messageContent: string) => {
-      return await apiRequest("POST", "/api/ai-coach/chat", { 
+      return await apiRequestJson<{ message: string; suggestions?: string[]; insights?: any[] }>("POST", "/api/ai-coach/chat", { 
         message: messageContent,
         context: {
           userGoals: user?.wellnessGoals || [],
@@ -113,7 +113,7 @@ export default function AIChatCoach() {
         }
       });
     },
-    onSuccess: (response) => {
+    onSuccess: (response: { message: string; suggestions?: string[]; insights?: any[] }) => {
       const aiMessage: Message = {
         id: Date.now().toString() + "_ai",
         type: "ai",

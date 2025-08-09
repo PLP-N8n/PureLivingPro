@@ -99,7 +99,7 @@ export function AutomationDashboard() {
   });
 
   // All queries at component level
-  const { data: statusResponse, refetch: refetchStatus } = useQuery({
+  const { data: statusResponse, refetch: refetchStatus } = useQuery<any>({
     queryKey: ['/api/automation/status'],
     refetchInterval: 30000
   });
@@ -107,7 +107,7 @@ export function AutomationDashboard() {
   // Extract data from response structure
   const status = (statusResponse as any)?.data;
 
-  const { data: affiliateLinksResponse, refetch: refetchAffiliateLinks } = useQuery({
+  const { data: affiliateLinksResponse, refetch: refetchAffiliateLinks } = useQuery<any>({
     queryKey: ['/api/affiliate-links'],
     enabled: selectedTab === 'affiliate',
     refetchInterval: selectedTab === 'affiliate' ? 30000 : false, // Refresh every 30 seconds when tab is active
@@ -115,7 +115,7 @@ export function AutomationDashboard() {
     gcTime: 0 // Don't cache results (formerly cacheTime in v4)
   });
 
-  const { data: contentPipelineResponse } = useQuery({
+  const { data: contentPipelineResponse } = useQuery<any>({
     queryKey: ['/api/content-pipeline'],
     enabled: selectedTab === 'content'
   });
@@ -124,7 +124,7 @@ export function AutomationDashboard() {
   const affiliateLinks = (affiliateLinksResponse as any)?.data || [];
   const contentPipeline = (contentPipelineResponse as any)?.data || [];
 
-  const { data: revenueStatsResponse } = useQuery({
+  const { data: revenueStatsResponse } = useQuery<any>({
     queryKey: ['/api/revenue/stats'],
     enabled: selectedTab === 'revenue'
   });
