@@ -133,6 +133,112 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Import and register bulk routes
   const { registerBulkRoutes } = await import('./routes-bulk');
   registerBulkRoutes(app);
+  // SEO and Affiliate endpoints
+  const CANONICAL_DOMAIN = 'https://purelivingpro.com';
+
+  app.get('/robots.txt', asyncHandler(async (_req, res) => {
+    const lines = [
+      'User-agent: *',
+      'Disallow: /admin-old',
+      `Sitemap: ${CANONICAL_DOMAIN}/sitemap.xml`,
+    ].join('\n');
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.send(lines);
+  }));
+
+  app.get('/sitemap.xml', asyncHandler(async (_req, res) => {
+    const staticPaths = [
+      '/',
+      '/blog',
+      '/about',
+      '/contact',
+      '/wellness-picks',
+      '/meditation-timer',
+      '/subscribe',
+    ];
+    const posts = await storage.getBlogPosts({ isPublished: true });
+    const urls: { loc: string; lastmod?: string; changefreq?: string; priority?: string }[] = [];
+
+    for (const p of staticPaths) {
+      urls.push({
+        loc: `${CANONICAL_DOMAIN}${p}`,
+        changefreq: 'weekly',
+        priority: '0.6',
+      });
+    }
+
+    for (const post of posts) {
+      const slug = post.slug;
+      if (!slug) continue;
+      const lastmod = (post.updatedAt || post.createdAt) ? new Date(post.updatedAt || post.createdAt).toISOString() : undefined;
+      urls.push({
+        loc: `${CANONICAL_DOMAIN}/blog/${slug}`,
+        lastmod,
+        changefreq: 'weekly',
+        priority: '0.8',
+      });
+    }
+
+    const xmlItems = urls.map(u => {
+      return [
+        '<url>',
+        `<loc>${u.loc}</loc>`,
+        u.lastmod ? `<lastmod>${u.lastmod}</lastmod>` : '',
+        u.changefreq ? `<changefreq>${u.changefreq}</changefreq>` : '',
+        u.priority ? `<priority>${u.priority}</priority>` : '',
+        '</url>'
+      ].filter(Boolean).join('');
+    }).join('');
+
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>` +
+      `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">` +
+      xmlItems +
+      `</urlset>`;
+
+    res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+    res.send(xml);
+  }));
+
+  // Affiliate redirect with click logging
+  app.get('/r/:id', asyncHandler(async (req, res) => {
+    const id = parseInt(req.params.id, 10);
+    if (Number.isNaN(id)) {
+      return res.status(400).json({ message: 'Invalid affiliate link id' });
+    }
+
+    const links = await storage.getAffiliateLinks({ id, isActive: true });
+    const link = Array.isArray(links) ? links[0] : undefined;
+
+    if (!link || !link.url) {
+      return res.status(404).json({ message: 'Affiliate link not found' });
+    }
+
+    const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.socket.remoteAddress || '';
+    const ua = req.headers['user-agent'] || '';
+    const referer = req.headers['referer'] || req.headers['referrer'] || '';
+    const contentId = req.query.contentId ? parseInt(String(req.query.contentId), 10) : undefined;
+
+    try {
+      await storage.createRevenueTracking({
+        source: 'affiliate',
+        affiliateLinkId: id,
+        contentId: Number.isNaN(contentId as any) ? undefined : contentId,
+        platform: 'web',
+        amount: 0,
+        clickCount: 1,
+        metadata: {
+          ip,
+          userAgent: ua,
+          referer,
+        },
+        status: 'pending',
+      });
+    } catch (e) {
+      console.error('Failed to record affiliate click:', e);
+    }
+
+    res.redirect(302, link.url);
+  }));
 
   // Admin stats endpoint
   // Cached admin stats endpoint with optimized queries
