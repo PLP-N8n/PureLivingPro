@@ -1,0 +1,11 @@
+node_modules
+dist/public/assets/*.map
+dist/public/assets/*.LICENSE.txt
+dist/public/assets/*.css.map
+.git
+.gitignore
+.env
+.env.*
+npm-debug.log*
+Dockerfile
+**/*.tsbuildinfo

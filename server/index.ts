@@ -4,14 +4,65 @@ import { setupVite, serveStatic, log } from "./vite";
 import { validateEnvironment } from "./middleware/validation";
 import { errorHandler } from "./middleware/errorHandler";
 
-// Validate environment variables at startup only in production
-if (process.env.NODE_ENV === 'production') {
+if (process.env.NODE_ENV === "production") {
   validateEnvironment();
 }
 
+const PROD = process.env.NODE_ENV === "production";
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.set("trust proxy", 1);
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin as string | undefined;
+  const allowed = ["https://purelivingpro.com", "https://www.purelivingpro.com"];
+  const allowOrigin = PROD ? (origin && allowed.includes(origin) ? origin : "https://purelivingpro.com") : "*";
+  res.setHeader("Access-Control-Allow-Origin", allowOrigin);
+  res.setHeader("Vary", "Origin");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  if (req.method === "OPTIONS") {
+    res.status(204).end();
+    return;
+  }
+  next();
+});
+
+app.use((_req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "SAMEORIGIN");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  if (PROD) {
+    res.setHeader("Strict-Transport-Security", "max-age=15552000; includeSubDomains");
+    res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+    res.setHeader("Cross-Origin-Resource-Policy", "same-origin");
+  }
+  next();
+});
+
+const rlMap = new Map<string, { count: number; reset: number }>();
+const WINDOW_MS = 15 * 60 * 1000;
+const LIMIT = 100;
+
+app.use((req, res, next) => {
+  if (!req.path.startsWith("/api")) return next();
+  const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket.remoteAddress || "unknown";
+  const now = Date.now();
+  const rec = rlMap.get(ip) || { count: 0, reset: now + WINDOW_MS };
+  if (now > rec.reset) {
+    rec.count = 0;
+    rec.reset = now + WINDOW_MS;
+  }
+  rec.count += 1;
+  rlMap.set(ip, rec);
+  if (rec.count > LIMIT) {
+    res.status(429).json({ error: "Too many requests" });
+    return;
+  }
+  next();
+});
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -31,11 +82,9 @@ app.use((req, res, next) => {
       if (capturedJsonResponse) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
-
       if (logLine.length > 80) {
         logLine = logLine.slice(0, 79) + "…";
       }
-
       log(logLine);
     }
   });
@@ -43,30 +92,30 @@ app.use((req, res, next) => {
   next();
 });
 
+app.get("/healthz", (_req, res) => {
+  res.status(200).json({ ok: true });
+});
+
 (async () => {
   const server = await registerRoutes(app);
 
-  // Add global error handler (must be after routes)
   app.use(errorHandler);
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = 5000;
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
-  });
+  const port = Number(process.env.PORT) || 5000;
+  server.listen(
+    {
+      port,
+      host: "0.0.0.0",
+      reusePort: true,
+    },
+    () => {
+      log(`serving on port ${port}`);
+    }
+  );
 })();

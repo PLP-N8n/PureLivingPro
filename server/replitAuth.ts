@@ -8,11 +8,13 @@ import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
 
+const REPLIT_AUTH_ENABLED = process.env.REPLIT_AUTH_ENABLED === "true";
+
 if (!process.env.REPLIT_DOMAINS) {
   if (process.env.NODE_ENV === "test" || process.env.NODE_ENV === "development") {
     process.env.REPLIT_DOMAINS = "localhost,replit.com";
   } else {
-    throw new Error("Environment variable REPLIT_DOMAINS not provided");
+    process.env.REPLIT_DOMAINS = "";
   }
 }
 
@@ -27,7 +29,7 @@ const getOidcConfig = memoize(
 );
 
 export function getSession() {
-  const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
+  const sessionTtl = 7 * 24 * 60 * 60 * 1000;
   if (process.env.NODE_ENV === "test" || process.env.NODE_ENV === "development") {
     return session({
       secret: process.env.SESSION_SECRET || "test-secret",
@@ -84,18 +86,18 @@ async function upsertUser(
 
 export async function setupAuth(app: Express) {
   app.set("trust proxy", 1);
-  app.use(getSession());
-  app.use(passport.initialize());
-  app.use(passport.session());
 
-  if (process.env.NODE_ENV !== "production" && !process.env.REPL_ID) {
-    passport.serializeUser((user: Express.User, cb) => cb(null, user));
-    passport.deserializeUser((user: Express.User, cb) => cb(null, user));
-    app.get("/api/login", (_req, res) => res.status(501).json({ message: "Login not configured in development." }));
-    app.get("/api/callback", (_req, res) => res.status(501).json({ message: "Callback not configured in development." }));
+  const enabled = REPLIT_AUTH_ENABLED && !!process.env.REPL_ID;
+  if (!enabled) {
+    app.get("/api/login", (_req, res) => res.status(501).json({ message: "Login not configured." }));
+    app.get("/api/callback", (_req, res) => res.status(501).json({ message: "Callback not configured." }));
     app.get("/api/logout", (_req, res) => res.redirect("/"));
     return;
   }
+
+  app.use(getSession());
+  app.use(passport.initialize());
+  app.use(passport.session());
 
   const config = await getOidcConfig();
 
@@ -109,8 +111,7 @@ export async function setupAuth(app: Express) {
     verified(null, user);
   };
 
-  for (const domain of process.env
-    .REPLIT_DOMAINS!.split(",")) {
+  for (const domain of (process.env.REPLIT_DOMAINS || "").split(",").filter(Boolean)) {
     const strategy = new Strategy(
       {
         name: `replitauth:${domain}`,
@@ -127,15 +128,15 @@ export async function setupAuth(app: Express) {
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
   app.get("/api/login", (req, res, next) => {
-    const domain = process.env.REPLIT_DOMAINS!.split(",")[0];
+    const domain = (process.env.REPLIT_DOMAINS || "").split(",").filter(Boolean)[0];
     passport.authenticate(`replitauth:${domain}`, {
-      prompt: "login consent", 
+      prompt: "login consent",
       scope: ["openid", "email", "profile", "offline_access"],
     })(req, res, next);
   });
 
   app.get("/api/callback", (req, res, next) => {
-    const domain = process.env.REPLIT_DOMAINS!.split(",")[0];
+    const domain = (process.env.REPLIT_DOMAINS || "").split(",").filter(Boolean)[0];
     passport.authenticate(`replitauth:${domain}`, {
       successReturnToOrRedirect: "/",
       failureRedirect: "/api/login",
@@ -157,7 +158,11 @@ export async function setupAuth(app: Express) {
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
   const user = req.user as any;
 
-  if (!req.isAuthenticated() || !user.expires_at) {
+  if (typeof (req as any).isAuthenticated !== "function") {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  if (!(req as any).isAuthenticated() || !user?.expires_at) {
     return res.status(401).json({ message: "Unauthorized" });
   }
 
@@ -177,7 +182,7 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
     const tokenResponse = await client.refreshTokenGrant(config, refreshToken);
     updateUserSession(user, tokenResponse);
     return next();
-  } catch (error) {
+  } catch {
     res.status(401).json({ message: "Unauthorized" });
     return;
   }
