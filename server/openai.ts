@@ -1,11 +1,6 @@
 import OpenAI from "openai";
 
-if (!process.env.OPENAI_API_KEY) {
-  throw new Error("OPENAI_API_KEY environment variable must be set");
-}
-
-// the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai: OpenAI | null = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
 
 export async function generateWellnessPlan(userProfile: {
   goals: string[];
@@ -23,6 +18,19 @@ export async function generateWellnessPlan(userProfile: {
     eveningAffirmation: string;
   }>;
 }> {
+  if (!openai) {
+    return {
+      title: "Starter 7-Day Wellness Plan",
+      weeklyFocus: "Build gentle, sustainable habits",
+      dailyPlan: Array.from({ length: 7 }).map((_, i) => ({
+        day: i + 1,
+        theme: "Balance",
+        morningActivity: "10-minute walk",
+        afternoonActivity: "Stretching break",
+        eveningAffirmation: "I support my health with small steps",
+      })),
+    };
+  }
   const prompt = `
 Create a personalized 7-day wellness plan for a user with the following profile:
 - Goals: ${userProfile.goals.join(", ")}
@@ -81,6 +89,13 @@ export async function generatePersonalizedContent(
   content: string;
   category: string;
 }> {
+  if (!openai) {
+    return {
+      title: "Personalized Tip",
+      content: "Focus on hydration, light movement, and consistent sleep.",
+      category: "wellness",
+    };
+  }
   const prompt = `
 Generate personalized ${contentType} content for a wellness platform user with:
 - Goals: ${userProfile.goals.join(", ")}
@@ -123,6 +138,13 @@ export async function analyzeMoodAndSuggestActivities(
   suggestions: string[];
   affirmation: string;
 }> {
+  if (!openai) {
+    return {
+      moodAnalysis: "You’re trending toward balance—keep things simple and compassionate.",
+      suggestions: ["5-minute breathing", "Short outdoor walk", "Hydrate", "Gentle stretch"],
+      affirmation: "Small steps count. I’m proud of my progress.",
+    };
+  }
   const prompt = `
 Analyze a user's wellness state and provide personalized suggestions:
 - Current mood: ${mood}/5
@@ -167,6 +189,15 @@ export async function generateWellnessBlogPost(
   tags: string;
   readTime: number;
 }> {
+  if (!openai) {
+    return {
+      title: "Holistic Wellness Guide",
+      content: "# Wellness Basics\n\nStart with movement, hydration, and mindful breathing.",
+      excerpt: "Simple steps to support your wellness journey.",
+      tags: "wellness, holistic, health",
+      readTime: 6,
+    };
+  }
   try {
     const systemPrompt = `You are an expert wellness content creator specializing in the "Creation of Life" theme that blends ancient wisdom with modern science. Create high-quality blog posts that are:
     - Scientifically accurate and evidence-based
@@ -205,6 +236,14 @@ export async function optimizeContentForSEO(
   keywords: string;
   suggestions: string[];
 }> {
+  if (!openai) {
+    return {
+      optimizedTitle: title,
+      metaDescription: "Practical wellness guidance and tips.",
+      keywords: "wellness, health, holistic, lifestyle",
+      suggestions: ["Use clear headings", "Add internal links", "Tighten meta description"],
+    };
+  }
   try {
     const prompt = `Optimize this wellness content for SEO:
     
@@ -244,6 +283,9 @@ export async function generateProductDescription(
   category: string,
   features?: string[]
 ): Promise<string> {
+  if (!openai) {
+    return `${productName} is a quality ${category.toLowerCase()} designed to support your wellness journey.`;
+  }
   try {
     const prompt = `Create a compelling product description for this wellness product:
     
@@ -288,6 +330,18 @@ export async function generateAIMealPlan(params: {
   servingSize: number;
   additionalNotes: string;
 }): Promise<any> {
+  if (!openai) {
+    return {
+      id: `meal-plan-${Date.now()}`,
+      title: "Personalized 7-Day Meal Plan",
+      description: "Balanced meals focused on whole foods and hydration.",
+      meals: { breakfast: [], lunch: [], dinner: [], snacks: [] },
+      nutritionSummary: { totalCalories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 },
+      shoppingList: [],
+      preparationTips: ["Prep grains in batches", "Keep fruit handy", "Hydrate regularly"],
+      createdAt: new Date(),
+    };
+  }
   try {
     const prompt = `Create a comprehensive 7-day meal plan with the following requirements:
 

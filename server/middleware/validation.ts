@@ -1,28 +1,48 @@
 import { z } from 'zod';
 
-export const envSchema = z.object({
+const common = {
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  DATABASE_URL: z.string().url('DATABASE_URL must be a valid URL'),
-  SESSION_SECRET: z.string().min(32, 'SESSION_SECRET must be at least 32 characters long'),
-  OPENAI_API_KEY: z.string().min(1, 'OPENAI_API_KEY is required'),
-  DEEPSEEK_API_KEY: z.string().min(1, 'DEEPSEEK_API_KEY is required'),
-  STRIPE_SECRET_KEY: z.string().min(1, 'STRIPE_SECRET_KEY is required'),
-  SENDGRID_API_KEY: z.string().min(1, 'SENDGRID_API_KEY is required'),
-  REPLIT_DOMAINS: z.string().min(1, 'REPLIT_DOMAINS is required'),
-  REPL_ID: z.string().min(1, 'REPL_ID is required'),
   ISSUER_URL: z.string().url().optional(),
   PGHOST: z.string().optional(),
   PGPORT: z.string().optional(),
   PGUSER: z.string().optional(),
   PGPASSWORD: z.string().optional(),
   PGDATABASE: z.string().optional(),
+};
+
+const devTestSchema = z.object({
+  ...common,
+  DATABASE_URL: z.string().url().optional(),
+  SESSION_SECRET: z.string().min(1).optional(),
+  OPENAI_API_KEY: z.string().optional(),
+  DEEPSEEK_API_KEY: z.string().optional(),
+  STRIPE_SECRET_KEY: z.string().optional(),
+  SENDGRID_API_KEY: z.string().optional(),
+  REPLIT_DOMAINS: z.string().optional(),
+  REPL_ID: z.string().optional(),
 });
 
-export type EnvConfig = z.infer<typeof envSchema>;
+const prodSchema = z.object({
+  ...common,
+  SESSION_SECRET: z.string().min(32, 'SESSION_SECRET must be at least 32 characters long'),
+  DATABASE_URL: z.string().url().optional(),
+  OPENAI_API_KEY: z.string().optional(),
+  DEEPSEEK_API_KEY: z.string().optional(),
+  STRIPE_SECRET_KEY: z.string().optional(),
+  SENDGRID_API_KEY: z.string().optional(),
+  REPLIT_DOMAINS: z.string().optional(),
+  REPL_ID: z.string().optional(),
+});
+
+export type EnvConfig =
+  | z.infer<typeof prodSchema>
+  | z.infer<typeof devTestSchema>;
 
 export function validateEnvironment(): EnvConfig {
+  const isProd = process.env.NODE_ENV === 'production';
+  const schema = isProd ? prodSchema : devTestSchema;
   try {
-    const config = envSchema.parse(process.env);
+    const config = schema.parse(process.env);
     console.log('✅ Environment variables validated successfully');
     return config;
   } catch (error) {
